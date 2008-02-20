@@ -1,7 +1,7 @@
 require 'dramatis/version'
 
-AUTHOR = 'FIXME full name'  # can also be an array of Authors
-EMAIL = "FIXME email"
+AUTHOR = 'Steven Parkes'  # can also be an array of Authors
+EMAIL = "smparkes@smparkes.net"
 DESCRIPTION = "description of gem"
 GEM_NAME = 'dramatis' # what ppl will type to install your gem
 RUBYFORGE_PROJECT = 'dramatis' # The unix name for your project
