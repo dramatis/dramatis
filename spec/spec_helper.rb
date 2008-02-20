@@ -5,3 +5,5 @@ rescue LoadError
   gem 'rspec'
   require 'spec'
 end
+
+$:.push File.join( File.dirname(__FILE__), "..", "lib" )

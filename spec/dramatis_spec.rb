@@ -1,11 +1,8 @@
 require File.dirname(__FILE__) + '/spec_helper.rb'
+require 'dramatis'
 
-# Time to add your specs!
-# http://rspec.rubyforge.org/
-describe "Place your specs here" do
+describe Dramatis do
   
-  it "find this spec in spec directory" do
-    violated "Be sure to write your specs"
-  end
+  it "should have specs"
   
 end
