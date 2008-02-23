@@ -3,11 +3,11 @@ require File.join( File.dirname(__FILE__), "..", "..", '/spec_helper.rb' )
 require 'dramatis/runtime'
 require 'dramatis/actor/name'
 
-Runtime = Dramatis::Runtime
-Actor = Dramatis::Actor
-Name = Actor::Name
+describe Dramatis::Actor::Name do
 
-describe Name do
+  Runtime = Dramatis::Runtime
+  Actor = Dramatis::Actor
+  Name = Actor::Name
 
   after do
     Runtime.quiesce
@@ -26,11 +26,20 @@ describe Name do
     name = Name.new Object.new
   end
 
+  it "should deliver messages with nil continuations" do
+    object = mock(Object.new)
+    object.should_receive(:foo).with(:bar)
+    name = Name.new object
+    Actor::Name( name ).continue.foo( :bar )
+    pending
+  end
+
   it "should allow and execute messages to bound names" do
     object = mock(Object.new)
     object.should_receive(:foo).with(:bar).and_return(:foobar)
     name = Name.new object
     result = name.foo :bar
+    pending
     result.should == :foobar
   end
 
@@ -41,18 +50,9 @@ describe Name do
     object = mock(Object.new)
     object.should_receive(:foo).with(:bar).and_return(:foobar)
 
-    Actor::Name( name ).become object
-    pending "can't actually check the should_recieve until queing/quiescing works"
-  end
+    Actor::Name( name ).actor = object
 
-  it "nil continuations should be fine" do
-    name = Name.new
-    ( Actor::Name( name ).continue ).foo :bar
-    Actor::Name( name ).become object
-    object = mock(Object.new)
-    object.should_receive(:foo).with(:bar).and_return(:foobar)
-    pending "can't actually check the should_recieve until queing/quiescing works"
-
+    pending
   end
 
   it "unbound names should queue messages" do

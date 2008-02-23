@@ -5,12 +5,25 @@ class Dramatis::Actor::Name; end
 require 'dramatis/actor'
 require 'dramatis/runtime/unbound'
 
-Unbound = Dramatis::Runtime::Unbound
-
 class Dramatis::Actor::Name
 
+  Runtime = Dramatis::Runtime
+  Unbound = Runtime::Unbound
+
   def initialize object = nil
-    @object = object || Unbound.new
+    if object
+      @object = object
+      @bind = lambda { throw "a fit" }
+    else
+      @object = Unbound.new
+      @bind = lambda do |object|
+        old = @object
+        @object = object
+        old.instance_eval {
+          @bind.call( object )
+        }
+      end
+    end
   end
 
   def method_missing *args
@@ -20,7 +33,8 @@ class Dramatis::Actor::Name
       throw "a fit"
     end
 
-    @object.send *args
+    Runtime::enqueue self, *args
+
   end
 
 end
