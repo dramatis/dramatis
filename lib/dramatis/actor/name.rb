@@ -2,39 +2,20 @@ module Dramatis; end
 module Dramatis::Actor; end
 class Dramatis::Actor::Name; end
 
+require 'dramatis/runtime/name_server'
 require 'dramatis/actor'
-require 'dramatis/runtime/unbound'
 
 class Dramatis::Actor::Name
 
-  Runtime = Dramatis::Runtime
-  Unbound = Runtime::Unbound
-
   def initialize object = nil
-    if object
-      @object = object
-      @bind = lambda { throw "a fit" }
-    else
-      @object = Unbound.new
-      @bind = lambda do |object|
-        old = @object
-        @object = object
-        old.instance_eval {
-          @bind.call( object )
-        }
-      end
-    end
+    @binding = Dramatis::Runtime::NameServer.the.new object
+    @options = nil
+    return self
   end
 
   def method_missing *args
-
-    # debugging to make sure we don't send to the actor rather than the proxy
-    if args[0].to_s =~ /^__.*__$/ 
-      throw "a fit"
-    end
-
-    Runtime::enqueue self, *args
-
+    return @binding.actor_send( :method_args => args,
+                                :name_args => @options )
   end
 
 end

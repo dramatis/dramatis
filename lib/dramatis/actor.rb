@@ -1,13 +1,14 @@
 module Dramatis; end
 module Dramatis::Actor; end
 
-require 'dramatis/actor/name/proxy/private'
+require 'dramatis/runtime/name_server'
+require 'dramatis/runtime/actor/name/proxy'
 
 module Dramatis::Actor
 
-  Name = Dramatis::Actor::Name
-  Proxy = Name::Proxy
-  Private = Proxy::Private
+  Runtime = Dramatis::Runtime
+  NameServer = Runtime::NameServer
+  Proxy = Runtime::Actor::Name::Proxy
 
   def self.Name *args, &block
     Proxy.new *args, &block
@@ -17,7 +18,7 @@ module Dramatis::Actor
 
     klass.class_eval do
       def actor
-        @name ||= Private.new( Name.new( self ) )
+        @__dramatis__ ||= Dramatis::Runtime::NameServer.the[self]
       end
     end
 

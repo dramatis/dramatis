@@ -26,21 +26,25 @@ describe Dramatis::Actor::Name do
     name = Name.new Object.new
   end
 
-  it "should deliver messages with nil continuations" do
-    object = mock(Object.new)
-    object.should_receive(:foo).with(:bar)
-    name = Name.new object
-    Actor::Name( name ).continue.foo( :bar )
-    pending
-  end
-
   it "should allow and execute messages to bound names" do
     object = mock(Object.new)
     object.should_receive(:foo).with(:bar).and_return(:foobar)
     name = Name.new object
     result = name.foo :bar
-    pending
     result.should == :foobar
+  end
+
+  it "should deliver messages with nil continuations" do
+    object = mock(Object.new)
+    object.should_receive(:foo).with(:bar)
+    name = Name.new object
+    Actor::Name( name ).continue.foo( :bar )
+  end
+
+  it "shouldn't be possible to bind twice" do
+    name = Name.new
+    Actor::Name( name ).bind Object.new
+    lambda { Actor::Name( name ).bind Object.new }.should raise_error
   end
 
   it "should execute messages to unbound names once bound" do
@@ -50,16 +54,13 @@ describe Dramatis::Actor::Name do
     object = mock(Object.new)
     object.should_receive(:foo).with(:bar).and_return(:foobar)
 
-    Actor::Name( name ).actor = object
-
-    pending
+    Actor::Name( name ).bind object
   end
 
-  it "unbound names should queue messages" do
-    name = Actor::Name.new
-    name.a
-    name.b
-    Actor
-  end
+  it "unbound names should queue messages and deliver them in order"
+
+  it "messages should be delivered out of order sometimes"
+
+  it "flushing should guarantee message order"
 
 end
