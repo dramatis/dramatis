@@ -14,9 +14,17 @@ module Dramatis::Actor
     Proxy.new *args, &block
   end
 
-  def self.acts_as klass
+  def self.acts_as cls, opts = {}
 
-    klass.class_eval do
+    if opts[:new] != :object
+      cls.class_eval do
+        def self.new *args
+          Dramatis::Actor::Name.new super *args
+        end
+      end
+    end
+
+    cls.class_eval do
       def actor
         @__dramatis__ ||= Dramatis::Runtime::NameServer.the[self]
       end

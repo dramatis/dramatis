@@ -13,6 +13,18 @@ describe Dramatis::Actor::Name do
     Runtime.quiesce
   end
 
+  it "should be creatable from an acts_as class and return the right type" do
+
+    class Foo
+      Actor::acts_as self
+    end
+
+    name = Foo.new
+    name.should be_a_kind_of Actor::Name
+
+    
+  end
+
   it "should be creatable unbound" do
     name = Name.new
   end
