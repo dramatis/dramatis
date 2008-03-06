@@ -32,7 +32,6 @@ class Dramatis::Runtime::Actor
       delivered = false
       @messages.each do |message|
         if @filter.call( *message )
-          p "pop",  message
           @object.send *message
           @messages.shift
           delivered = true

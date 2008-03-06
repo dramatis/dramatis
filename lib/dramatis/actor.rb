@@ -19,7 +19,7 @@ module Dramatis::Actor
     if opts[:new] != :object
       cls.class_eval do
         def self.new *args
-          Dramatis::Actor::Name.new super *args
+          Dramatis::Actor::Name.new super( *args )
         end
       end
     end
