@@ -3,6 +3,7 @@ module Dramatis::Actor; end
 
 require 'dramatis/runtime/name_server'
 require 'dramatis/runtime/actor/name/proxy'
+require 'dramatis/actor/name'
 
 module Dramatis::Actor
 
