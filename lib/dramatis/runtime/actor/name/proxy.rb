@@ -10,7 +10,7 @@ class Dramatis::Runtime::Actor::Name::Proxy
     @opts = args[1]
   end
   
-  def continue &block
+  def continue options = {}, &block
     @name
   end
 

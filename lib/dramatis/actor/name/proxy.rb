@@ -3,14 +3,15 @@ module Dramatis::Actor; end
 class Dramatis::Actor::Name; end
 class Dramatis::Actor::Name::Proxy; end
 
-class Dramatis::Actor::Name::Proxy
+class Dramatis::Actor::Name::Proxyx
 
   def initialize *args
     @name = args[0]
     @opts = args[1]
   end
 
-  def continue &block
+  def continue options, foo
+    p "here"
     @name
   end
 

@@ -57,6 +57,10 @@ describe Dramatis::Actor::Name do
     Actor::Name( name ).bind object
   end
 
+  it "should allow nil continuations" do
+    Actor::Name( Name.new ).continue nil
+  end
+
   it "unbound names should queue messages and deliver them in order"
 
   it "messages should be delivered out of order sometimes"
