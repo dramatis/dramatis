@@ -16,7 +16,12 @@ class Kid
   end
 
   def whisper what
-    mangle( @next.nil? && @next.whisper( mangle( what )  ) || what )
+    @heard = mangle what
+    @next and @next.whisper @heard
+  end
+
+  def ask
+    @heard
   end
 
   def mangle what
