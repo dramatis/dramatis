@@ -19,7 +19,7 @@ class Dramatis::Actor::Name
 
   def method_missing *args
     return @binding.actor_send( :method_args => args,
-                                :name_args => @options )
+                                 :name_args => @options )
   end
 
 end

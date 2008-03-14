@@ -11,6 +11,7 @@ class Dramatis::Runtime::Actor::Name::Proxy
   end
   
   def continue options = {}, &block
+    @continuation = [ options, block ]
     @name
   end
 
@@ -22,6 +23,7 @@ class Dramatis::Runtime::Actor::Name::Proxy
   private
 
   def unbox *args
+    raise "hell" if @continuation and @continuation[0] == nil
     @name.instance_eval do
       @binding.send *args
     end

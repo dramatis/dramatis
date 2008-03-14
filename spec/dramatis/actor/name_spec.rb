@@ -57,8 +57,12 @@ describe Dramatis::Actor::Name do
     Actor::Name( name ).bind object
   end
 
-  it "should allow nil continuations" do
-    Actor::Name( Name.new ).continue nil
+  it "should allow nil continuations and not return anything" do
+    object = mock(Object.new)
+    object.should_receive(:foo).with(:bar).and_return(:foobar)
+    name = Name.new object
+    result = ( Actor::Name( name ).continue nil ).foo :bar
+    result.should == nil
   end
 
   it "unbound names should queue messages and deliver them in order"
