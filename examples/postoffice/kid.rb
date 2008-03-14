@@ -1,5 +1,7 @@
 require 'dramatis/actor'
 
+require 'mangler'
+
 class Kid
 
   Dramatis::Actor.acts_as self
@@ -15,14 +17,15 @@ class Kid
 
   def whisper what
     what = mangle what
-    puts "#{@name}: I heard #{what}"
     if @next
       @next.whisper what
+    else
+      puts "#{@name}: #{what}"
     end
   end
 
   def mangle what
-    what
+    Mangler.mangle what
   end
 
 end
