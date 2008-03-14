@@ -1,4 +1,4 @@
-#!/bin/env ruby
+#!/bin/env ruby -w
 
 $:.push File.join( File.dirname(__FILE__), "..", "..", "..", "lib" )
 $:.push File.join( File.dirname(__FILE__), ".." )
