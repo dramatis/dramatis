@@ -41,7 +41,7 @@ class Mangler
   def self.words
     @words ||=
       begin
-        lines = IO.readlines "3esl.txt"
+        lines = IO.readlines File.join( File.dirname(__FILE__), "3esl.txt")
         lines.each { |line| line.chomp! } 
         lines
       end
