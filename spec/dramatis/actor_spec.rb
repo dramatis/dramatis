@@ -27,4 +27,9 @@ describe Dramatis::Actor do
 
   end
 
+  it "should create a new name when invoked with new" do
+    name = Actor.new Object.new
+    name.should be_a_kind_of Actor::Name
+  end
+
 end

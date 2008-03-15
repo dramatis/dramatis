@@ -14,22 +14,22 @@ describe Dramatis::Actor::Name do
   end
 
   it "should be creatable unbound" do
-    name = Name.new
+    Name.new
   end
 
   it "should allow messages to unbound" do
-    name = Name.new
-    name.foo
+    Name.new.foo
   end
 
   it "should be creatable bound" do
-    name = Name.new Object.new
+    Actor.new Object.new
   end
 
   it "should allow and execute messages to bound names" do
-    object = mock(Object.new)
+    object = mock Object.new
     object.should_receive(:foo).with(:bar).and_return(:foobar)
-    name = Name.new object
+    name = Actor.new object
+    pending
     result = name.foo :bar
     result.should == :foobar
   end
@@ -37,12 +37,14 @@ describe Dramatis::Actor::Name do
   it "should deliver messages with nil continuations" do
     object = mock(Object.new)
     object.should_receive(:foo).with(:bar)
-    name = Name.new object
+    name = Actor.new object
+    pending
     Actor::Name( name ).continue.foo( :bar )
   end
 
   it "shouldn't be possible to bind twice" do
     name = Name.new
+    pending
     Actor::Name( name ).bind Object.new
     lambda { Actor::Name( name ).bind Object.new }.should raise_error
   end
@@ -60,7 +62,8 @@ describe Dramatis::Actor::Name do
   it "should allow nil continuations and not return anything" do
     object = mock(Object.new)
     object.should_receive(:foo).with(:bar).and_return(:foobar)
-    name = Name.new object
+    name = Actor.new object
+    pending
     result = ( Actor::Name( name ).continue nil ).foo :bar
     pending
     result.should == nil

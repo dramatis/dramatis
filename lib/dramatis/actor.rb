@@ -33,4 +33,11 @@ module Dramatis::Actor
 
   end
 
+  def initialize object
+  end
+
+  def self.new behavior
+    Dramatis::Actor::Name.new Runtime::Actor.new behavior
+  end
+
 end
