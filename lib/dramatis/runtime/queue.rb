@@ -10,6 +10,11 @@ class Dramatis::Runtime::Queue
   end
 
   def << task
+    # FIX
+    # I'm not sure about the locking here
+    # as soon as the task is added to the queue and the queue
+    # unlocked, the task could be run (we're not actor-protected here)
+    # but for an RPC task, we may not have even gone into the wait yet
     lock {
       @queue << task
       if !runnable? and @filter.call( task )
