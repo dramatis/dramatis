@@ -5,31 +5,27 @@ require 'dramatis/actor/name'
 
 describe Dramatis::Actor::Name do
 
-  Runtime = Dramatis::Runtime
-  Actor = Dramatis::Actor
-  Name = Actor::Name
-
   after do
-    Runtime.quiesce
+    Dramatis::Runtime.quiesce
   end
 
   it "should be creatable unbound" do
-    Name.new
+    Dramatis::Actor.new
   end
 
   it "should allow messages to unbound" do
-    Name.new.foo
+    Dramatis::Actor.new.foo
   end
 
   it "should be creatable bound" do
-    Actor.new Object.new
+    name = Dramatis::Actor.new Object.new
+    name.should be_kind_of Dramatis::Actor::Name
   end
 
   it "should allow and execute messages to bound names" do
     object = mock Object.new
     object.should_receive(:foo).with(:bar).and_return(:foobar)
-    name = Actor.new object
-    pending
+    name = Dramatis::Actor.new object
     result = name.foo :bar
     result.should == :foobar
   end
@@ -37,32 +33,44 @@ describe Dramatis::Actor::Name do
   it "should deliver messages with nil continuations" do
     object = mock(Object.new)
     object.should_receive(:foo).with(:bar)
-    name = Actor.new object
+    name = Dramatis::Actor.new object
     pending
     Actor::Name( name ).continue.foo( :bar )
   end
 
   it "shouldn't be possible to bind twice" do
-    name = Name.new
+    name = Dramatis::Actor.new
     pending
     Actor::Name( name ).bind Object.new
     lambda { Actor::Name( name ).bind Object.new }.should raise_error
   end
 
   it "should execute messages to unbound names once bound" do
-    name = Name.new
-    ( Actor::Name( name ).continue { |result| result.should == :foobar } ).foo :bar
+    name = Dramatis::Actor.new
+
+    pending
+
+    ( Dramatis::Actor::Name( name ).continue { |result| result.should == :foobar } ).foo :bar
 
     object = mock(Object.new)
     object.should_receive(:foo).with(:bar).and_return(:foobar)
 
-    Actor::Name( name ).bind object
+    pending
+
+    Dramatis::Actor::Name( name ).bind object
+  end
+
+  it "should be possible to bind with a nil continuation" do
+    name = Dramatis::Actor.new
+    name = Dramatis::Actor::Name( name ).continue nil
+    Dramatis::Actor::Name( name ).bind Object.new
+    pending "should test that the nil continuation is respected"
   end
 
   it "should allow nil continuations and not return anything" do
     object = mock(Object.new)
     object.should_receive(:foo).with(:bar).and_return(:foobar)
-    name = Actor.new object
+    name = Dramatis::Actor.new object
     pending
     result = ( Actor::Name( name ).continue nil ).foo :bar
     pending

@@ -2,14 +2,14 @@ module Dramatis; end
 module Dramatis::Actor; end
 
 require 'dramatis/runtime/name_server'
-require 'dramatis/runtime/actor/name/proxy'
+require 'dramatis/actor/name/proxy'
 require 'dramatis/actor/name'
 
 module Dramatis::Actor
 
   Runtime = Dramatis::Runtime
   NameServer = Runtime::NameServer
-  Proxy = Runtime::Actor::Name::Proxy
+  Proxy = Dramatis::Actor::Name::Proxy
 
   def self.Name *args, &block
     Proxy.new *args, &block
@@ -20,7 +20,7 @@ module Dramatis::Actor
     if opts[:new] != :object
       cls.class_eval do
         def self.new *args
-          Dramatis::Actor::Name.new super( *args )
+          Dramatis::Actor.new super( *args )
         end
       end
     end
@@ -33,10 +33,7 @@ module Dramatis::Actor
 
   end
 
-  def initialize object
-  end
-
-  def self.new behavior
+  def self.new behavior = nil
     Dramatis::Actor::Name.new Runtime::Actor.new behavior
   end
 

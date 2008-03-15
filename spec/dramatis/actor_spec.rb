@@ -5,6 +5,8 @@ require 'dramatis/actor/name'
 
 describe Dramatis::Actor do
 
+  Actor = Dramatis::Actor
+
   it "should be creatable from an acts_as class and return the right type" do
 
     f = Class.new do

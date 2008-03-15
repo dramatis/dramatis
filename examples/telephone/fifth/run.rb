@@ -21,6 +21,8 @@ phrases.each do |phrase|
   sally.whisper phrase
 end
 
+raise "hell" if tom.ask == tom.ask
+
 phrases.length.times do
   puts "Teacher heard: #{tom.ask}"
 end

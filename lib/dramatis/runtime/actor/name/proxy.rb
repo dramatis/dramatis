@@ -3,7 +3,7 @@ module Dramatis::Runtime; end
 class Dramatis::Runtime::Actor; end
 module Dramatis::Runtime::Actor::Name; end
 
-class Dramatis::Runtime::Actor::Name::Proxy
+class Dramatis::Runtime::Actor::Name::Proxyx
 
   def initialize *args
     @name = args[0]
