@@ -1,8 +1,9 @@
 module Dramatis; end
 module Dramatis::Runtime; end
 
-require 'dramatis/runtime/queue'
 require 'dramatis/runtime/task'
+require 'dramatis/runtime/gate'
+require 'thread'
 
 class Dramatis::Runtime::Actor
 
@@ -11,19 +12,21 @@ class Dramatis::Runtime::Actor
 
   def initialize object = nil
     @object = object
-    filter = nil
     if object
-      filter = @@anything
+      @gate = Dramatis::Runtime::Gate.new @@anything
     else
-      filter = @@nothing
+      @gate = Dramatis::Runtime::Gate.new @@nothing
     end
-    @queue = Dramatis::Runtime::Queue.new filter
+    @queue = []
+    @mutex = Mutex.new
+    @thread = nil
+    @state = :blocked
   end
   
   def bind object
     raise RuntimeError.new( "a snit" ) if @object
     @object = object
-    @queue.filter = @@anything
+    @gate.set @@anything
     self
   end
 
@@ -51,41 +54,49 @@ class Dramatis::Runtime::Actor
   end
 
   def common_send dest, args, opts = {}
-    @queue <<  Dramatis::Runtime::Task.new( self, dest, args, opts  )
+
+    task = Dramatis::Runtime::Task.new( self, dest, args, opts  )
+
+    @mutex.synchronize do
+      @queue << task
+
+      if @state != :runnable and !@thread and @gate.accepts? task
+        @state = :runnable
+        Dramatis::Runtime::Scheduler.the.schedule task
+      end
+    end
+
+    task.queued
+
   end
 
-  def deliver dest, args, opts = {}
-    p dest, args, opts
-    raise "hell" if dest != :object and dest != :actor
-    result = nil
-    method = args.shift
-    if dest == :object
-      result = @object.send method, args
-    else
-      result = self.send method, args
+  def suspend continuation
+    
+  end
+
+  def deliver dest, args, continuation
+    @mutex.synchronize do
+      @thread = Thread.current
     end
-    return result
-    p dest, args, opts
-    raise "hell"
-    result = nil
-    if @filter.call( *opts[:method_args] )
-      result = @object.send *opts[:method_args]
-      delivered = true
-      while delivered do
-        delivered = false
-        @messages.each do |message|
-          if @filter.call( *message )
-            @object.send *message
-            @messages.shift
-            delivered = true
-            break
-          end
+    begin
+      method = args.shift
+      result = 
+        case dest
+        when :actor
+          self.send method, *args
+        when :object
+          @object.send method, *args
+        else
+          raise "hell: " + @dest.to_s
         end
+      continuation.result result
+    rescue => exception
+      continuation.exception exception
+    ensure
+      @mutex.synchronize do
+        @thread = nil
       end
-    else
-      @messages.push opts[:method_args]
     end
-    result
   end
 
   def accept *args, &block

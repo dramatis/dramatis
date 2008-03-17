@@ -14,6 +14,7 @@ describe Dramatis::Actor::Name do
   end
 
   it "should allow messages to unbound" do
+    pending
     Dramatis::Actor.new.foo
   end
 
