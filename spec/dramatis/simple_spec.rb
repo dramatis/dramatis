@@ -1,8 +1,17 @@
 require File.join( File.dirname(__FILE__), "..", '/spec_helper.rb' )
 
 require 'dramatis/actor'
+require 'dramatis/runtime'
 
 describe Dramatis::Actor do
+
+  after do
+    Dramatis::Runtime.reset
+  end
+
+  after do
+    Dramatis::Runtime.the.quiesce
+  end
 
   it "should be creatable w/o requiring name" do
 

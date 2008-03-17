@@ -1,5 +1,5 @@
 module Dramatis; end
-module Dramatis::Runtime; end
+class Dramatis::Runtime; end
 
 require 'dramatis/runtime/actor'
 

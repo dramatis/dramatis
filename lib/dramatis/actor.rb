@@ -34,7 +34,11 @@ module Dramatis::Actor
   end
 
   def self.new behavior = nil
-    Dramatis::Actor::Name.new Runtime::Actor.new behavior
+    ( Runtime::Actor.new behavior ).name
+  end
+
+  def self.current
+    Dramatis::Runtime::Scheduler.current
   end
 
 end

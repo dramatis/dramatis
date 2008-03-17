@@ -12,8 +12,12 @@ class Dramatis::Actor::Name
   end
 
   def method_missing *args, &block
-    block and @options[:block] = block
-    @actor.object_send args, @options
+    options = @options
+    if block
+      options = options.clone
+      options[:block] = block
+    end
+    @actor.object_send args, options
   end
 
   private
