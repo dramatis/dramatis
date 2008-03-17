@@ -209,9 +209,14 @@ class Dramatis::Runtime::Actor::Main < Dramatis::Runtime::Actor
     @@the = nil
   end
 
+  def finalize
+    schedule
+    Dramatis::Runtime::Scheduler.the.main_at_exit
+  end
+
   def initialize
     super Object.new
-    # at_exit { schedule }
+    at_exit { finalize }
   end
 
 end

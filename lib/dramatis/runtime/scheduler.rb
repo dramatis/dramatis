@@ -35,10 +35,16 @@ class Dramatis::Runtime::Scheduler
     raise Deadlock.new
   end
 
+  def checkin thread
+  end
+
   def suspend_notification task
     @mutex.synchronize do
-      warn "suspend " + task.to_s + " before " + @running_threads.to_s + " queue " + @queue.length.to_s
+      warn "#{Thread.current} checkin #{@running_threads}"
       @running_threads -= 1
+      if @state == :waiting
+        @wait.signal
+      end
       if @running_threads == 0
         deadlock
       end
@@ -50,8 +56,29 @@ class Dramatis::Runtime::Scheduler
     @mutex.synchronize do
       @suspended_tasks.delete task.to_s
       @running_threads += 1
-      warn "resume " + task.to_s + " after " + @running_threads.to_s  + " queue " + @queue.length.to_s
+      warn "#{Thread.current} checkout #{@running_threads}"
     end
+  end
+
+  def main_at_exit
+    p "main has exited: waiting"
+    @main_mutex.synchronize do
+      warn "#{Thread.current} main checkin #{@running_threads}"
+      @running_threads -= 1
+      if @state == :waiting
+        @wait.signal
+      end
+    end
+    sleep 15
+    @main_mutex.synchronize do
+      raise "hell #{@main_state.to_s}" if @main_state != :running and @main_state != :may_finish
+      if @main_state == :running
+        @main_state = :waiting
+        @main_wait.wait @main_mutex
+      end
+    end
+    raise "hell #{@main_state.to_s}" if @main_state != :may_finish
+    p "main has exited: done"
   end
 
   private
@@ -60,20 +87,30 @@ class Dramatis::Runtime::Scheduler
     Thread.abort_on_exception = true
     @mutex = Mutex.new
     @wait = ConditionVariable.new
+    warn "#{Thread.current} checkout main #{Thread.main}"
     @running_threads = 1
     @suspended_tasks = {}
     @queue = []
     @state = :running
+
+    @main_mutex = Mutex.new
+    @main_wait = ConditionVariable.new
+    @main_state = :running
+
     @thread = Thread.new { run }
+  end
+
+  class Done < ::Exception
   end
 
   def run
 
     begin
-      loop do
+      while true
         task = nil
         @mutex.synchronize do
-          while @queue.empty?
+          warn "qe #{@queue.empty?} tr '#{@running_threads}'"
+          while @queue.empty? and @running_threads != 0
             @state = :waiting
             begin
               if @running_threads == 0
@@ -85,25 +122,45 @@ class Dramatis::Runtime::Scheduler
             end
             @state = :running
           end
+          
+          raise Done if @queue.empty? and @running_threads == 0
 
           task = @queue.shift
 
           @running_threads += 1
           Thread.new do
+            warn "#{Thread.current} checkout #{@running_threads}"
             begin
               deliver task
             ensure
               @mutex.synchronize do
+                warn "#{Thread.current} checkin #{@running_threads}"
                 @running_threads -= 1
+                if @state == :waiting
+                  @wait.signal
+                end
               end
             end
           end
 
         end
       end
+      warn "after loop"
+    rescue Done
     rescue => exception
       warn "1 exception " + exception.to_s
       Dramatis::Runtime.the.exception exception
+    end
+
+    warn "scheduler giving up the ghost"
+    
+    @main_mutex.synchronize do
+      raise "hell #{@main_state.to_s}" if @main_state != :running and @main_state != :waiting
+      state = @main_state
+      @main_state = :may_finish
+      if state == :waiting
+        @main_wait.signal
+      end
     end
 
     @mutex.synchronize do
