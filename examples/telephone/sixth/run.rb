@@ -19,8 +19,12 @@ phrases = [ "his mom locked her keys in the car, " +
 phrases.each do |phrase|
   puts "Teacher: #{phrase}"
   sally.whisper phrase
+  puts "asked sally"
 end
 
+puts "before asking"
+
 phrases.length.times do
+  puts "asking"
   puts "Teacher heard: '#{tom.ask}'"
 end

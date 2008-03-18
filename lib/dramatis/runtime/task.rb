@@ -8,6 +8,15 @@ class Dramatis::Runtime::Task
 
   attr_reader :actor
 
+  def method
+    @args[0]
+  end
+
+  def arguments
+    # FIX not tested
+    @args[1,-1]
+  end
+
   def initialize actor, dest, args, options
     @actor = actor
     @dest = dest

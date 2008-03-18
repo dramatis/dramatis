@@ -12,6 +12,7 @@ class Kid
     @name = name
     @next = next_kid
     @heard = "I ain't heard nuthin"
+    actor.refuse :ask
   end
 
   def to_s
@@ -25,9 +26,13 @@ class Kid
       next_kid = Actor::Name( @next ).continue nil
       next_kid.whisper @heard
     end
+    actor.accept :ask
+    actor.refuse :whisper
   end
 
   def ask
+    actor.refuse :ask
+    actor.accept :whisper
     @heard
   end
 

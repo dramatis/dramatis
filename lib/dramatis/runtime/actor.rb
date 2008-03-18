@@ -8,28 +8,26 @@ require 'pp' #FIX
 
 class Dramatis::Runtime::Actor
 
-  @@anything = lambda { |*args| true; }
-  @@nothing = lambda { |*args| false; }
-
   def name
     @name ||= Dramatis::Actor::Name.new self
   end
 
+  attr_reader :object_interface
+  attr_reader :gate
+
   def initialize object = nil
     @object = object
     if object
-      @gate = Dramatis::Runtime::Gate.new @@anything
-      @@anything.call nil
+      @gate = Dramatis::Runtime::Gate.new true
     else
-      @gate = Dramatis::Runtime::Gate.new @@nothing
-      @@nothing.call nil
+      @gate = Dramatis::Runtime::Gate.new false
     end
     blocked!
     @queue = []
     @mutex = Mutex.new
     @thread = nil
     @continuations = {}
-    # p "self", self, @continuations
+    @object_interface = ObjectInterface.new self
   end
   
   def register_continuation c
@@ -41,7 +39,7 @@ class Dramatis::Runtime::Actor
   def bind object
     raise RuntimeError.new( "a snit" ) if @object
     @object = object
-    @gate.set @@anything
+    @gate.default = true
     self
   end
 
@@ -72,7 +70,8 @@ class Dramatis::Runtime::Actor
     task = Dramatis::Runtime::Task.new( self, dest, args, opts  )
 
     @mutex.synchronize do
-      if !runnable? and @gate.accepts? task
+      # FIX arguments?
+      if !runnable? and @gate.accepts? task.method
         runnable!
         # warn "s q #{@queue.length}"
         Dramatis::Runtime::Scheduler.the.schedule task
@@ -142,7 +141,8 @@ class Dramatis::Runtime::Actor
       @thread = nil
       schedule = nil
       @queue.each_with_index do |task,index|
-        if @gate.accepts? task
+        # FIX arugments?
+        if @gate.accepts? task.method
           schedule = task
           # warn "before: #{@queue}"
           @queue[index,1] = []
@@ -170,6 +170,22 @@ class Dramatis::Runtime::Actor
   def runnable?
     # warn "runnable? #{self} #{@state}"
     @state == :runnable
+  end
+
+  class ObjectInterface
+    def gate
+      @actor.gate
+    end
+    def refuse *args
+      @actor.gate.refuse( *args )
+    end
+    def accept *args
+      @actor.gate.accept( *args )
+    end
+    private
+    def initialize actor
+      @actor = actor
+    end
   end
 
 end

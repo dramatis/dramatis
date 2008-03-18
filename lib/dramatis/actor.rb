@@ -1,14 +1,12 @@
 module Dramatis; end
 module Dramatis::Actor; end
 
-require 'dramatis/runtime/name_server'
 require 'dramatis/actor/name/proxy'
 require 'dramatis/actor/name'
 
 module Dramatis::Actor
 
   Runtime = Dramatis::Runtime
-  NameServer = Runtime::NameServer
   Proxy = Dramatis::Actor::Name::Proxy
 
   def self.Name *args, &block
@@ -20,14 +18,13 @@ module Dramatis::Actor
     if opts[:new] != :object
       cls.class_eval do
         def self.new *args
-          Dramatis::Actor.new super( *args )
+          new_actor = Runtime::Actor.new
+          object = allocate
+          ( class << object; self; end ).send :define_method, :actor,
+                                ( lambda { new_actor.object_interface } )
+          object.send :initialize, *args
+          ( new_actor.bind object ).name
         end
-      end
-    end
-
-    cls.class_eval do
-      def actor
-        @__dramatis__ ||= Dramatis::Runtime::NameServer.the[self]
       end
     end
 
