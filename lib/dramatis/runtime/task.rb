@@ -33,6 +33,10 @@ class Dramatis::Runtime::Task
     end
   end
 
+  def exception e
+    @continuation.exception e
+  end
+
   def queued
     @continuation.queued
   end
@@ -98,7 +102,7 @@ class Dramatis::Runtime::Task
                   @actor.schedule
                 end
                 @wait.wait @mutex
-              rescue => exception
+              rescue Exception => exception
                 warn "wait said #{exception}"
                 raise exception
               end
@@ -114,7 +118,6 @@ class Dramatis::Runtime::Task
         when :return
           return @value
         when :exception
-          warn "this path has no test code"
           raise @value
         end
       end
@@ -124,8 +127,9 @@ class Dramatis::Runtime::Task
       end
 
       def exception exception
-        warn "4 exception " + exception.to_s
+        # warn "4 exception " + exception.to_s
         @actor.exception exception
+        # warn "4 delivered ".to_s
       end
 
       def continuation_result result

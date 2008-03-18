@@ -28,8 +28,18 @@ class Dramatis::Runtime::Actor
     @thread = nil
     @continuations = {}
     @object_interface = ObjectInterface.new self
+    Dramatis::Runtime::Scheduler.the << self
   end
   
+  def deadlock e
+    @mutex.synchronize do
+      @queue.each do |task|
+        task.exception e
+      end
+      @queue.clear
+    end
+  end
+
   def register_continuation c
     # p "selfish", self, @continuations
     # pp "csr", c.to_s
@@ -52,7 +62,7 @@ class Dramatis::Runtime::Actor
       type = :continuation 
       begin
         raise "holly hell" if args[0] != :result and args[0] != :exception
-      rescue => exception
+      rescue Exception => exception
         pp exception.backtrace
       end
       args.unshift opts[:continuation_send]
@@ -70,10 +80,10 @@ class Dramatis::Runtime::Actor
     task = Dramatis::Runtime::Task.new( self, dest, args, opts  )
 
     @mutex.synchronize do
-      # FIX arguments?
+      # warn "common send r? #{runnable?} g? #{@gate.accepts? task.method} q #{@queue.length}"
+      # FIX arguments to gate
       if !runnable? and @gate.accepts? task.method
         runnable!
-        # warn "s q #{@queue.length}"
         Dramatis::Runtime::Scheduler.the.schedule task
       else
         @queue << task
@@ -126,7 +136,7 @@ class Dramatis::Runtime::Actor
       # p continuation.to_s
       continuation.result result
       # p "called c #{result}"
-    rescue => exception
+    rescue Exception => exception
       smp_protect { pp "0 exception ", exception }
       continuation.exception exception
     ensure

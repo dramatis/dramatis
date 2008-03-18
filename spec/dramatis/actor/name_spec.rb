@@ -11,7 +11,7 @@ describe Dramatis::Actor::Name do
 
   after do
     Dramatis::Runtime.the.quiesce
-    warn "after " + Thread.list.join( " " )
+    warn "after " + Thread.list.join( " " ) if Thread.list.length != 1
     Thread.list.length.should == 1
   end
 
@@ -21,7 +21,7 @@ describe Dramatis::Actor::Name do
 
   it "should allow messages to unbound" do
     lambda { Dramatis::Actor.new.foo }.
-      should raise_error Dramatis::Runtime::Scheduler::Deadlock
+      should raise_error Dramatis::Deadlock
   end
 
   it "should be creatable bound" do
@@ -30,7 +30,6 @@ describe Dramatis::Actor::Name do
   end
 
   it "should allow and execute messages to bound names" do
-    pending
     object = mock Object.new
     object.should_receive(:foo).with(:bar).and_return(:foobar)
     name = Dramatis::Actor.new object
@@ -39,7 +38,6 @@ describe Dramatis::Actor::Name do
   end
 
   it "should deliver messages with nil continuations" do
-    pending
     object = mock(Object.new)
     object.should_receive(:foo).with(:bar)
     name = Dramatis::Actor.new object
@@ -47,10 +45,8 @@ describe Dramatis::Actor::Name do
   end
 
   it "shouldn't be possible to bind twice" do
-    pending
     name = Dramatis::Actor.new
-    pending
-    Actor::Name( name ).bind Object.new
+    Dramatis::Actor::Name( name ).bind Object.new
     lambda { Actor::Name( name ).bind Object.new }.should raise_error
   end
 

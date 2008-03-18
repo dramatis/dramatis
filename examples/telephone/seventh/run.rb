@@ -18,7 +18,11 @@ phrases = [ "his mom locked her keys in the car, " +
 
 phrases.each do |phrase|
   puts "Teacher: #{phrase}"
-  sally.whisper phrase
+  begin
+    sally.whisper phrase
+  rescue Dramatis::Deadlock
+    warn "woah: got a deadlock"
+  end
 end
 
 phrases.length.times do

@@ -21,16 +21,17 @@ class Kid
 
   def whisper what
     @heard = mangle what
-    # puts "#{self} heard #{@heard}"
     if @next
       next_kid = Actor::Name( @next ).continue nil
       next_kid.whisper @heard
     end
     actor.accept :ask
+    actor.refuse :whisper
   end
 
   def ask
     actor.refuse :ask
+    actor.accept :whisper
     @heard
   end
 

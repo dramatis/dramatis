@@ -32,13 +32,15 @@ class Dramatis::Runtime::Gate
       @hash = {}
     end
 
+    def track; false; end
+
     def refuse method
-      warn "refuse #{method}"
+      track and warn "refuse #{method}"
       @hash[ method ] = false
     end
 
     def accept method
-      warn "accept #{method}"
+      track and warn "accept #{method}"
       @hash[ method ] = true
     end
 
@@ -48,7 +50,7 @@ class Dramatis::Runtime::Gate
 
     def accepts? method
       v = @hash.has_key?( method ) ? @hash[method] : super( method )
-      warn "accepts? #{method} => #{v}"
+      track and warn "accepts? #{method} => #{v}"
       v
     end
 
