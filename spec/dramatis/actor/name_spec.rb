@@ -1,6 +1,7 @@
 require File.join( File.dirname(__FILE__), "..", "..", '/spec_helper.rb' )
 
 require 'dramatis/runtime'
+require 'dramatis'
 require 'dramatis/actor/name'
 
 describe Dramatis::Actor::Name do
@@ -11,7 +12,7 @@ describe Dramatis::Actor::Name do
 
   after do
     Dramatis::Runtime.the.quiesce
-    warn "after " + Thread.list.join( " " ) if Thread.list.length != 1
+    warn ( "after " + Thread.list.join( " " ) ) if Thread.list.length != 1
     Thread.list.length.should == 1
   end
 
@@ -47,7 +48,7 @@ describe Dramatis::Actor::Name do
   it "shouldn't be possible to bind twice" do
     name = Dramatis::Actor.new
     Dramatis::Actor::Name( name ).bind Object.new
-    lambda { Actor::Name( name ).bind Object.new }.should raise_error
+    lambda { Dramatis::Actor::Name( name ).bind Object.new }.should raise_error Dramatis::BindError
   end
 
   it "should execute messages to unbound names once bound" do

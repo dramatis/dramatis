@@ -1,5 +1,7 @@
 module Dramatis; end
 
-class Dramatis::Deadlock < StandardError; end
+class Dramatis::Error < StandardError; end
+class Dramatis::Deadlock < Dramatis::Error; end
+class Dramatis::BindError < Dramatis::Error; end
 
 

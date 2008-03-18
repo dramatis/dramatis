@@ -11,7 +11,7 @@ describe Dramatis::Actor do
 
   after do
     Dramatis::Runtime.the.quiesce
-    pp "after", Thread.main, Thread.list
+    warn ( "after " + Thread.list.join( " " ) ) if Thread.list.length != 1
     Thread.list.length.should == 1
   end
 

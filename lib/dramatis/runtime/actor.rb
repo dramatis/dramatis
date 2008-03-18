@@ -47,9 +47,9 @@ class Dramatis::Runtime::Actor
   end
 
   def bind object
-    raise RuntimeError.new( "a snit" ) if @object
+    raise Dramatis::BindError if @object
     @object = object
-    @gate.default = true
+    @gate.set_default true, :object
     self
   end
 
@@ -82,7 +82,7 @@ class Dramatis::Runtime::Actor
     @mutex.synchronize do
       # warn "common send r? #{runnable?} g? #{@gate.accepts? task.method} q #{@queue.length}"
       # FIX arguments to gate
-      if !runnable? and @gate.accepts? task.method
+      if !runnable? and @gate.accepts?(  *( [ task.type, task.method ] + task.arguments ) )
         runnable!
         Dramatis::Runtime::Scheduler.the.schedule task
       else
@@ -137,7 +137,7 @@ class Dramatis::Runtime::Actor
       continuation.result result
       # p "called c #{result}"
     rescue Exception => exception
-      smp_protect { pp "0 exception ", exception }
+      # pp "0 exception ", exception
       continuation.exception exception
     ensure
       schedule
@@ -152,7 +152,7 @@ class Dramatis::Runtime::Actor
       schedule = nil
       @queue.each_with_index do |task,index|
         # FIX arugments?
-        if @gate.accepts? task.method
+        if @gate.accepts?( *( [ task.type, task.method ] + task.arguments ) )
           schedule = task
           # warn "before: #{@queue}"
           @queue[index,1] = []
@@ -187,10 +187,10 @@ class Dramatis::Runtime::Actor
       @actor.gate
     end
     def refuse *args
-      @actor.gate.refuse( *args )
+      @actor.gate.refuse( :object, *args )
     end
     def accept *args
-      @actor.gate.accept( *args )
+      @actor.gate.accept( :object, *args )
     end
     private
     def initialize actor
@@ -198,18 +198,6 @@ class Dramatis::Runtime::Actor
     end
   end
 
-end
-
-class Object
-  def smp_protect
-    old = Thread.critical
-    Thread.critical = 1
-    begin
-      yield
-    ensure
-      Thread.critical = old
-    end
-  end
 end
 
 # Might be nice if this was broken out into another file ... YAGNI?

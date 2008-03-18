@@ -3,54 +3,74 @@ class Dramatis::Runtime; end
 
 class Dramatis::Runtime::Gate
 
-  def self.new *args
-    Hash.new( *args )
+  def self.new default, hash = {}
+    actor = Hash.new true
+    object = Hash.new default, hash
+    continuation = Hash.new true
+    gate = Hash.new true, { :actor => actor, :object => object, :continuation => continuation }
   end
 
-  class Base
+  class Constant
+    def initialize constant
+      @constant = constant
+    end
+    def accepts? *args
+      @constant
+    end
+  end
 
-    def initialize default
+  ACCEPT = Constant.new true
+  REJECT = Constant.new false
+
+  class Hash
+
+    def initialize default, hash = {}
       @default = default
-    end
-
-    def accepts? arg
-      @default
-    end
-
-    def default= value
-      old = @default
-      @default = value
-      old
-    end
-
-  end
-
-  class Hash < Base
-
-    def initialize default
-      super default
-      @hash = {}
+      @hash = hash.clone
+      track and warn "create default = #{@default} hash = [#{@hash.keys.join(' ')}]"
     end
 
     def track; false; end
 
-    def refuse method
-      track and warn "refuse #{method}"
-      @hash[ method ] = false
+    def refuse *args
+      track and warn "refuse [#{args.join(' ')}]"
+      if args.length == 1
+        @hash[args[0]] = REJECT
+      else
+        @hash[args[0]].refuse( *args[1,args.length] )
+      end
     end
 
-    def accept method
-      track and warn "accept #{method}"
-      @hash[ method ] = true
+    def accept *args
+      track and warn "accept [#{args.join(' ')}]"
+      if args.length == 1
+        @hash[args[0]] = ACCEPT
+      else
+        @hash[args[0]].accept( *args[1,args.length] )
+      end
     end
 
-    def default method
-      @hash.delete method
+    def default *args
+      track and warn "default [#{args.join(' ')}]"
+      if args.length == 1
+        @hash.delete args[0]
+      else
+        @hash[args[0]].default( *args[1,args.length] )
+      end
     end
 
-    def accepts? method
-      v = @hash.has_key?( method ) ? @hash[method] : super( method )
-      track and warn "accepts? #{method} => #{v}"
+    def set_default value, *args
+      track and warn "default = #{value} [#{args.join(' ')}] #{args.length}"
+      if args.length == 0
+        @default = value
+      else
+        @hash[args[0]].set_default value, *args[1,args.length]
+      end
+    end
+
+    def accepts? *args
+      v = @hash.has_key?( args[0] ) ? @hash[args[0]].accepts?( *args[1,args.length] ) : @default
+      track and warn "accepts? [#{args.join(' ')}] => #{v}"
       v
     end
 
