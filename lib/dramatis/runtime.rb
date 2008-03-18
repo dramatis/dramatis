@@ -24,6 +24,7 @@ class Dramatis::Runtime
   end
 
   def quiesce
+    Dramatis::Runtime::Scheduler.the.quiesce
     maybe_raise_exceptions
   end
 

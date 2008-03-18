@@ -12,7 +12,7 @@ module Dramatis::Actor
   Proxy = Dramatis::Actor::Name::Proxy
 
   def self.Name *args, &block
-    Proxy.new *args, &block
+    Proxy.new( *args, &block )
   end
 
   def self.acts_as cls, opts = {}

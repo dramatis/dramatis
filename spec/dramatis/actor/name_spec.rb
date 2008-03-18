@@ -11,7 +11,7 @@ describe Dramatis::Actor::Name do
 
   after do
     Dramatis::Runtime.the.quiesce
-    pp "after", Thread.list
+    warn "after " + Thread.list.join( " " )
     Thread.list.length.should == 1
   end
 
@@ -25,7 +25,6 @@ describe Dramatis::Actor::Name do
   end
 
   it "should be creatable bound" do
-    pending
     name = Dramatis::Actor.new Object.new
     name.should be_kind_of Dramatis::Actor::Name
   end

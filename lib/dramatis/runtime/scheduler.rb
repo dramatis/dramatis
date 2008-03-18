@@ -18,9 +18,15 @@ class Dramatis::Runtime::Scheduler
 
   def schedule task
     @mutex.synchronize do
+      warn "sched #{@queue.length} #{@state}"
       @queue << task
-      if @queue.length == 1 && @state == :waiting
-        @wait.signal
+      if @queue.length == 1
+        if @state == :waiting
+          @wait.signal
+        elsif @state == :idle
+          @state = :running
+          @thread = Thread.new { run }
+        end
       end
     end
   end
@@ -35,16 +41,19 @@ class Dramatis::Runtime::Scheduler
     raise Deadlock.new
   end
 
-  def checkin thread
-  end
-
   def suspend_notification task
     @mutex.synchronize do
+      deadlock if @state == :idle
       warn "#{Thread.current} checkin #{@running_threads}"
       @running_threads -= 1
+      raise "hell #{@state}" if @state == :idle
       if @state == :waiting
         @wait.signal
+      elsif @state == :idle
+        @state = :running
+        @thread = Thread.new { run }
       end
+      # FIX empty queues
       if @running_threads == 0
         deadlock
       end
@@ -60,8 +69,13 @@ class Dramatis::Runtime::Scheduler
     end
   end
 
+  def quiesce
+    main_at_exit
+    @main_state = :running
+  end
+
   def main_at_exit
-    p "main has exited: waiting"
+    warn "main has exited: waiting"
     @main_mutex.synchronize do
       warn "#{Thread.current} main checkin #{@running_threads}"
       @running_threads -= 1
@@ -69,16 +83,21 @@ class Dramatis::Runtime::Scheduler
         @wait.signal
       end
     end
-    sleep 15
+    # sleep 15
     @main_mutex.synchronize do
       raise "hell #{@main_state.to_s}" if @main_state != :running and @main_state != :may_finish
       if @main_state == :running
-        @main_state = :waiting
-        @main_wait.wait @main_mutex
+        if @state != :idle
+          @main_state = :waiting
+          @main_wait.wait @main_mutex
+          raise "hell #{@main_state.to_s}" if @main_state != :may_finish
+        else
+          @main_state = :may_finish
+        end
       end
     end
     raise "hell #{@main_state.to_s}" if @main_state != :may_finish
-    p "main has exited: done"
+    warn "main has exited: done"
   end
 
   private
@@ -91,13 +110,13 @@ class Dramatis::Runtime::Scheduler
     @running_threads = 1
     @suspended_tasks = {}
     @queue = []
-    @state = :running
+    @state = :idle
 
     @main_mutex = Mutex.new
     @main_wait = ConditionVariable.new
     @main_state = :running
 
-    @thread = Thread.new { run }
+    @thread = nil
   end
 
   class Done < ::Exception
@@ -161,10 +180,14 @@ class Dramatis::Runtime::Scheduler
       if state == :waiting
         @main_wait.signal
       end
-    end
-
-    @mutex.synchronize do
-      @thread = nil
+      # should this be synchronized?
+      # if there is more than one main (non-dramatis) thread ... well, I'm not sure
+      # how protected we are for that around shutdown/startup
+      # I guess it won't hurt, but I'm not sure it helps
+      @mutex.synchronize do
+        @state = :idle
+        @thread = nil
+      end
     end
 
   end

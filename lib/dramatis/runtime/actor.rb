@@ -35,12 +35,6 @@ class Dramatis::Runtime::Actor
   def register_continuation c
     # p "selfish", self, @continuations
     pp "csr", c.to_s
-    c.instance_eval do
-      @actor.instance_eval do
-        p "#{@actor} #{self}"
-        raise "hell" if @actor != self
-      end
-    end
     @continuations[c.to_s] = c
   end
 
@@ -72,7 +66,7 @@ class Dramatis::Runtime::Actor
 
   def common_send dest, args, opts = {}
 
-    pp "common send ", dest.to_s #, args, opts
+    warn "common send #{self}"
 
     task = Dramatis::Runtime::Task.new( self, dest, args, opts  )
 
@@ -162,7 +156,7 @@ class Dramatis::Runtime::Actor
   end
 
   def blocked!
-    warn "blocked! #{self} #{@state}"
+    # warn "blocked! #{self} #{@state}"
     @state = :blocked
   end
 

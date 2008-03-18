@@ -11,6 +11,8 @@ describe Dramatis::Actor do
 
   after do
     Dramatis::Runtime.the.quiesce
+    pp "after", Thread.main, Thread.list
+    Thread.list.length.should == 1
   end
 
   it "should be creatable w/o requiring name" do
