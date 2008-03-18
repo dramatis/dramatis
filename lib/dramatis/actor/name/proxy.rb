@@ -9,13 +9,17 @@ class Dramatis::Actor::Name::Proxy
     @name = name
   end
 
+  # this stuff is either tricky or evil; i need to lookup
+  # variable look ordering for instance_eval
+  # i'm assuming lexical scope over object scope
+
   def continue options = {}, &continuation
     raise "hell" if ( options == nil and continuation ) or
                      ( options and !continuation )
-    @name = @name.instance_eval do
-      dup
-    end
+    a, o = @name.instance_eval { [ @actor, @options ] }
+    @name = Dramatis::Actor::Name.new a
     @name.instance_eval do
+      @options = o.dup
       @options[:continuation] = options == nil ? :none : continuation
     end
     @name
@@ -26,11 +30,11 @@ class Dramatis::Actor::Name::Proxy
   end
 
   def continuation c
-    @name = @name.instance_eval do
-      dup
-    end
+    a, o = @name.instance_eval { [ @actor, @options ] }
+    @name = Dramatis::Actor::Name.new a
     @name.instance_eval do
       @actor.register_continuation c
+      @options = o.dup
       @options[:continuation_send] = c.to_s
       @options[:continuation] = :none
     end
@@ -43,7 +47,7 @@ class Dramatis::Actor::Name::Proxy
     @name.instance_eval do
       options = @options
       if block
-        options = options.clone
+        options = options.dup
         options[:block] = block
       end
       @actor.actor_send args, options

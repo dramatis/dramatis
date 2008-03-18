@@ -31,6 +31,7 @@ class Dramatis::Runtime
   def maybe_raise_exceptions
     @mutex.synchronize do
       if !@exceptions.empty?
+        warn "no maybe about it"
         raise Exception.new @exceptions
       end
     end

@@ -11,6 +11,10 @@ class Dramatis::Actor::Name
     method_missing :to_s
   end
 
+  def dup
+    raise "hell again"
+  end
+
   def method_missing *args, &block
     options = @options
     if block

@@ -34,7 +34,7 @@ class Dramatis::Runtime::Actor
   
   def register_continuation c
     # p "selfish", self, @continuations
-    pp "csr", c.to_s
+    # pp "csr", c.to_s
     @continuations[c.to_s] = c
   end
 
@@ -66,13 +66,15 @@ class Dramatis::Runtime::Actor
 
   def common_send dest, args, opts = {}
 
-    warn "common send #{self}"
+    
+    # warn "common send #{self} #{dest} #{args.join(' ')} #{opts.to_a.join(' ' )}"
 
     task = Dramatis::Runtime::Task.new( self, dest, args, opts  )
 
     @mutex.synchronize do
       if !runnable? and @gate.accepts? task
         runnable!
+        # warn "s q #{@queue.length}"
         Dramatis::Runtime::Scheduler.the.schedule task
       else
         @queue << task
@@ -89,7 +91,7 @@ class Dramatis::Runtime::Actor
     end
     begin
       method = args.shift
-      pp "switch", dest.to_s, args
+      # pp "switch", dest.to_s, args
       result = 
         case dest
         when :actor
@@ -101,12 +103,12 @@ class Dramatis::Runtime::Actor
           @object.send method, *args
           # p "sent object #{method}"
         when :continuation
-          p "send continuation #{method}"
+          # p "send continuation #{method}"
           continuation_name = method
-          p "c is #{continuation_name}"
+          # warn "c is #{continuation_name}"
           c = @continuations[continuation_name]
-          pp "cs", @continuations.keys
-          raise "hell 0" if !c
+          # pp "cs", @continuations.keys
+          raise "hell 0 #{Thread.current}" if !c
           method = args.shift
           method = case method
                      when :result: :continuation_result
@@ -114,17 +116,17 @@ class Dramatis::Runtime::Actor
                      else
                        raise "hell *"
                    end
-          pp c.to_s, "send", method, args
+          # pp c.to_s, "send", method, args
           c.send method, *args
-          pp "csd", continuation_name
           @continuations.delete continuation_name
+          # pp "csd", continuation_name, @continuations.keys
         else
           raise "hell 1: " + @dest.to_s
         end
-      p "call c #{result}"
-      p continuation.to_s
+      # p "call c #{result}"
+      # p continuation.to_s
       continuation.result result
-      p "called c #{result}"
+      # p "called c #{result}"
     rescue => exception
       smp_protect { pp "0 exception ", exception }
       continuation.exception exception
@@ -142,9 +144,9 @@ class Dramatis::Runtime::Actor
       @queue.each_with_index do |task,index|
         if @gate.accepts? task
           schedule = task
-          warn "before: #{@queue}"
+          # warn "before: #{@queue}"
           @queue[index,1] = []
-          warn "after: #{@queue}"
+          # warn "after: #{@queue}"
         end
       end
       if schedule 
@@ -161,12 +163,12 @@ class Dramatis::Runtime::Actor
   end
 
   def runnable!
-    warn "runnable! #{self} #{@state}"
+    # warn "runnable! #{self} #{@state}"
     @state = :runnable
   end
 
   def runnable?
-    warn "runnable? #{self} #{@state}"
+    # warn "runnable? #{self} #{@state}"
     @state == :runnable
   end
 

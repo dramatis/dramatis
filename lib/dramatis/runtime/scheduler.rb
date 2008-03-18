@@ -18,13 +18,15 @@ class Dramatis::Runtime::Scheduler
 
   def schedule task
     @mutex.synchronize do
-      warn "sched #{@queue.length} #{@state}"
+      # warn "sched #{@queue.length} #{@state}"
       @queue << task
       if @queue.length == 1
         if @state == :waiting
           @wait.signal
         elsif @state == :idle
           @state = :running
+          @running_threads = 1
+          # warn "#{Thread.current} checkout main #{@running_threads}"
           @thread = Thread.new { run }
         end
       end
@@ -44,13 +46,15 @@ class Dramatis::Runtime::Scheduler
   def suspend_notification task
     @mutex.synchronize do
       deadlock if @state == :idle
-      warn "#{Thread.current} checkin #{@running_threads}"
+      # warn "#{Thread.current} checkin #{@running_threads}"
       @running_threads -= 1
       raise "hell #{@state}" if @state == :idle
       if @state == :waiting
         @wait.signal
       elsif @state == :idle
         @state = :running
+        @running_threads = 1
+        # warn "#{Thread.current} checkout main #{@running_threads}"
         @thread = Thread.new { run }
       end
       # FIX empty queues
@@ -65,7 +69,7 @@ class Dramatis::Runtime::Scheduler
     @mutex.synchronize do
       @suspended_tasks.delete task.to_s
       @running_threads += 1
-      warn "#{Thread.current} checkout #{@running_threads}"
+      # warn "#{Thread.current} checkout #{@running_threads}"
     end
   end
 
@@ -75,9 +79,9 @@ class Dramatis::Runtime::Scheduler
   end
 
   def main_at_exit
-    warn "main has exited: waiting"
+    # warn "main has exited: waiting"
     @main_mutex.synchronize do
-      warn "#{Thread.current} main checkin #{@running_threads}"
+      # warn "#{Thread.current} main checkin #{@running_threads}"
       @running_threads -= 1
       if @state == :waiting
         @wait.signal
@@ -97,7 +101,7 @@ class Dramatis::Runtime::Scheduler
       end
     end
     raise "hell #{@main_state.to_s}" if @main_state != :may_finish
-    warn "main has exited: done"
+    # warn "main has exited: done"
   end
 
   private
@@ -106,8 +110,8 @@ class Dramatis::Runtime::Scheduler
     Thread.abort_on_exception = true
     @mutex = Mutex.new
     @wait = ConditionVariable.new
-    warn "#{Thread.current} checkout main #{Thread.main}"
-    @running_threads = 1
+    # warn "#{Thread.current} checkout main #{Thread.main}"
+    @running_threads = 0
     @suspended_tasks = {}
     @queue = []
     @state = :idle
@@ -128,7 +132,7 @@ class Dramatis::Runtime::Scheduler
       while true
         task = nil
         @mutex.synchronize do
-          warn "qe #{@queue.empty?} tr '#{@running_threads}'"
+          # warn "qe #{@queue.empty?} tr '#{@running_threads}'"
           while @queue.empty? and @running_threads != 0
             @state = :waiting
             begin
@@ -148,12 +152,12 @@ class Dramatis::Runtime::Scheduler
 
           @running_threads += 1
           Thread.new do
-            warn "#{Thread.current} checkout #{@running_threads}"
+            # warn "#{Thread.current} checkout #{@running_threads}"
             begin
               deliver task
             ensure
               @mutex.synchronize do
-                warn "#{Thread.current} checkin #{@running_threads}"
+                # warn "#{Thread.current} checkin #{@running_threads}"
                 @running_threads -= 1
                 if @state == :waiting
                   @wait.signal
@@ -164,14 +168,14 @@ class Dramatis::Runtime::Scheduler
 
         end
       end
-      warn "after loop"
+      # warn "after loop"
     rescue Done
     rescue => exception
       warn "1 exception " + exception.to_s
       Dramatis::Runtime.the.exception exception
     end
 
-    warn "scheduler giving up the ghost"
+    # warn "scheduler giving up the ghost #{@queue.length}"
     
     @main_mutex.synchronize do
       raise "hell #{@main_state.to_s}" if @main_state != :running and @main_state != :waiting
@@ -185,6 +189,8 @@ class Dramatis::Runtime::Scheduler
       # how protected we are for that around shutdown/startup
       # I guess it won't hurt, but I'm not sure it helps
       @mutex.synchronize do
+        # warn "s #{Thread.current} m #{Thread.main} l #{Thread.list.join(' ')} "
+        raise "hell" if @queue.length > 0
         @state = :idle
         @thread = nil
       end

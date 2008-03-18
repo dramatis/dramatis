@@ -12,9 +12,15 @@ jane = Kid.new "Jane", dick
 harry = Kid.new "Harry", jane
 sally = Kid.new "Sally", harry
 
-phrase = "his mom locked her keys in the car, " +
-         "so he should get a ride home with Hector"
+phrases = [ "his mom locked her keys in the car, " +
+            "so he should get a ride home with Hector",
+            "Mac King is a comedy magic genius" ]
 
-puts "Teacher: #{phrase}"
-sally.whisper phrase
+phrases.each do |phrase|
+  puts "Teacher: #{phrase}"
+  sally.whisper phrase
+end
 
+phrases.length.times do
+  puts "Teacher heard: '#{tom.ask}'"
+end
