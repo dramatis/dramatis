@@ -69,37 +69,42 @@ describe Dramatis::Actor::Name do
   end
 
   it "should execute messages to unbound names once bound" do
-    pending
-    name = Dramatis::Actor.new
 
-    ( Dramatis::Actor::Name( name ).continue { |result| result.should == :foobar } ).foo :bar
+    name = Dramatis::Actor.new
 
     object = mock(Object.new)
     object.should_receive(:foo).with(:bar).and_return(:foobar)
 
-    pending
+    result = nil
+
+    retval = ( Dramatis::Actor::Name( name ).continue { |value| result = value } ).foo :bar
+
+    retval.should == nil
+    result.should == nil
+
+    Dramatis::Runtime.the.quiesce
+
+    result.should == nil
 
     Dramatis::Actor::Name( name ).bind object
-  end
 
-  it "should be possible to bind with a nil continuation" do
-    pending
-    name = Dramatis::Actor.new
-    pending
-    name = Dramatis::Actor::Name( name ).continue nil
-    Dramatis::Actor::Name( name ).bind Object.new
-    pending "should test that the nil continuation is respected"
-  end
-
-  it "should allow nil continuations and not return anything" do
-    pending
-    object = mock(Object.new)
-    object.should_receive(:foo).with(:bar).and_return(:foobar)
-    name = Dramatis::Actor.new object
-    pending
-    result = ( Actor::Name( name ).continue nil ).foo :bar
-    pending
     result.should == nil
+
+    Dramatis::Runtime.the.quiesce
+
+    result.should == :foobar
+
+  end
+
+  it "should be possible to bind with a non-rpc continuation" do
+    name = Dramatis::Actor.new
+    result = nil
+    name = Dramatis::Actor::Name( name ).continue { |v| result = v }
+    retval = Dramatis::Actor::Name( name ).bind Object.new
+    retval.should == nil
+    result.should == nil
+    Dramatis::Runtime.the.quiesce
+    result.should_not == nil
   end
 
   it "unbound names should queue messages and deliver them in order"
