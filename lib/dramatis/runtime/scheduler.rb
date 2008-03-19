@@ -19,7 +19,7 @@ class Dramatis::Runtime::Scheduler
 
   def schedule task
     @mutex.synchronize do
-      # warn "sched #{@queue.length} #{@state}"
+      # warn "sched #{@queue.length} #{@state} #{task}"
       @queue << task
       if @queue.length == 1
         if @state == :waiting
@@ -144,7 +144,7 @@ class Dramatis::Runtime::Scheduler
 
   def run
     
-    checkio and warn "#{Thread.current} scheduler starting"
+    checkio and warn "#{Thread.current} scheduler starting #{@state}"
 
     begin
       while true
@@ -179,10 +179,10 @@ class Dramatis::Runtime::Scheduler
           if @queue.length > 0
 
             task = @queue.shift
-
+            
             @running_threads += 1
 
-            Thread.new do
+            Thread.new task do |task|
               checkio and warn "#{Thread.current} spining up #{@running_threads}"
               begin
                 deliver task
@@ -254,9 +254,9 @@ class Dramatis::Runtime::Scheduler
     thread = Thread.current
     thread[:dramatis_actor] = task.actor.name
     begin
-      # p "deliver " + task.inspect
+      # warn "deliver " + task.inspect
       task.deliver
-      # p "delivered " + task.inspect
+      # warn "delivered " + task.inspect
     rescue Exception => exception
       warn "2 exception " + exception.to_s
       pp exception.backtrace

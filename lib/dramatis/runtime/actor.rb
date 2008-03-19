@@ -120,10 +120,9 @@ class Dramatis::Runtime::Actor
           raise "hell 0 #{Thread.current}" if !c
           method = args.shift
           method = case method
-                     when :result: :continuation_result
-                     when :exception: :continuation_exception
-                     else
-                       raise "hell *"
+                     when :result; :continuation_result
+                     when :exception; :continuation_exception
+                     else; raise "hell *"
                    end
           # pp c.to_s, "send", method, args
           c.send method, *args
