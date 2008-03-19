@@ -51,11 +51,26 @@ describe Dramatis::Actor::Name do
     lambda { Dramatis::Actor::Name( name ).bind Object.new }.should raise_error Dramatis::BindError
   end
 
+  it "should allow and execute block continuations" do
+
+    actor = Object.new
+    name = Dramatis::Actor.new actor
+    actor.should_receive(:foo).with(:bar).and_return(:foobar)
+
+    result = nil
+    retval = ( Dramatis::Actor::Name( name ).continue  {|value| result = value } ).foo :bar
+    retval.should == nil
+    result.should == nil
+
+    Dramatis::Runtime.the.quiesce
+    
+    result.should == :foobar
+
+  end
+
   it "should execute messages to unbound names once bound" do
     pending
     name = Dramatis::Actor.new
-
-    pending
 
     ( Dramatis::Actor::Name( name ).continue { |result| result.should == :foobar } ).foo :bar
 

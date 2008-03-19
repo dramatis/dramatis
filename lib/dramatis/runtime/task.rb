@@ -30,7 +30,7 @@ class Dramatis::Runtime::Task
     when :rpc
       @continuation = Continuation::RPC.new
     when Proc
-      @continuation = Continuation::Proc.new
+      @continuation = Continuation::Proc.new options[:continuation]
     else
       raise "hell 2 " + options.inspect
     end
@@ -60,8 +60,6 @@ class Dramatis::Runtime::Task
       end
 
       def exception exception
-        warn "3 exception " + exception.to_s
-        pp exception.backtrace
         Dramatis::Runtime.the.exception exception
       end
 
@@ -163,11 +161,29 @@ class Dramatis::Runtime::Task
         end
       end
 
-      def continue
-        kick
+    end
+
+    class Proc
+
+      def initialize block
+        @block = block
+        @actor = Dramatis::Actor::Name( Dramatis::Actor.current ).continuation( self )
       end
-      def kick
+
+      def queued; end
+
+      def result result
+        @actor.result result
       end
+
+      def exception exception
+        Dramatis::Runtime.the.exception exception
+      end
+
+      def continuation_result result
+        @block.call result
+      end
+
     end
 
   end
