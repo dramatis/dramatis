@@ -37,8 +37,8 @@ class Dramatis::Runtime::Scheduler
   # must be called with @mutex locked
   # must be called after @running_threads decremented
   def maybe_deadlock
-    # warn "maybe_deadlock #{Thread.current} #{Thread.main} threads #{@running_threads} queue #{@queue.length} #{Thread.list.join(" ")}"
-    if @running_threads == 0 and @queue.length == 0 and @suspended_continuations.length > 0
+    warn "maybe_deadlock #{Thread.current} #{Thread.main} threads #{@running_threads} queue #{@queue.length} #{Thread.list.join(" ")} qg #{@quiescing}"
+    if @running_threads == 0 and @queue.length == 0 and @suspended_continuations.length > 0 and !@quiescing
       # deadlock
       begin
         begin
@@ -87,33 +87,43 @@ class Dramatis::Runtime::Scheduler
   end
 
   def quiesce
-    main_at_exit
+    main_at_exit true
     @main_state = :running
   end
 
-  def main_at_exit
-    # warn "main has exited: waiting"
-    @main_mutex.synchronize do
-      checkio and warn "#{Thread.current} main checkin 1 #{@running_threads}"
-      @running_threads -= 1
-      if @state == :waiting
-        @wait.signal
+  def main_at_exit quiescing = false
+    warn "main has exited: waiting"
+    @mutex.synchronize do
+      @quiescing = quiescing
+      checkio and warn "#{Thread.current} main maybe checkin 1 #{@running_threads} #{@state} #{quiescing}"
+
+      if @state != :idle
+        @running_threads -= 1
+        if @state == :waiting
+          @wait.signal
+        end
       end
-    end
-    # sleep 15
-    @main_mutex.synchronize do
+
       raise "hell #{@main_state.to_s}" if @main_state != :running and @main_state != :may_finish
+
       if @main_state == :running
         if @state != :idle
           @main_state = :waiting
-          @main_wait.wait @main_mutex
+          @main_wait.wait @mutex
           @main_join.join
           @main_join = nil
           raise "hell #{@main_state.to_s}" if @main_state != :may_finish
         else
+          begin
+            maybe_deadlock
+          rescue Dramatis::Deadlock => deadlock
+            warn "Deadlock at exit: uncompleted tasks exist"
+            raise deadlock
+          end
           @main_state = :may_finish
         end
       end
+      @quiescing = false
     end
     raise "hell #{@main_state.to_s}" if @main_state != :may_finish
     # warn "?threads? #{Thread.list.join(' ')}"
@@ -138,6 +148,7 @@ class Dramatis::Runtime::Scheduler
     @main_mutex = Mutex.new
     @main_wait = ConditionVariable.new
     @main_state = :running
+    @quiescing = false
 
     @thread = nil
 
@@ -234,7 +245,8 @@ class Dramatis::Runtime::Scheduler
     
     checkio and warn "scheduler giving up after deadlock #{@queue.length} #{Thread.current}"
 
-    @main_mutex.synchronize do
+    # FIX need to check all the mutex nesting between main_mutex and mutex
+    @mutex.synchronize do
       raise "hell #{@main_state.to_s}" if @main_state != :running and @main_state != :waiting
       state = @main_state
       @main_state = :may_finish
@@ -247,12 +259,12 @@ class Dramatis::Runtime::Scheduler
       # if there is more than one main (non-dramatis) thread ... well, I'm not sure
       # how protected we are for that around shutdown/startup
       # I guess it won't hurt, but I'm not sure it helps
-      @mutex.synchronize do
+      # @mutex.synchronize do
         # warn "s #{Thread.current} m #{Thread.main} l #{Thread.list.join(' ')} "
         raise "hell" if @queue.length > 0
         @state = :idle
         @thread = nil
-      end
+    # end
     end
 
     checkio and warn "#{Thread.current} scheduler ending"

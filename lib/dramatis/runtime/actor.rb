@@ -223,6 +223,10 @@ class Dramatis::Runtime::Actor
 end
 
 # Might be nice if this was broken out into another file ... YAGNI?
+# This needs to be reworked. External threads and the main thread are
+# related but different (there can only be one main thread). Mutliple
+# at_exit calls are suspect. Of course, if the main actor tracks multilple
+# runtimes, it might be okay.
 
 class Dramatis::Runtime::Actor::Main < Dramatis::Runtime::Actor
 
