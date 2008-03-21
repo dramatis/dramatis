@@ -4,5 +4,5 @@ def foo *args
   pp args
 end
 args = [ :a, :b, :c ]
-foo *args
-p @foo
+foo( *args )
+p foo

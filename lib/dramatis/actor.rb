@@ -23,7 +23,7 @@ module Dramatis::Actor
           ( class << object; self; end ).send :define_method, :actor,
                                 ( lambda { new_actor.object_interface } )
           new_actor.bind object
-          new_actor.instance_eval { @gate.set_default false, :object }
+          new_actor.instance_eval { @gate.refuse :object }
           new_actor.actor_send [ :object_initialize, *args ], :continuation => :rpc
           new_actor.name
         end

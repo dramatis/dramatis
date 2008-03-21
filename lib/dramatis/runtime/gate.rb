@@ -1,14 +1,89 @@
 module Dramatis; end
 class Dramatis::Runtime; end
 
+require 'pp' # FIX
+
 class Dramatis::Runtime::Gate
 
-  def self.new default, hash = {}
+  def self.new
+    gate = Case.new
+    gate.accept Object
+    gate.accept :actor
+    gate.accept :continuation
+    gate.accept :object
+    gate
+  end
+
+  def tbd
     actor = Hash.new true
     object = Hash.new default, hash
     continuation = Hash.new true
     gate = Hash.new true, :actor => actor, :object => object, :continuation => continuation
     gate
+  end
+
+  class Case
+    def change args, value, inplace
+      pp "> #{args.join(' ')} #{value} #{inplace}", @list
+      prepend = true
+      @list.each_with_index do |entry, list_index|
+        p "huh?"
+        vector, result = entry
+        p "ho"
+        p "?? #{vector} ?? #{result}"
+        matches = true
+        args.each_with_index do |arg, arg_index|
+          p "compare #{vector[arg_index]} #{arg}"
+          if vector[arg_index] != arg
+            p "matches"
+            matches = false
+            break
+          end
+        end
+        if matches
+          p "matched"
+          if inplace
+            p "inplace"
+            @list[list_index][1] = value
+            prepend = false
+          else
+            @list[list_index,1] = []
+          end
+          break
+        end
+      end
+      if prepend
+        @list.unshift [ args, value ]
+      end
+      pp "<", @list
+    end
+    def accept *args
+      change args, true, false
+    end
+    def refuse *args
+      change args, false, false
+    end
+    def update value, *args
+    end
+    def accepts? *args
+      accepted = nil
+      @list.each do |entry|
+        vector, result = entry
+        args.each_with_index do |arg, i|
+          warn "#{vector[i]} #{arg} => #{vector[i] === arg} so #{result}"
+          vector[i] === arg and accepted = result
+        end
+        warn "last" if accepted != nil
+        break if accepted != nil
+      end
+      accepted == true
+    end
+    def initialize
+      @list = []
+    end
+    def list
+      @list
+    end
   end
 
   class Constant

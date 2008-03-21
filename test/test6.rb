@@ -24,6 +24,7 @@ b = cls.new
 begin
   a.rpc b
   raise "hell"
+rescue NoMethodError
 rescue Exception => e
   warn "!! #{e}"
   raise e

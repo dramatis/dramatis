@@ -17,10 +17,9 @@ class Dramatis::Runtime::Actor
 
   def initialize object = nil
     @object = object
-    if object
-      @gate = Dramatis::Runtime::Gate.new true
-    else
-      @gate = Dramatis::Runtime::Gate.new false
+    @gate = Dramatis::Runtime::Gate.new
+    if !object
+      @gate.refuse :object
     end
     blocked!
     @queue = []
@@ -32,7 +31,7 @@ class Dramatis::Runtime::Actor
   end
   
   def object_initialize *args
-    @gate.set_default true, :object
+    @gate.accept :object
     @object.send :initialize, *args
   end
 
@@ -42,7 +41,7 @@ class Dramatis::Runtime::Actor
     @object = object
     # warn "okay?"
     # p @gate
-    @gate.set_default true, :object
+    @gate.accept :object
     # pp @gate
     self
   end

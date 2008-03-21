@@ -1,3 +1,7 @@
+#!/bin/env ruby
+
+$:.push File.join( File.dirname(__FILE__), "..", "lib" )
+
 require 'pp'
 a = [ :a, :b, :c ]
 pp a
