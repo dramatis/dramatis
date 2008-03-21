@@ -46,9 +46,16 @@ class Dramatis::Runtime::Gate
       @hash = hash.clone
       @queued = {}
       track and warn "create default = #{@default} hash = [#{@hash.keys.join(' ')}]"
+      @always = []
+      @call_thread = nil
     end
 
     def track; true; end
+
+    def always *args
+      track and warn "always [#{args.join(' ')}]"
+      @always << args
+    end
 
     def refuse *args
       track and warn "refuse [#{args.join(' ')}]"
@@ -87,7 +94,10 @@ class Dramatis::Runtime::Gate
     end
 
     def accepts? *args
-      v = @hash.has_key?( args[0] ) ? @hash[args[0]].accepts?( *args[1,args.length] ) : @default
+      v = nil
+      if v == nil 
+        v = @hash.has_key?( args[0] ) ? @hash[args[0]].accepts?( *args[1,args.length] ) : @default
+      end
       track and warn "accepts? [#{args.join(' ')}] => #{v}"
       v
     end

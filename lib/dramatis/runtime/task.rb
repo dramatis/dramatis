@@ -107,7 +107,7 @@ class Dramatis::Runtime::Task
                 # I think this means that while the state stuff is not necessary
                 # the semaphore is ... of course
                 @actor.instance_eval do
-                  @actor.schedule
+                  @actor.schedule self
                 end
                 Dramatis::Runtime::Scheduler.the.suspend_notification self
                 @wait.wait @mutex

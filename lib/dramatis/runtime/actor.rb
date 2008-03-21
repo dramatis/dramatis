@@ -162,7 +162,7 @@ class Dramatis::Runtime::Actor
   end
 
   # note called from task.rb, too
-  def schedule
+  def schedule continuation = nil
     @mutex.synchronize do
       # warn ">schd #{self} #{@queue.join(' ')}"
       @thread = nil
@@ -213,6 +213,9 @@ class Dramatis::Runtime::Actor
     end
     def name
       @actor.name
+    end
+    def always *args
+      @actor.gate.always( :object, *args )
     end
     private
     def initialize actor
