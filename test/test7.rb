@@ -7,28 +7,38 @@ require 'dramatis/runtime'
 
 require 'pp'
 
-cls = Class.new do
+a = Class.new do
 
   Dramatis::Actor.acts_as self
 
-  def initialize other = nil
-    other.f actor.name if other
-  end
-
-  def f caller
-    warn "f" + caller.g
-  end
-
-  def g
-    "g"
+  def initialize
+    actor.refuse :fromB
   end
 
 end
 
-a = cls.new
-begin
-  b = cls.new a
-  raise "should have deadlocked"
-rescue Dramatis::Deadlock
-  # okay
+b = Class.new do
+
+  Dramatis::Actor.acts_as self
+
+  def initialize anA
+    @anA = anA
+  end
+
+  def startB
+    @anA.fromB
+  end
+
+  def shouldDeadlock
+  end
+
 end
+
+anA = a.new
+aB = b.new anA
+
+( Dramatis::Actor::Name( aB ).continue nil ).startB
+
+warn "b4"
+Dramatis::Runtime.the.quiesce # :shutdown => false
+warn "a5"

@@ -89,7 +89,7 @@ class Dramatis::Runtime::Task
         current = Dramatis::Actor.current
         actor = current.instance_eval { @actor }
         # warn "contiunation to #{actor}"
-        @actor = Dramatis::Actor::Name( Dramatis::Actor.current ).continuation( self )
+        @actor = Dramatis::Actor::Name( Dramatis::Actor.current ).send :continuation, self
       end
 
       def queued
@@ -175,7 +175,7 @@ class Dramatis::Runtime::Task
 
       def initialize block
         @block = block
-        @actor = Dramatis::Actor::Name( Dramatis::Actor.current ).continuation( self )
+        @actor = Dramatis::Actor::Name( Dramatis::Actor.current ).send :continuation, self
       end
 
       def queued; end

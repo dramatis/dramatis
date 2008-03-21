@@ -29,6 +29,8 @@ class Dramatis::Actor::Name::Proxy
     actor_send :bind, behavior
   end
 
+  private
+
   def continuation c
     a, o = @name.instance_eval { [ @actor, @options ] }
     @name = Dramatis::Actor::Name.new a
@@ -40,8 +42,6 @@ class Dramatis::Actor::Name::Proxy
     end
     @name
   end
-
-  private
 
   def actor_send *args, &block
     @name.instance_eval do

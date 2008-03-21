@@ -32,6 +32,7 @@ class Dramatis::Runtime::Actor
   end
   
   def object_initialize *args
+    @gate.set_default true, :object
     @object.send :initialize, *args
   end
 
