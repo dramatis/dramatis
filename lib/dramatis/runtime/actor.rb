@@ -31,6 +31,21 @@ class Dramatis::Runtime::Actor
     Dramatis::Runtime::Scheduler.the << self
   end
   
+  def object_initialize *args
+    @object.send :initialize, *args
+  end
+
+  def bind object
+    # warn "bind #{object} #{@object} #{@gate}"
+    raise Dramatis::BindError if @object
+    @object = object
+    # warn "okay?"
+    # p @gate
+    @gate.set_default true, :object
+    # pp @gate
+    self
+  end
+
   def deadlock e
     @mutex.synchronize do
       @queue.each do |task|
@@ -46,18 +61,11 @@ class Dramatis::Runtime::Actor
     @continuations[c.to_s] = c
   end
 
-  def bind object
-    raise Dramatis::BindError if @object
-    @object = object
-    @gate.set_default true, :object
-    self
-  end
-
-  def actor_send args, opts = {}
+  def actor_send args, opts
     common_send :actor, args, opts
   end
 
-  def object_send args, opts = {}
+  def object_send args, opts
     if opts[:continuation_send]
       type = :continuation 
       begin
@@ -72,21 +80,23 @@ class Dramatis::Runtime::Actor
     common_send type, args, opts
   end
 
-  def common_send dest, args, opts = {}
+  def common_send dest, args, opts
 
-    
+    warn "common send #{self} #{dest} #{args[0]}"
     # warn "common send #{self} #{dest} #{args.join(' ')} #{opts.to_a.join(' ' )}"
 
     task = Dramatis::Runtime::Task.new( self, dest, args, opts  )
 
     @mutex.synchronize do
-      # warn "common send r? #{runnable?} g? #{@gate.accepts? task.method} q #{@queue.length}"
+      # warn "#{self} #{Thread.current} common send r? #{runnable?} g? #{@gate.accepts?( *( [ task.type, task.method ] + task.arguments )  ) } q #{@queue.length}"
       # FIX arguments to gate
       if !runnable? and @gate.accepts?(  *( [ task.type, task.method ] + task.arguments ) )
         runnable!
         Dramatis::Runtime::Scheduler.the.schedule task
       else
+        # warn "+>schd #{self} #{@queue.join(' ')}"
         @queue << task
+        # warn "+<schd #{self} #{@queue.join(' ')}"
       end
     end
 
@@ -100,7 +110,7 @@ class Dramatis::Runtime::Actor
     end
     begin
       method = args.shift
-      # pp "switch", dest.to_s, args
+      # warn "switch " + dest.to_s + " " + method.to_s
       result = 
         case dest
         when :actor
@@ -136,33 +146,42 @@ class Dramatis::Runtime::Actor
       continuation.result result
       # p "called c #{result}"
     rescue Exception => exception
-      # pp "0 exception ", exception
-      continuation.exception exception
+      pp "0 exception ", exception
+      # pp exception.backtrace
+      begin
+        continuation.exception exception
+      rescue Exception => e
+        warn "double exception fault: #{e}"
+        pp e
+        raise e
+      end
     ensure
       schedule
     end
-
   end
 
   # note called from task.rb, too
   def schedule
     @mutex.synchronize do
+      # warn ">schd #{self} #{@queue.join(' ')}"
       @thread = nil
-      schedule = nil
-      @queue.each_with_index do |task,index|
+      task = nil
+      index = 0
+      while task == nil and index < @queue.length do
+        candidate = @queue[index]
         # FIX arugments?
-        if @gate.accepts?( *( [ task.type, task.method ] + task.arguments ) )
-          schedule = task
-          # warn "before: #{@queue}"
+        if @gate.accepts?( *( [ candidate.type, candidate.method ] + candidate.arguments ) )
+          task = candidate
           @queue[index,1] = []
-          # warn "after: #{@queue}"
         end
+        index += 1
       end
-      if schedule 
-        Dramatis::Runtime::Scheduler.the.schedule schedule
+      if task 
+        Dramatis::Runtime::Scheduler.the.schedule task
       else
         blocked!
       end
+      # warn "<schd #{self} #{@queue.join(' ')} #{@state} #{Thread.current}"
     end
   end
 
@@ -190,6 +209,9 @@ class Dramatis::Runtime::Actor
     end
     def accept *args
       @actor.gate.accept( :object, *args )
+    end
+    def name
+      @actor.name
     end
     private
     def initialize actor

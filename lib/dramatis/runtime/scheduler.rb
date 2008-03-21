@@ -38,16 +38,21 @@ class Dramatis::Runtime::Scheduler
   # must be called after @running_threads decremented
   def maybe_deadlock
     # warn "maybe_deadlock #{Thread.current} #{Thread.main} threads #{@running_threads} queue #{@queue.length} #{Thread.list.join(" ")}"
-    if @running_threads == 0 and @queue.length == 0 and @suspended_tasks.length > 0
+    if @running_threads == 0 and @queue.length == 0 and @suspended_continuations.length > 0
       # deadlock
       begin
-        raise Dramatis::Deadlock.new
+        begin
+          raise Dramatis::Deadlock.new
+        rescue Dramatis::Deadlock => deadlock
+          # pp deadlock.backtrace
+          raise deadlock
+        end
       end
     end
   end
 
   def _deadlock
-    false and @suspended_tasks.each_value do |task|
+    false and @suspended_continuations.each_value do |task|
       task.exception Deadlock.new
     end
     @actors.each { |actor| actor.deadlock }
@@ -55,7 +60,7 @@ class Dramatis::Runtime::Scheduler
 
   def checkio; false; end
 
-  def suspend_notification task
+  def suspend_notification continuation
     @mutex.synchronize do
       # deadlock if @state == :idle
       if @state == :idle
@@ -69,13 +74,13 @@ class Dramatis::Runtime::Scheduler
       if @state == :waiting
         @wait.signal
       end
-      @suspended_tasks[task.to_s] = task
+      @suspended_continuations[continuation.to_s] = continuation
     end
   end
 
-  def wakeup_notification task
+  def wakeup_notification continuation
     @mutex.synchronize do
-      @suspended_tasks.delete task.to_s
+      @suspended_continuations.delete continuation.to_s
       @running_threads += 1
       checkio and warn "#{Thread.current} checkout #{@running_threads}"
     end
@@ -126,7 +131,7 @@ class Dramatis::Runtime::Scheduler
     @mutex = Mutex.new
     @wait = ConditionVariable.new
     @running_threads = 0
-    @suspended_tasks = {}
+    @suspended_continuations = {}
     @queue = []
     @state = :idle
 
@@ -186,6 +191,9 @@ class Dramatis::Runtime::Scheduler
               checkio and warn "#{Thread.current} spining up #{@running_threads}"
               begin
                 deliver task
+              rescue Exception => e
+                warn "unexptected deliver error #{e}"
+                raise e
               ensure
                 @mutex.synchronize do
                   checkio and warn "#{Thread.current} checkin 2 #{@running_threads} #{@state}"
@@ -206,6 +214,7 @@ class Dramatis::Runtime::Scheduler
     rescue Done
     rescue Exception => exception
       warn "1 exception " + exception.to_s
+      # pp exception.backtrace
       Dramatis::Runtime.the.exception exception
     end
 
@@ -217,7 +226,7 @@ class Dramatis::Runtime::Scheduler
       end
     rescue Dramatis::Deadlock => deadlock
       actors = @mutex.synchronize { @actors.dup }
-      actors.each { |actor| actor.deadlock }
+      actors.each { |actor| actor.deadlock deadlock }
     rescue Exception => exception
       warn "1 exception " + exception.to_s
       Dramatis::Runtime.the.exception exception
@@ -253,13 +262,16 @@ class Dramatis::Runtime::Scheduler
   def deliver task
     thread = Thread.current
     thread[:dramatis_actor] = task.actor.name
+    xx = task.actor.name
+    xx = xx.instance_eval { @actor }
+    # warn "assign #{xx} to #{thread}"
     begin
       # warn "deliver " + task.inspect
       task.deliver
       # warn "delivered " + task.inspect
     rescue Exception => exception
       warn "2 exception " + exception.to_s
-      pp exception.backtrace
+      # pp exception.backtrace
       Dramatis::Runtime.the.exception exception
     ensure
       thread[:dramatis_actor] = nil

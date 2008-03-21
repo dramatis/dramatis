@@ -22,8 +22,9 @@ module Dramatis::Actor
           object = allocate
           ( class << object; self; end ).send :define_method, :actor,
                                 ( lambda { new_actor.object_interface } )
-          object.send :initialize, *args
-          ( new_actor.bind object ).name
+          new_actor.bind object
+          new_actor.actor_send [ :object_initialize, *args ], :continuation => :rpc
+          new_actor.name
         end
       end
     end

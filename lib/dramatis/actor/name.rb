@@ -7,7 +7,7 @@ require 'dramatis/actor'
 
 class Dramatis::Actor::Name
 
-  def to_s
+  def to_s_off
     method_missing :to_s
   end
 

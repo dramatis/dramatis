@@ -67,6 +67,10 @@ class Dramatis::Runtime::Task
 
     class RPC
 
+      def actor
+        @actor.instance_eval { @actor }
+      end
+
       def initialize
         # all the synchronizaton here probably gets tossed
         # proof:
@@ -82,6 +86,9 @@ class Dramatis::Runtime::Task
         @state = :start
         @mutex = Mutex.new
         @wait = ConditionVariable.new
+        current = Dramatis::Actor.current
+        actor = current.instance_eval { @actor }
+        # warn "contiunation to #{actor}"
         @actor = Dramatis::Actor::Name( Dramatis::Actor.current ).continuation( self )
       end
 
@@ -92,16 +99,17 @@ class Dramatis::Runtime::Task
           if @state == :start
             @state = :waiting
             begin
-              Dramatis::Runtime::Scheduler.the.suspend_notification self
               begin
                 # FIX: only recieve this continuation or call chain
-                # note that up until the call to schedule, we hold the actor
-                # during the schedule call, we lose it ... but we hold the current
-                # lock. I think this means that while the state stuff is not necessary
+                # note that up until the call to schedule, we hold the actor psuedo-lock
+                # i.e., its state is running. During the schedule call, we lose it ...
+                # but we hold the current lock.
+                # I think this means that while the state stuff is not necessary
                 # the semaphore is ... of course
                 @actor.instance_eval do
                   @actor.schedule
                 end
+                Dramatis::Runtime::Scheduler.the.suspend_notification self
                 @wait.wait @mutex
               rescue Exception => exception
                 warn "wait said #{exception}"
@@ -128,9 +136,9 @@ class Dramatis::Runtime::Task
       end
 
       def exception exception
-        # warn "4 exception " + exception.to_s
+        warn "4 exception " + exception.to_s
         @actor.exception exception
-        # warn "4 delivered ".to_s
+        warn "4 delivered ".to_s
       end
 
       def continuation_result result

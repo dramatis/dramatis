@@ -7,7 +7,8 @@ class Dramatis::Runtime::Gate
     actor = Hash.new true
     object = Hash.new default, hash
     continuation = Hash.new true
-    gate = Hash.new true, { :actor => actor, :object => object, :continuation => continuation }
+    gate = Hash.new true, :actor => actor, :object => object, :continuation => continuation
+    gate
   end
 
   class Constant
@@ -16,6 +17,22 @@ class Dramatis::Runtime::Gate
     end
     def accepts? *args
       @constant
+    end
+    def refuse *args
+      warn "HELLL"
+      raise "hell"
+    end
+    def accept *args
+      warn "HELLL"
+      raise "hell"
+    end
+    def default *args
+      warn "HELLL"
+      raise "hell"
+    end
+    def set_default *args
+      warn "HELLL"
+      raise "hell"
     end
   end
 
@@ -27,10 +44,11 @@ class Dramatis::Runtime::Gate
     def initialize default, hash = {}
       @default = default
       @hash = hash.clone
+      @queued = {}
       track and warn "create default = #{@default} hash = [#{@hash.keys.join(' ')}]"
     end
 
-    def track; false; end
+    def track; true; end
 
     def refuse *args
       track and warn "refuse [#{args.join(' ')}]"

@@ -16,6 +16,43 @@ describe Dramatis::Actor::Name do
     Thread.list.length.should == 1
   end
 
+  it "should return NoMethodError as appropriate" do
+    actor = Dramatis::Actor.new Object.new
+    lambda { actor.foo }.should raise_error NoMethodError
+  end
+
+  it "should recreate errors rather just forward them(?)"
+
+  it "should block other methods during a continuation" do
+
+    cls = Class.new do
+      Dramatis::Actor.acts_as self
+
+      attr_accessor :foo
+
+      def initialize caller = nil
+        @foo = false
+        if caller
+          caller.foo = true
+        else
+          actor.refuse :"foo="
+        end
+      end
+
+      def accept
+        act
+      end
+
+    end
+
+    a = cls.new
+    
+    a.foo.should == false
+
+    b = cls.new a
+
+  end
+
   it "should be creatable unbound" do
     Dramatis::Actor.new
   end
