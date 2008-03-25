@@ -47,12 +47,12 @@ class Dramatis::Runtime::Actor
   end
 
   def deadlock e
+    tasks = nil
     @mutex.synchronize do
-      @queue.each do |task|
-        task.exception e
-      end
+      tasks = @queue.dup
       @queue.clear
     end
+    tasks.each { |task| task.exception e }
   end
 
   def register_continuation c
@@ -87,8 +87,14 @@ class Dramatis::Runtime::Actor
 
     task = Dramatis::Runtime::Task.new( self, dest, args, opts  )
 
+
+    warn "#{self} #{Thread.current} common send r? #{runnable?} g? #{@gate.accepts?( *( [ task.type, task.method ] + task.arguments )  ) } q #{@queue.length}"
+    begin
+      raise "helly"
+    rescue Exception => e
+      pp e.backtrace
+    end
     @mutex.synchronize do
-      # warn "#{self} #{Thread.current} common send r? #{runnable?} g? #{@gate.accepts?( *( [ task.type, task.method ] + task.arguments )  ) } q #{@queue.length}"
       # FIX arguments to gate
       if !runnable? and @gate.accepts?(  *( [ task.type, task.method ] + task.arguments ) )
         runnable!
@@ -118,12 +124,12 @@ class Dramatis::Runtime::Actor
           self.send method, *args
           # p "sent actor #{method}"
         when :object
-          p "send object #{@object} #{method}"
+          # p "send object #{@object} #{method}"
           v = @object.send method, *args
           # p "sent object #{method}"
           v
         when :continuation
-          p "send continuation #{method}"
+          # p "send continuation #{method}"
           continuation_name = method
           # warn "c is #{continuation_name}"
           c = @continuations[continuation_name]
@@ -135,14 +141,14 @@ class Dramatis::Runtime::Actor
                      when :exception; :continuation_exception
                      else; raise "hell *"
                    end
-          pp c.to_s, "send", method, args
+          # pp c.to_s, "send", method, args
           c.send method, *args
           @continuations.delete continuation_name
           # pp "csd", continuation_name, @continuations.keys
         else
           raise "hell 1: " + @dest.to_s
         end
-      p "call c '#{result}'"
+      # p "call c '#{result}'"
       # p continuation.to_s
       continuation.result result
       # p "called c #{result}"
@@ -164,7 +170,7 @@ class Dramatis::Runtime::Actor
   # note called from task.rb, too
   def schedule continuation = nil
     @mutex.synchronize do
-      warn ">schd #{self} '#{@queue.join(' ')}'"
+      warn ">schd #{self} #{@queue.join(' ')}"
       @thread = nil
       task = nil
       index = 0

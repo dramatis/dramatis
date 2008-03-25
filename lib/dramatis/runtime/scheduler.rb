@@ -117,7 +117,12 @@ class Dramatis::Runtime::Scheduler
       if @main_state == :running
         if @state != :idle
           @main_state = :waiting
-          @main_wait.wait @mutex
+          begin
+            @main_wait.wait @mutex
+          rescue Exception => e
+            pp "wait said #{e}", e.backtrace
+            raise e
+          end
           @main_join.join
           @main_join = nil
           raise "hell #{@main_state.to_s}" if @main_state != :may_finish
@@ -240,7 +245,8 @@ class Dramatis::Runtime::Scheduler
       # warn "after loop"
     rescue Done
     rescue Exception => exception
-      warn "1 exception " + exception.to_s
+      warn "1 *? exception " + exception.to_s
+      warn "smp!!! " + exception.backtrace.join("\n")
       # pp exception.backtrace
       Dramatis::Runtime.the.exception exception
     end
@@ -255,7 +261,7 @@ class Dramatis::Runtime::Scheduler
       actors = @mutex.synchronize { @actors.dup }
       actors.each { |actor| actor.deadlock deadlock }
     rescue Exception => exception
-      warn "1 exception " + exception.to_s
+      warn "2 exception " + exception.to_s
       Dramatis::Runtime.the.exception exception
     end
     

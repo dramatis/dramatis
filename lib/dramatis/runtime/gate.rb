@@ -31,35 +31,35 @@ class Dramatis::Runtime::Gate
     def _change list, args, value, options = {}
       inplace = options[ :inplace ]
       tag = options[ :tag ]
-      pp ">> #{args and args.join(' ')} #{value} #{inplace} #{tag}", list
+      # pp ">> #{args and args.join(' ')} #{value} #{inplace} #{tag}", list
       prepend = true
       tbd = []
       list.each_with_index do |entry, list_index|
         vector, result, entry_tag = entry
         matches = true
         if tag and entry_tag != tag
-          p "#{tag} tag and #{entry_tag} dont' match"
+          # p "#{tag} tag and #{entry_tag} dont' match"
           next
         end
         if args
           args.each_with_index do |arg, arg_index|
-            p "compare #{vector[arg_index]} #{arg}"
+            # p "compare #{vector[arg_index]} #{arg}"
             if vector[arg_index] != arg
-              p "matches"
+              # p "matches"
               matches = false
               break
             end
           end
         end
         if matches
-          p "matched"
+          # p "matched"
           if inplace and value != nil
-            p "inplace"
+            # p "inplace"
             list[list_index][1] = value
             # FIX: tag?
             prepend = false
           else
-            p "schedule remove #{list[list_index].join(' ')} at #{list_index}"
+            # p "schedule remove #{list[list_index].join(' ')} at #{list_index}"
             tbd << list_index
             # list[list_index,1] = []
           end
@@ -67,32 +67,32 @@ class Dramatis::Runtime::Gate
         end
       end
       tbd.reverse.each do |index|
-        p "remove #{index} #{list[index].join(' ')} at #{index}"
+        # p "remove #{index} #{list[index].join(' ')} at #{index}"
         list[index,1] = []
       end
       if prepend and value != nil
         list.unshift [ args, value, tag ]
       end
-      pp "<< #{args and args.join(' ')} #{value} #{inplace} #{tag}", list
+      # pp "<< #{args and args.join(' ')} #{value} #{inplace} #{tag}", list
     end
     def change args, value, inplace
-      pp "> #{args.join(' ')} #{value} #{inplace}", @list
+      # pp "> #{args.join(' ')} #{value} #{inplace}", @list
       prepend = true
       @list.each_with_index do |entry, list_index|
         vector, result = entry
         matches = true
         args.each_with_index do |arg, arg_index|
-          p "compare #{vector[arg_index]} #{arg}"
+          # p "compare #{vector[arg_index]} #{arg}"
           if vector[arg_index] != arg
-            p "matches"
+            # p "matches"
             matches = false
             break
           end
         end
         if matches
-          p "matched"
+          # p "matched"
           if inplace
-            p "inplace"
+            # p "inplace"
             @list[list_index][1] = value
             # FIX: tag?
             prepend = false
@@ -105,7 +105,7 @@ class Dramatis::Runtime::Gate
       if prepend
         @list.unshift [ args, value ]
       end
-      pp "<", @list
+      # pp "<", @list
     end
     def accept *args
       change args, true, false
@@ -116,13 +116,13 @@ class Dramatis::Runtime::Gate
     def update value, *args
     end
     def accepts? *args
-      p "accepts? #{args.join(" ")}"
+      # p "accepts? #{args.join(" ")}"
       accepted = nil
       ( @always + @list ).each do |entry|
         vector, result = entry
         matches = true
         vector.each_with_index do |v, i|
-          warn "#{v} #{args[i]} => #{v === args[i]} so #{result}"
+          # warn "#{v} #{args[i]} => #{v === args[i]} so #{result}"
           if not( v === args[i] )
             matches = false
             break
@@ -133,8 +133,8 @@ class Dramatis::Runtime::Gate
           break
         end
       end
-      warn "last '#{accepted}'"
-      p "accepts? #{args.join(" ")} => '#{accepted}'"
+      # warn "last '#{accepted}'"
+      # p "accepts? #{args.join(" ")} => '#{accepted}'"
       accepted == true
     end
     def initialize
@@ -185,7 +185,7 @@ class Dramatis::Runtime::Gate
       @call_thread = nil
     end
 
-    def track; true; end
+    def track; false; end
 
     def always *args
       track and warn "always [#{args.join(' ')}]"

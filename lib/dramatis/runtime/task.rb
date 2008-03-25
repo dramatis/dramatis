@@ -115,6 +115,7 @@ class Dramatis::Runtime::Task
                 @wait.wait @mutex
               rescue Exception => exception
                 warn "wait said #{exception}"
+                pp "wait said", exception.backtrace
                 raise exception
               end
             ensure
@@ -143,6 +144,7 @@ class Dramatis::Runtime::Task
 
       def exception exception
         warn "4 exception " + exception.to_s
+        warn "4 exception " + exception.backtrace.join("\n")
         @actor.exception exception
         warn "4 delivered ".to_s
       end
