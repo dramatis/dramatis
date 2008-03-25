@@ -44,7 +44,7 @@ class Dramatis::Runtime::Scheduler
   # must be called with @mutex locked
   # must be called after @running_threads decremented
   def maybe_deadlock
-    # warn "maybe_deadlock #{Thread.current} #{Thread.main} threads #{@running_threads} queue #{@queue.length} #{Thread.list.join(" ")} qg #{@quiescing}"
+    warn "maybe_deadlock #{Thread.current} #{Thread.main} threads #{@running_threads} queue #{@queue.length} #{Thread.list.join(" ")} qg #{@quiescing}"
     if @running_threads == 0 and @queue.length == 0 and @suspended_continuations.length > 0 and !@quiescing
       # deadlock
       begin
@@ -141,6 +141,7 @@ class Dramatis::Runtime::Scheduler
     raise "hell #{@main_state.to_s}" if @main_state != :may_finish
     # warn "?threads? #{Thread.list.join(' ')}"
     # warn "main has exited: done"
+    Dramatis::Runtime::the.maybe_raise_exceptions
   end
 
   def << actor
@@ -265,7 +266,7 @@ class Dramatis::Runtime::Scheduler
       Dramatis::Runtime.the.exception exception
     end
     
-    checkio and warn "scheduler giving up after deadlock #{@queue.length} #{Thread.current}"
+    checkio and warn "scheduler giving up after final deadlock check #{@queue.length} #{Thread.current}"
 
     # FIX need to check all the mutex nesting between main_mutex and mutex
     @mutex.synchronize do

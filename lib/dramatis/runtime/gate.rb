@@ -20,6 +20,8 @@ class Dramatis::Runtime::Gate
     end
     def only args, options = {}
       _change @list, [ :object ], false, options
+      _change @list, [ :continuation ], false, options
+      _change @list, [ :continuation, Object, :exception ], true, options
       _change @list, Array( args ), true, options
     end
     def default args, options = {}
@@ -134,7 +136,7 @@ class Dramatis::Runtime::Gate
         end
       end
       # warn "last '#{accepted}'"
-      # p "accepts? #{args.join(" ")} => '#{accepted}'"
+      p "accepts? #{args.join(" ")} => '#{accepted}'"
       accepted == true
     end
     def initialize

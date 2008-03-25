@@ -26,7 +26,6 @@ class Dramatis::Runtime::Actor
     blocked!
     @queue = []
     @mutex = Mutex.new
-    @thread = nil
     @continuations = {}
     @object_interface = ObjectInterface.new self
     Dramatis::Runtime::Scheduler.the << self
@@ -34,6 +33,11 @@ class Dramatis::Runtime::Actor
   
   def enable_call_threading
     @call_threading = true
+  end
+
+  def current_call_thread? that
+    warn "current_call_thread? #{@call_thread} #{(@call_thread and (@call_thread == that)).inspect} #{that}"
+    @call_thread and @call_thread == that
   end
 
   def object_initialize *args
@@ -92,8 +96,8 @@ class Dramatis::Runtime::Actor
     # warn "common send #{self} #{dest} #{args.join(' ')} #{opts.to_a.join(' ' )}"
 
     if @call_threading and opts[:call_thread] == nil
-      # opts = opts.dup
-      # opts[:call_thread] = something
+      opts = opts.dup
+      opts[:call_thread] = true
     end
 
     task = Dramatis::Runtime::Task.new( self, dest, args, opts  )
@@ -120,11 +124,10 @@ class Dramatis::Runtime::Actor
 
   end
 
-  def deliver dest, args, continuation
-    @mutex.synchronize do
-      @thread = Thread.current
-    end
+  def deliver dest, args, continuation, call_thread
+    old_call_thread = @call_thread
     begin
+      @call_thread = call_thread
       method = args.shift
       # warn "switch " + dest.to_s + " " + method.to_s
       result = 
@@ -173,6 +176,7 @@ class Dramatis::Runtime::Actor
         raise e
       end
     ensure
+      @call_thread = old_call_thread
       schedule
     end
   end
@@ -181,14 +185,13 @@ class Dramatis::Runtime::Actor
   def schedule continuation = nil
     @mutex.synchronize do
       # warn ">schd #{self} #{@queue.join(' ')}"
-      @thread = nil
       task = nil
       index = 0
       while task == nil and index < @queue.length do
         candidate = @queue[index]
         # FIX arugments?
         if @gate.accepts?( *( [ candidate.type, candidate.method ] + candidate.arguments ) ) or
-           current_call_thread? task.call_thread
+           current_call_thread? candidate.call_thread
           task = candidate
           @queue[index,1] = []
         end

@@ -32,6 +32,9 @@ class Dramatis::Runtime
     @mutex.synchronize do
       if !@exceptions.empty?
         warn "no maybe about it"
+        @exceptions.each do |exception|
+          pp "#{exception}", exception.backtrace
+        end
         raise Exception.new @exceptions
       end
       @exceptions.clear

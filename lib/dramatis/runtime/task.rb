@@ -20,17 +20,31 @@ class Dramatis::Runtime::Task
     @args[1,@args.length]
   end
 
+  attr_reader :call_thread
+
   def initialize actor, dest, args, options
     @actor = actor
     @dest = dest
     @args = args
+
+    @call_thread = nil
+    call_thread_opt = options[:call_thread]
+    if call_thread_opt
+      if call_thread_opt == true
+        @call_thread = self.to_s
+      else
+        @call_thread = call_thread_opt
+      end
+    end
+
     case options[:continuation]
     when :none
-      @continuation = Continuation::None.new
+      @continuation = Continuation::None.new @call_thread
     when :rpc
-      @continuation = Continuation::RPC.new
+      @continuation = Continuation::RPC.new @call_thread
     when Proc
-      @continuation = Continuation::Proc.new options[:continuation]
+      @continuation = Continuation::Proc.new @call_thread, options[:continuation],
+                                                             options[:exception]
     else
       raise "hell 2 " + options.inspect
     end
@@ -45,7 +59,7 @@ class Dramatis::Runtime::Task
   end
 
   def deliver
-    @actor.deliver @dest, @args, @continuation
+    @actor.deliver @dest, @args, @continuation, @call_thread
   end
 
   private
@@ -63,6 +77,8 @@ class Dramatis::Runtime::Task
         Dramatis::Runtime.the.exception exception
       end
 
+      def initialize call_thread
+      end
     end
 
     class RPC
@@ -71,7 +87,7 @@ class Dramatis::Runtime::Task
         @actor.instance_eval { @actor }
       end
 
-      def initialize
+      def initialize call_thread
         # all the synchronizaton here probably gets tossed
         # proof:
         # to create the continuation, you have to have the actor lock
@@ -86,6 +102,7 @@ class Dramatis::Runtime::Task
         @state = :start
         @mutex = Mutex.new
         @wait = ConditionVariable.new
+        @call_thread = call_thread
         current = Dramatis::Actor.current
         actor = current.instance_eval { @actor }
         # warn "contiunation to #{actor}"
@@ -100,7 +117,11 @@ class Dramatis::Runtime::Task
             @state = :waiting
             begin
               tag = to_s
+              call_thread = @call_thread
               @actor.instance_eval do
+                @actor.instance_eval do
+                  @call_thread = call_thread
+                end
                 @actor.gate.only [ :continuation, tag ], :tag => tag
                 @actor.schedule self
               end
@@ -125,6 +146,11 @@ class Dramatis::Runtime::Task
         when :return
           return @value
         when :exception
+          begin
+            raise "hell for #{@value}"
+          rescue Exception => e
+            pp "#{e}", e.backtrace
+          end
           raise @value
         end
       end
@@ -172,8 +198,10 @@ class Dramatis::Runtime::Task
 
     class Proc
 
-      def initialize block
-        @block = block
+      def initialize call_thread, result, except
+        p "p.n #{call_thread} #{result} #{except}"
+        @result_block = result
+        @exception_block = except
         @actor = Dramatis::Actor::Name( Dramatis::Actor.current ).send :continuation, self
       end
 
@@ -184,11 +212,20 @@ class Dramatis::Runtime::Task
       end
 
       def exception exception
-        Dramatis::Runtime.the.exception exception
+        @actor.exception exception
       end
 
       def continuation_result result
-        @block.call result
+        @result_block.call result
+      end
+
+      def continuation_exception exception
+        warn "delivering #{exception} => #{@exception_block}"
+        if @exception_block
+          @exception_block.call exception
+        else
+          Dramatis::Runtime.the.exception exception
+        end
       end
 
     end

@@ -21,6 +21,7 @@ class Dramatis::Actor::Name::Proxy
     @name.instance_eval do
       @options = o.dup
       @options[:continuation] = options == nil ? :none : continuation
+      options and @options[:exception] = options[:exception]
     end
     @name
   end

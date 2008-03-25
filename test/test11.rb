@@ -3,6 +3,7 @@
 $:.push File.join( File.dirname(__FILE__), "..", "lib" )
 
 require 'dramatis/actor/name'
+require 'dramatis/actor'
 require 'dramatis/runtime'
 
 require 'pp'
@@ -33,12 +34,29 @@ a = Class.new do
     first.a
   end
 
+  def e
+    block = lambda do
+      warn "block continuation"
+    end
+    ( Dramatis::Actor::Name( actor.name ).continue( &block ) ).f
+  end
+
+  def f
+    warn "f"
+  end
+
 end
 
 # recursion allowd
 
-a.new.a
+# a.new.a
 
 # co-recursion allowed
 
-a.new.c
+# a.new.c
+
+# recusion through blocks ...
+
+a.new.e
+
+Dramatis::Runtime.the.quiesce
