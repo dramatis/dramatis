@@ -26,7 +26,7 @@ a = Class.new do
 
   def c
     other = self.class.new
-    other.new.d actor.name
+    other.d actor.name
   end
 
   def d first

@@ -106,7 +106,7 @@ class Dramatis::Runtime::Actor
     end
     @mutex.synchronize do
       # FIX arguments to gate
-      if !runnable? and @gate.accepts?(  *( [ task.type, task.method ] + task.arguments ) )
+      if !runnable? and ( @gate.accepts?(  *( [ task.type, task.method ] + task.arguments ) ) or current_call_thread?( task.call_thread ) )
         runnable!
         Dramatis::Runtime::Scheduler.the.schedule task
       else
@@ -187,7 +187,8 @@ class Dramatis::Runtime::Actor
       while task == nil and index < @queue.length do
         candidate = @queue[index]
         # FIX arugments?
-        if @gate.accepts?( *( [ candidate.type, candidate.method ] + candidate.arguments ) )
+        if @gate.accepts?( *( [ candidate.type, candidate.method ] + candidate.arguments ) ) or
+           current_call_thread? task.call_thread
           task = candidate
           @queue[index,1] = []
         end

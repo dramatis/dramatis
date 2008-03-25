@@ -99,27 +99,18 @@ class Dramatis::Runtime::Task
           if @state == :start
             @state = :waiting
             begin
+              tag = to_s
+              @actor.instance_eval do
+                @actor.gate.only [ :continuation, tag ], :tag => tag
+                @actor.schedule self
+              end
               begin
-                # FIX: only recieve this continuation or call chain
-                # note that up until the call to schedule, we hold the actor psuedo-lock
-                # i.e., its state is running. During the schedule call, we lose it ...
-                # but we hold the current lock.
-                # I think this means that while the state stuff is not necessary
-                # the semaphore is ... of course
-                tag = to_s
-                @actor.instance_eval do
-                  @actor.gate.only [ :continuation, tag ], :tag => tag
-                  @actor.schedule self
-                end
                 Dramatis::Runtime::Scheduler.the.suspend_notification self
                 @wait.wait @mutex
-              rescue Exception => exception
-                warn "wait said #{exception}"
-                pp "wait said", exception.backtrace
-                raise exception
+              ensure
+                Dramatis::Runtime::Scheduler.the.wakeup_notification self
               end
             ensure
-              Dramatis::Runtime::Scheduler.the.wakeup_notification self
               tag = to_s
               @actor.instance_eval do
                 @actor.gate.default_by_tag tag

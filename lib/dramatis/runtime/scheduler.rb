@@ -65,7 +65,7 @@ class Dramatis::Runtime::Scheduler
     @actors.each { |actor| actor.deadlock }
   end
 
-  def checkio; false; end
+  def checkio; true; end
 
   def suspend_notification continuation
     @mutex.synchronize do
@@ -120,7 +120,7 @@ class Dramatis::Runtime::Scheduler
           begin
             @main_wait.wait @mutex
           rescue Exception => e
-            pp "wait said #{e}", e.backtrace
+            # pp "wait said #{e}", e.backtrace
             raise e
           end
           @main_join.join
@@ -237,7 +237,7 @@ class Dramatis::Runtime::Scheduler
                   end
                 end
               end
-              checkio and warn "#{Thread.current} retiring #{@running_threads}"
+              # checkio and warn "#{Thread.current} retiring #{@running_threads}"
             end
           end
         end
