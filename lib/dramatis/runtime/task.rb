@@ -143,10 +143,10 @@ class Dramatis::Runtime::Task
       end
 
       def exception exception
-        warn "4 exception " + exception.to_s
-        warn "4 exception " + exception.backtrace.join("\n")
+        # warn "4 exception " + exception.to_s
+        # warn "4 exception " + exception.backtrace.join("\n")
         @actor.exception exception
-        warn "4 delivered ".to_s
+        # warn "4 delivered ".to_s
       end
 
       def continuation_result result

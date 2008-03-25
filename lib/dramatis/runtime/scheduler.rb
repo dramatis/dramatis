@@ -65,7 +65,7 @@ class Dramatis::Runtime::Scheduler
     @actors.each { |actor| actor.deadlock }
   end
 
-  def checkio; true; end
+  def checkio; false; end
 
   def suspend_notification continuation
     @mutex.synchronize do
@@ -99,8 +99,8 @@ class Dramatis::Runtime::Scheduler
   end
 
   def main_at_exit quiescing = false
-    warn "quiescing" if quiescing
-    warn "main has exited: waiting" if !quiescing
+    # warn "quiescing" if quiescing
+    # warn "main has exited: waiting" if !quiescing
     @mutex.synchronize do
       @quiescing = quiescing
       checkio and warn "#{Thread.current} main maybe checkin 1 #{@running_threads} #{@state} #{quiescing}"

@@ -13,6 +13,10 @@ a = Class.new do
 
   Dramatis::Actor.acts_as self
 
+  def initialize
+    actor.enable_call_threading
+  end
+
   def a
     actor.name.b
   end
@@ -20,12 +24,21 @@ a = Class.new do
   def b
   end
 
+  def c
+    other = self.class.new
+    other.new.d actor.name
+  end
+
+  def d first
+    first.a
+  end
+
 end
 
-# This should deadlock nicely
+# recursion allowd
 
-begin
-  a.new.a
-  raise "should have deadlocked"
-rescue Dramatis::Deadlock
-end
+a = a.new.a
+
+# co-recursion allowed
+
+a.new.c

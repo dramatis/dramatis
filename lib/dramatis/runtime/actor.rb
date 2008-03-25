@@ -16,6 +16,8 @@ class Dramatis::Runtime::Actor
   attr_reader :gate
 
   def initialize object = nil
+    @call_threading = false
+    @call_thread = nil
     @object = object
     @gate = Dramatis::Runtime::Gate.new
     if !object
@@ -30,6 +32,10 @@ class Dramatis::Runtime::Actor
     Dramatis::Runtime::Scheduler.the << self
   end
   
+  def enable_call_threading
+    @call_threading = true
+  end
+
   def object_initialize *args
     @gate.accept :object
     @object.send :initialize, *args
@@ -82,15 +88,19 @@ class Dramatis::Runtime::Actor
 
   def common_send dest, args, opts
 
-    warn "common send #{self} #{dest} #{args[0]}"
+    # warn "common send #{self} #{dest} #{args[0]}"
     # warn "common send #{self} #{dest} #{args.join(' ')} #{opts.to_a.join(' ' )}"
+
+    if @call_threading and opts[:call_thread] == nil
+      # opts = opts.dup
+      # opts[:call_thread] = something
+    end
 
     task = Dramatis::Runtime::Task.new( self, dest, args, opts  )
 
-
-    warn "#{self} #{Thread.current} common send r? #{runnable?} g? #{@gate.accepts?( *( [ task.type, task.method ] + task.arguments )  ) } q #{@queue.length}"
+    # warn "#{self} #{Thread.current} common send r? #{runnable?} g? #{@gate.accepts?( *( [ task.type, task.method ] + task.arguments )  ) } q #{@queue.length}"
     begin
-      raise "helly"
+      # raise "helly"
     rescue Exception => e
       pp e.backtrace
     end
@@ -100,9 +110,9 @@ class Dramatis::Runtime::Actor
         runnable!
         Dramatis::Runtime::Scheduler.the.schedule task
       else
-        warn "+>schd #{self} #{@queue.join(' ')}"
+        # warn "+>schd #{self} #{@queue.join(' ')}"
         @queue << task
-        warn "+<schd #{self} #{@queue.join(' ')}"
+        # warn "+<schd #{self} #{@queue.join(' ')}"
       end
     end
 
@@ -153,7 +163,7 @@ class Dramatis::Runtime::Actor
       continuation.result result
       # p "called c #{result}"
     rescue Exception => exception
-      pp "0 exception ", exception
+      # pp "0 exception ", exception
       # pp exception.backtrace
       begin
         continuation.exception exception
@@ -170,7 +180,7 @@ class Dramatis::Runtime::Actor
   # note called from task.rb, too
   def schedule continuation = nil
     @mutex.synchronize do
-      warn ">schd #{self} #{@queue.join(' ')}"
+      # warn ">schd #{self} #{@queue.join(' ')}"
       @thread = nil
       task = nil
       index = 0
@@ -188,7 +198,7 @@ class Dramatis::Runtime::Actor
       else
         blocked!
       end
-      warn "<schd #{self} #{@queue.join(' ')} #{@state} #{Thread.current}"
+      # warn "<schd #{self} #{@queue.join(' ')} #{@state} #{Thread.current}"
     end
   end
 
@@ -220,11 +230,14 @@ class Dramatis::Runtime::Actor
     def default *args
       @actor.gate.default( [ :object ] + args )
     end
-    def name
-      @actor.name
-    end
     def always args, value
       @actor.gate.always( ( [ :object ] + Array( args ) ), value )
+    end
+    def enable_call_threading
+      @actor.enable_call_threading
+    end
+    def name
+      @actor.name
     end
     private
     def initialize actor
