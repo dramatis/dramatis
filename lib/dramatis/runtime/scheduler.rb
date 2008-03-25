@@ -20,6 +20,13 @@ class Dramatis::Runtime::Scheduler
   def schedule task
     @mutex.synchronize do
       # warn "sched #{@queue.length} #{@state} #{task}"
+      begin
+        raise "bad bad bad" if task == nil
+      rescue Exception => e
+        p "very bad very #{e}"
+        pp e.backtrace
+        raise e
+      end
       @queue << task
       if @queue.length == 1
         if @state == :waiting
@@ -197,6 +204,14 @@ class Dramatis::Runtime::Scheduler
 
             task = @queue.shift
             
+            begin
+              raise "hell!!!!" if task == nil
+            rescue Exception => e
+              p "bad bad #{e}"
+              pp e.backtrace
+              raise e
+            end
+
             @running_threads += 1
 
             Thread.new task do |task|

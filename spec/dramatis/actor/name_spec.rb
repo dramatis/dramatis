@@ -97,8 +97,6 @@ describe Dramatis::Actor::Name do
 
     Dramatis::Actor::Name( name ).bind object
 
-    result.should == nil
-
     Dramatis::Runtime.the.quiesce
 
     result.should == :foobar

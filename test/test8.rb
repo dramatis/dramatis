@@ -120,7 +120,7 @@ aB_cast.increment
 
 Dramatis::Runtime.the.quiesce
 
-# raise "hell" if aB.count != 3
+aise "hell" if aB.count != 3
 
 
 
