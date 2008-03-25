@@ -9,7 +9,7 @@ class Dramatis::Runtime
       @exceptions = exceptions
     end
     def to_s
-      "Dramatis::Runtime:" + super + ": " + @exceptions.join( " "  )
+      super + ": " + @exceptions.join( " "  )
     end
   end
 
@@ -34,11 +34,27 @@ class Dramatis::Runtime
         warn "no maybe about it"
         raise Exception.new @exceptions
       end
+      @exceptions.clear
+    end
+  end
+
+  def exceptions
+    result = nil
+    @mutex.synchronize do
+      result = @exceptions.dup
+    end
+    result
+  end
+
+
+  def clear_exceptions
+    @mutex.synchronize do
+      @exceptions.clear
     end
   end
 
   def exception exception
-    warn "runtime exception: " + exception
+    warn "runtime recording exception: " + exception
     @mutex.synchronize do
       @exceptions << exception
     end

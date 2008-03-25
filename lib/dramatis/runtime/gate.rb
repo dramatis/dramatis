@@ -14,23 +14,72 @@ class Dramatis::Runtime::Gate
     gate
   end
 
-  def tbd
-    actor = Hash.new true
-    object = Hash.new default, hash
-    continuation = Hash.new true
-    gate = Hash.new true, :actor => actor, :object => object, :continuation => continuation
-    gate
-  end
-
   class Case
+    def always args, value, options = {}
+      _change @always, Array( args ), value, options
+    end
+    def only args, options = {}
+      _change @list, [ :object ], false, options
+      _change @list, Array( args ), true, options
+    end
+    def default args, options = {}
+      _change @list, args, nil, options
+    end
+    def default_by_tag tag
+      _change @list, nil, nil, { :tag => tag }
+    end
+    def _change list, args, value, options = {}
+      inplace = options[ :inplace ]
+      tag = options[ :tag ]
+      pp ">> #{args and args.join(' ')} #{value} #{inplace} #{tag}", list
+      prepend = true
+      tbd = []
+      list.each_with_index do |entry, list_index|
+        vector, result, entry_tag = entry
+        matches = true
+        if tag and entry_tag != tag
+          p "#{tag} tag and #{entry_tag} dont' match"
+          next
+        end
+        if args
+          args.each_with_index do |arg, arg_index|
+            p "compare #{vector[arg_index]} #{arg}"
+            if vector[arg_index] != arg
+              p "matches"
+              matches = false
+              break
+            end
+          end
+        end
+        if matches
+          p "matched"
+          if inplace and value != nil
+            p "inplace"
+            list[list_index][1] = value
+            # FIX: tag?
+            prepend = false
+          else
+            p "schedule remove #{list[list_index].join(' ')} at #{list_index}"
+            tbd << list_index
+            # list[list_index,1] = []
+          end
+          # break
+        end
+      end
+      tbd.reverse.each do |index|
+        p "remove #{index} #{list[index].join(' ')} at #{index}"
+        list[index,1] = []
+      end
+      if prepend and value != nil
+        list.unshift [ args, value, tag ]
+      end
+      pp "<< #{args and args.join(' ')} #{value} #{inplace} #{tag}", list
+    end
     def change args, value, inplace
       pp "> #{args.join(' ')} #{value} #{inplace}", @list
       prepend = true
       @list.each_with_index do |entry, list_index|
-        p "huh?"
         vector, result = entry
-        p "ho"
-        p "?? #{vector} ?? #{result}"
         matches = true
         args.each_with_index do |arg, arg_index|
           p "compare #{vector[arg_index]} #{arg}"
@@ -45,6 +94,7 @@ class Dramatis::Runtime::Gate
           if inplace
             p "inplace"
             @list[list_index][1] = value
+            # FIX: tag?
             prepend = false
           else
             @list[list_index,1] = []
@@ -66,19 +116,29 @@ class Dramatis::Runtime::Gate
     def update value, *args
     end
     def accepts? *args
+      p "accepts? #{args.join(" ")}"
       accepted = nil
-      @list.each do |entry|
+      ( @always + @list ).each do |entry|
         vector, result = entry
-        args.each_with_index do |arg, i|
-          warn "#{vector[i]} #{arg} => #{vector[i] === arg} so #{result}"
-          vector[i] === arg and accepted = result
+        matches = true
+        vector.each_with_index do |v, i|
+          warn "#{v} #{args[i]} => #{v === args[i]} so #{result}"
+          if not( v === args[i] )
+            matches = false
+            break
+          end
         end
-        warn "last" if accepted != nil
-        break if accepted != nil
+        if matches
+          accepted = result
+          break
+        end
       end
+      warn "last '#{accepted}'"
+      p "accepts? #{args.join(" ")} => '#{accepted}'"
       accepted == true
     end
     def initialize
+      @always = []
       @list = []
     end
     def list

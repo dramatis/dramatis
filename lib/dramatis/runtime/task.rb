@@ -106,7 +106,9 @@ class Dramatis::Runtime::Task
                 # but we hold the current lock.
                 # I think this means that while the state stuff is not necessary
                 # the semaphore is ... of course
+                tag = to_s
                 @actor.instance_eval do
+                  @actor.gate.only [ :continuation, tag ], :tag => tag
                   @actor.schedule self
                 end
                 Dramatis::Runtime::Scheduler.the.suspend_notification self
@@ -117,6 +119,10 @@ class Dramatis::Runtime::Task
               end
             ensure
               Dramatis::Runtime::Scheduler.the.wakeup_notification self
+              tag = to_s
+              @actor.instance_eval do
+                @actor.gate.default_by_tag tag
+              end
             end
             raise "hell" if @state != :done
           end

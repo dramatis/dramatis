@@ -94,9 +94,9 @@ class Dramatis::Runtime::Actor
         runnable!
         Dramatis::Runtime::Scheduler.the.schedule task
       else
-        # warn "+>schd #{self} #{@queue.join(' ')}"
+        warn "+>schd #{self} #{@queue.join(' ')}"
         @queue << task
-        # warn "+<schd #{self} #{@queue.join(' ')}"
+        warn "+<schd #{self} #{@queue.join(' ')}"
       end
     end
 
@@ -118,11 +118,12 @@ class Dramatis::Runtime::Actor
           self.send method, *args
           # p "sent actor #{method}"
         when :object
-          # p "send object #{method}"
-          @object.send method, *args
+          p "send object #{@object} #{method}"
+          v = @object.send method, *args
           # p "sent object #{method}"
+          v
         when :continuation
-          # p "send continuation #{method}"
+          p "send continuation #{method}"
           continuation_name = method
           # warn "c is #{continuation_name}"
           c = @continuations[continuation_name]
@@ -134,14 +135,14 @@ class Dramatis::Runtime::Actor
                      when :exception; :continuation_exception
                      else; raise "hell *"
                    end
-          # pp c.to_s, "send", method, args
+          pp c.to_s, "send", method, args
           c.send method, *args
           @continuations.delete continuation_name
           # pp "csd", continuation_name, @continuations.keys
         else
           raise "hell 1: " + @dest.to_s
         end
-      # p "call c #{result}"
+      p "call c '#{result}'"
       # p continuation.to_s
       continuation.result result
       # p "called c #{result}"
@@ -163,7 +164,7 @@ class Dramatis::Runtime::Actor
   # note called from task.rb, too
   def schedule continuation = nil
     @mutex.synchronize do
-      # warn ">schd #{self} #{@queue.join(' ')}"
+      warn ">schd #{self} '#{@queue.join(' ')}'"
       @thread = nil
       task = nil
       index = 0
@@ -181,7 +182,7 @@ class Dramatis::Runtime::Actor
       else
         blocked!
       end
-      # warn "<schd #{self} #{@queue.join(' ')} #{@state} #{Thread.current}"
+      warn "<schd #{self} #{@queue.join(' ')} #{@state} #{Thread.current}"
     end
   end
 
@@ -210,11 +211,14 @@ class Dramatis::Runtime::Actor
     def accept *args
       @actor.gate.accept( :object, *args )
     end
+    def default *args
+      @actor.gate.default( [ :object ] + args )
+    end
     def name
       @actor.name
     end
-    def always *args
-      @actor.gate.always( :object, *args )
+    def always args, value
+      @actor.gate.always( ( [ :object ] + Array( args ) ), value )
     end
     private
     def initialize actor

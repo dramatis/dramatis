@@ -37,7 +37,7 @@ class Dramatis::Runtime::Scheduler
   # must be called with @mutex locked
   # must be called after @running_threads decremented
   def maybe_deadlock
-    warn "maybe_deadlock #{Thread.current} #{Thread.main} threads #{@running_threads} queue #{@queue.length} #{Thread.list.join(" ")} qg #{@quiescing}"
+    # warn "maybe_deadlock #{Thread.current} #{Thread.main} threads #{@running_threads} queue #{@queue.length} #{Thread.list.join(" ")} qg #{@quiescing}"
     if @running_threads == 0 and @queue.length == 0 and @suspended_continuations.length > 0 and !@quiescing
       # deadlock
       begin
@@ -58,7 +58,7 @@ class Dramatis::Runtime::Scheduler
     @actors.each { |actor| actor.deadlock }
   end
 
-  def checkio; false; end
+  def checkio; true; end
 
   def suspend_notification continuation
     @mutex.synchronize do
@@ -92,7 +92,8 @@ class Dramatis::Runtime::Scheduler
   end
 
   def main_at_exit quiescing = false
-    warn "main has exited: waiting"
+    warn "quiescing" if quiescing
+    warn "main has exited: waiting" if !quiescing
     @mutex.synchronize do
       @quiescing = quiescing
       checkio and warn "#{Thread.current} main maybe checkin 1 #{@running_threads} #{@state} #{quiescing}"
@@ -273,6 +274,13 @@ class Dramatis::Runtime::Scheduler
 
   def deliver task
     thread = Thread.current
+    begin
+      raise "hel!!!" if !task
+    rescue Exception => e
+      p "very bad!! #{e}"
+      pp e.backtrace
+      raise e
+    end
     thread[:dramatis_actor] = task.actor.name
     xx = task.actor.name
     xx = xx.instance_eval { @actor }

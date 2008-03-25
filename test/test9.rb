@@ -92,35 +92,12 @@ Dramatis::Runtime.the.quiesce
 
 raise "hell" if aB.count != 2
 
-raise "hell" if Dramatis::Runtime.the.exceptions.length != 0
-
-begin
-  aB.shouldDeadlock
-  raise "this should raise a deadlock since aB should be waiting on the fromB rpc"
-rescue Dramatis::Deadlock
-  # note: this clears the pending methods and continuations, so the count should still be
-  # 2 and the startB isn't pending anymore
-  p "good! got it"
-  pp Dramatis::Runtime.the.exceptions
-  raise "hell #{Dramatis::Runtime.the.exceptions.length}" if Dramatis::Runtime.the.exceptions.length != 2
-  Dramatis::Runtime.the.clear_exceptions
-  raise "hell" if Dramatis::Runtime.the.exceptions.length != 0
-end
-
-raise "hell" if aB.count != 2
-
 p "b4 allow"
 anA.allow
 p "a4 allow"
 
-# should get through fine now
-
-aB_cast.startB
-aB_cast.increment
-
 Dramatis::Runtime.the.quiesce
 
-# raise "hell" if aB.count != 3
-
-
-
+p "c4"
+raise "hell" if aB.count != 3
+p "d4"
