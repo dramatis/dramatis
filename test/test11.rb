@@ -37,7 +37,7 @@ end
 
 # recursion allowd
 
-a = a.new.a
+a.new.a
 
 # co-recursion allowed
 
