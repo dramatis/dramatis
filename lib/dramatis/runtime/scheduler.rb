@@ -44,7 +44,7 @@ class Dramatis::Runtime::Scheduler
   # must be called with @mutex locked
   # must be called after @running_threads decremented
   def maybe_deadlock
-    # warn "maybe_deadlock #{Thread.current} #{Thread.main} threads #{@running_threads} queue #{@queue.length} #{Thread.list.join(" ")} qg #{@quiescing}"
+    warn "maybe_deadlock #{Thread.current} #{Thread.main} threads #{@running_threads} queue #{@queue.length} #{Thread.list.join(" ")} qg #{@quiescing}"
     if @running_threads == 0 and @queue.length == 0 and @suspended_continuations.length > 0 and !@quiescing
       # deadlock
       begin
@@ -218,10 +218,10 @@ class Dramatis::Runtime::Scheduler
 
             @running_threads += 1
 
-            Thread.new task do |task|
+            Thread.new task do |selected|
               checkio and warn "#{Thread.current} spining up #{@running_threads}"
               begin
-                deliver task
+                deliver selected
               rescue Exception => e
                 warn "unexptected deliver error #{e}"
                 raise e

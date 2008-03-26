@@ -133,8 +133,12 @@ class Dramatis::Runtime::Task
               begin
                 Dramatis::Runtime::Scheduler.the.suspend_notification self
                 @wait.wait @mutex
+                # this causes a deadlock if the waking thread, which may be
+                # retiring, does so before this thead has awakend and notified
+                # the scheduler
+                # sleep 1
               ensure
-                Dramatis::Runtime::Scheduler.the.wakeup_notification self
+                # Dramatis::Runtime::Scheduler.the.wakeup_notification self
               end
             ensure
               tag = to_s
@@ -180,6 +184,7 @@ class Dramatis::Runtime::Task
             @state = :signaled
           else
             @state = :done
+            Dramatis::Runtime::Scheduler.the.wakeup_notification self
             @wait.signal
           end
         end
@@ -194,6 +199,7 @@ class Dramatis::Runtime::Task
             @state = :signaled
           else
             @state = :done
+            Dramatis::Runtime::Scheduler.the.wakeup_notification self
             @wait.signal
           end
         end

@@ -35,7 +35,7 @@ class Dramatis::Runtime
         @exceptions.each do |exception|
           pp "#{exception}", exception.backtrace
         end
-        raise Exception.new @exceptions
+        raise Exception.new( @exceptions )
       end
       @exceptions.clear
     end

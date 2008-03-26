@@ -262,7 +262,7 @@ class Dramatis::Runtime::Actor::Main < Dramatis::Runtime::Actor
   class Object
     class Exception < ::Exception; end
     def method_missing
-      raise Exception.new "must use Actor#become to enable main actor"
+      raise Exception.new( "must use Actor#become to enable main actor" )
     end
   end
 
