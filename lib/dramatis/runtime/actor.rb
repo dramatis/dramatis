@@ -14,6 +14,7 @@ class Dramatis::Runtime::Actor
 
   attr_reader :object_interface
   attr_reader :gate
+  attr_reader :call_thread
 
   def initialize object = nil
     @call_threading = false
@@ -31,12 +32,16 @@ class Dramatis::Runtime::Actor
     Dramatis::Runtime::Scheduler.the << self
   end
   
+  def call_threading?
+    @call_threading
+  end
+
   def enable_call_threading
     @call_threading = true
   end
 
   def current_call_thread? that
-    warn "current_call_thread? #{@call_thread} #{(@call_thread and (@call_thread == that)).inspect} #{that}"
+    # warn "current_call_thread? #{@call_thread} #{(@call_thread and (@call_thread == that)).inspect} #{that}"
     @call_thread and @call_thread == that
   end
 
@@ -94,11 +99,6 @@ class Dramatis::Runtime::Actor
 
     # warn "common send #{self} #{dest} #{args[0]}"
     # warn "common send #{self} #{dest} #{args.join(' ')} #{opts.to_a.join(' ' )}"
-
-    if @call_threading and opts[:call_thread] == nil
-      opts = opts.dup
-      opts[:call_thread] = true
-    end
 
     task = Dramatis::Runtime::Task.new( self, dest, args, opts  )
 

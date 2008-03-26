@@ -136,7 +136,7 @@ class Dramatis::Runtime::Gate
         end
       end
       # warn "last '#{accepted}'"
-      p "accepts? #{args.join(" ")} => '#{accepted}'"
+      # p "accepts? #{args.join(" ")} => '#{accepted}'"
       accepted == true
     end
     def initialize

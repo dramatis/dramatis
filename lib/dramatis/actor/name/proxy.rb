@@ -32,7 +32,7 @@ class Dramatis::Actor::Name::Proxy
 
   private
 
-  def continuation c
+  def continuation c, options
     a, o = @name.instance_eval { [ @actor, @options ] }
     @name = Dramatis::Actor::Name.new a
     @name.instance_eval do
@@ -40,6 +40,8 @@ class Dramatis::Actor::Name::Proxy
       @options = o.dup
       @options[:continuation_send] = c.to_s
       @options[:continuation] = :none
+      # FIX merge options, rather than cherry-pck
+      options[:call_thread] and @options[:call_thread] = options[:call_thread]
     end
     @name
   end

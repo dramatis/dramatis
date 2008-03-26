@@ -28,14 +28,18 @@ class Dramatis::Runtime::Task
     @args = args
 
     @call_thread = nil
-    call_thread_opt = options[:call_thread]
-    if call_thread_opt
-      if call_thread_opt == true
+
+    actor = Dramatis::Actor.current.instance_eval { @actor }
+    if actor.call_threading?
+      # warn "oct #{options[:call_thread]} act #{actor.call_thread}"
+      raise "hell" if options[:call_thread] and actor.call_thread and options[:call_thread] != actor.call_thread
+      @call_thread = actor.call_thread
+      if @call_thread == nil
         @call_thread = self.to_s
-      else
-        @call_thread = call_thread_opt
       end
     end
+
+    # warn "task #{self} #{args[0]} call thread [ #{@call_thread} ] #{options.to_a.join(' ')}"
 
     case options[:continuation]
     when :none
@@ -106,7 +110,7 @@ class Dramatis::Runtime::Task
         current = Dramatis::Actor.current
         actor = current.instance_eval { @actor }
         # warn "contiunation to #{actor}"
-        @actor = Dramatis::Actor::Name( Dramatis::Actor.current ).send :continuation, self
+        @actor = Dramatis::Actor::Name( Dramatis::Actor.current ).send :continuation, self, :call_thread => call_thread
       end
 
       def queued
@@ -120,6 +124,7 @@ class Dramatis::Runtime::Task
               call_thread = @call_thread
               @actor.instance_eval do
                 @actor.instance_eval do
+                  # warn "#{self} ct [ #{call_thread} ]"
                   @call_thread = call_thread
                 end
                 @actor.gate.only [ :continuation, tag ], :tag => tag
@@ -147,7 +152,7 @@ class Dramatis::Runtime::Task
           return @value
         when :exception
           begin
-            raise "hell for #{@value}"
+            # raise "hell for #{@value}"
           rescue Exception => e
             pp "#{e}", e.backtrace
           end
@@ -199,10 +204,10 @@ class Dramatis::Runtime::Task
     class Proc
 
       def initialize call_thread, result, except
-        p "p.n #{call_thread} #{result} #{except}"
+        # p "p.n #{call_thread} #{result} #{except}"
         @result_block = result
         @exception_block = except
-        @actor = Dramatis::Actor::Name( Dramatis::Actor.current ).send :continuation, self
+        @actor = Dramatis::Actor::Name( Dramatis::Actor.current ).send :continuation, self, :call_thread => call_thread
       end
 
       def queued; end
@@ -220,7 +225,7 @@ class Dramatis::Runtime::Task
       end
 
       def continuation_exception exception
-        warn "delivering #{exception} => #{@exception_block}"
+        # warn "delivering #{exception} => #{@exception_block}"
         if @exception_block
           @exception_block.call exception
         else

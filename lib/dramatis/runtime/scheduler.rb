@@ -44,7 +44,7 @@ class Dramatis::Runtime::Scheduler
   # must be called with @mutex locked
   # must be called after @running_threads decremented
   def maybe_deadlock
-    warn "maybe_deadlock #{Thread.current} #{Thread.main} threads #{@running_threads} queue #{@queue.length} #{Thread.list.join(" ")} qg #{@quiescing}"
+    # warn "maybe_deadlock #{Thread.current} #{Thread.main} threads #{@running_threads} queue #{@queue.length} #{Thread.list.join(" ")} qg #{@quiescing}"
     if @running_threads == 0 and @queue.length == 0 and @suspended_continuations.length > 0 and !@quiescing
       # deadlock
       begin
@@ -58,14 +58,7 @@ class Dramatis::Runtime::Scheduler
     end
   end
 
-  def _deadlock
-    false and @suspended_continuations.each_value do |task|
-      task.exception Deadlock.new
-    end
-    @actors.each { |actor| actor.deadlock }
-  end
-
-  def checkio; true; end
+  def checkio; false; end
 
   def suspend_notification continuation
     @mutex.synchronize do
@@ -198,7 +191,12 @@ class Dramatis::Runtime::Scheduler
           @mutex.synchronize { maybe_deadlock }
         rescue Dramatis::Deadlock => deadlock
           actors = @mutex.synchronize { @actors.dup }
-          actors.each { |actor| actor.deadlock deadlock }
+          thread = Thread.current
+          actors.each do |actor|
+            thread[:dramatis_actor] = actor.name
+            actor.deadlock deadlock
+          end
+          thread[:dramatis_actor] = nil
         end
         @mutex.synchronize { maybe_deadlock }
     

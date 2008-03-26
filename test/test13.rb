@@ -25,7 +25,7 @@ a = Class.new do
       @block_called = true
     end
     except = lambda do |exception|
-      warn "#{exception}"
+      warn "#{exception} (a good thing)"
       raise "hell: #{exception.to_s}" if exception.to_s != "hell"
       warn "exception continuation"
       @exception_raised = true
