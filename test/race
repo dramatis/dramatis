@@ -1,0 +1,44 @@
+smparkes@barronpark ~/work/dramatis/gem/dramatis/test $ ruby -dw test2.rb 
+#<Thread:0x002ac3aad861a0> checkout main #<Thread:0x002ac3aad861a0> 1
+#<Thread:0x002ac3aad861a0> checkin 0 #<Thread:0x002ac3aad861a0> 1
+#<Thread:0x002aaaaab4a418> scheduler starting running
+maybe_deadlock #<Thread:0x002aaaaab4a418> #<Thread:0x002ac3aad861a0> threads 0 queue 1 #<Thread:0x002ac3aad861a0> #<Thread:0x002aaaaab4a418> qg false
+maybe_deadlock #<Thread:0x002aaaaab4a418> #<Thread:0x002ac3aad861a0> threads 0 queue 1 #<Thread:0x002ac3aad861a0> #<Thread:0x002aaaaab4a418> qg false
+#<Thread:0x002aaaaab49630> spining up 1
+#<Thread:0x002aaaaab49630> checkin 2 1 waiting
+maybe_deadlock #<Thread:0x002aaaaab4a418> #<Thread:0x002ac3aad861a0> threads 0 queue 1 #<Thread:0x002ac3aad861a0> #<Thread:0x002aaaaab4a418> qg false
+maybe_deadlock #<Thread:0x002aaaaab4a418> #<Thread:0x002ac3aad861a0> threads 0 queue 1 #<Thread:0x002ac3aad861a0> #<Thread:0x002aaaaab4a418> qg false
+#<Thread:0x002aaaaab48af0> spining up 1
+#<Thread:0x002aaaaab48af0> checkin 2 1 waiting
+#<Thread:0x002ac3aad861a0> checkout 1
+#<Thread:0x002ac3aad861a0> main maybe checkin 1 1 waiting false
+maybe_deadlock #<Thread:0x002aaaaab4a418> #<Thread:0x002ac3aad861a0> threads 0 queue 0 #<Thread:0x002ac3aad861a0> #<Thread:0x002aaaaab4a418> qg false
+maybe_deadlock #<Thread:0x002aaaaab4a418> #<Thread:0x002ac3aad861a0> threads 0 queue 0 #<Thread:0x002ac3aad861a0> #<Thread:0x002aaaaab4a418> qg false
+Exception `Dramatis::Runtime::Scheduler::Done' at /home/barronpark/smparkes/work/dramatis/gem/dramatis/lib/dramatis/runtime/scheduler.rb:205 - Dramatis::Runtime::Scheduler::Done
+scheduler giving up the ghost 0 #<Thread:0x002aaaaab4a418>
+maybe_deadlock #<Thread:0x002aaaaab4a418> #<Thread:0x002ac3aad861a0> threads 0 queue 0 #<Thread:0x002ac3aad861a0> #<Thread:0x002aaaaab4a418> qg false
+scheduler giving up after final deadlock check 0 #<Thread:0x002aaaaab4a418>
+#<Thread:0x002aaaaab4a418> scheduler ending
+smparkes@barronpark ~/work/dramatis/gem/dramatis/test $ ruby -dw test2.rb 
+#<Thread:0x002b1bbe8eb188> checkout main #<Thread:0x002b1bbe8eb188> 1
+#<Thread:0x002b1bbe8eb188> checkin 0 #<Thread:0x002b1bbe8eb188> 1#<Thread:0x002aaaaab4a418> scheduler starting running
+
+maybe_deadlock #<Thread:0x002aaaaab4a418> #<Thread:0x002b1bbe8eb188> threads 0 queue 1 #<Thread:0x002b1bbe8eb188> #<Thread:0x002aaaaab4a418> qg false
+maybe_deadlock #<Thread:0x002aaaaab4a418> #<Thread:0x002b1bbe8eb188> threads 0 queue 1 #<Thread:0x002b1bbe8eb188> #<Thread:0x002aaaaab4a418> qg false
+#<Thread:0x002aaaaab49630> spining up 1
+maybe_deadlock #<Thread:0x002aaaaab4a418> #<Thread:0x002b1bbe8eb188> threads 1 queue 1 #<Thread:0x002b1bbe8eb188> #<Thread:0x002aaaaab4a418> #<Thread:0x002aaaaab49630> qg false
+maybe_deadlock #<Thread:0x002aaaaab4a418> #<Thread:0x002b1bbe8eb188> threads 1 queue 1 #<Thread:0x002b1bbe8eb188> #<Thread:0x002aaaaab4a418> #<Thread:0x002aaaaab49630> qg false
+#<Thread:0x002aaaaab48be0> spining up 2
+#<Thread:0x002aaaaab49630> checkin 2 2 waiting
+#<Thread:0x002aaaaab48be0> checkin 2 1 waiting
+maybe_deadlock #<Thread:0x002aaaaab4a418> #<Thread:0x002b1bbe8eb188> threads 0 queue 0 #<Thread:0x002b1bbe8eb188> #<Thread:0x002aaaaab4a418> qg false
+Exception `Dramatis::Deadlock' at /home/barronpark/smparkes/work/dramatis/gem/dramatis/lib/dramatis/runtime/scheduler.rb:52 - Dramatis::Deadlock
+Exception `Dramatis::Deadlock' at /home/barronpark/smparkes/work/dramatis/gem/dramatis/lib/dramatis/runtime/scheduler.rb:55 - Dramatis::Deadlock
+#<Thread:0x002b1bbe8eb188> checkout 1
+#<Thread:0x002b1bbe8eb188> main maybe checkin 1 1 running false
+maybe_deadlock #<Thread:0x002aaaaab4a418> #<Thread:0x002b1bbe8eb188> threads 0 queue 0 #<Thread:0x002b1bbe8eb188> #<Thread:0x002aaaaab4a418> qg false
+Exception `Dramatis::Runtime::Scheduler::Done' at /home/barronpark/smparkes/work/dramatis/gem/dramatis/lib/dramatis/runtime/scheduler.rb:205 - Dramatis::Runtime::Scheduler::Done
+scheduler giving up the ghost 0 #<Thread:0x002aaaaab4a418>
+maybe_deadlock #<Thread:0x002aaaaab4a418> #<Thread:0x002b1bbe8eb188> threads 0 queue 0 #<Thread:0x002b1bbe8eb188> #<Thread:0x002aaaaab4a418> qg false
+scheduler giving up after final deadlock check 0 #<Thread:0x002aaaaab4a418>
+#<Thread:0x002aaaaab4a418> scheduler ending
