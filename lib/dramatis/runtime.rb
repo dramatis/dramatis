@@ -57,7 +57,7 @@ class Dramatis::Runtime
   end
 
   def exception exception
-    warn "runtime recording exception: " + exception
+    warn "runtime recording exception: " + exception.to_s
     @mutex.synchronize do
       @exceptions << exception
     end

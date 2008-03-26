@@ -19,8 +19,8 @@ a = Class.new do
   end
 
   def a other
-    block = lambda do
-      warn "block continuation"
+    block = lambda do |c|
+      warn "block continuation #{c}"
       @block_called = true
     end
     ( Dramatis::Actor::Name( other ).continue( &block ) ).b

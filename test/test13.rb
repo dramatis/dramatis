@@ -20,8 +20,8 @@ a = Class.new do
   end
 
   def a other
-    result = lambda do
-      warn "block continuation"
+    result = lambda do |r|
+      warn "block continuation #{r}"
       @block_called = true
     end
     except = lambda do |exception|
