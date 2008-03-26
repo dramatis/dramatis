@@ -7,12 +7,8 @@ require 'dramatis/actor/name'
 describe Dramatis::Actor::Name do
 
   after do
-    Dramatis::Runtime.reset
-  end
-
-  after do
     Dramatis::Runtime.the.quiesce
-    warn ( "after " + Thread.list.join( " " ) ) if Thread.list.length != 1
+    warn "after " + Thread.list.join( " " ) if Thread.list.length != 1
     Thread.list.length.should == 1
   end
 
@@ -68,12 +64,12 @@ describe Dramatis::Actor::Name do
 
     result = nil
     retval = ( Dramatis::Actor::Name( name ).continue  {|value| result = value } ).foo :bar
-    retval.should == nil
-    result.should == nil
+    retval.should equal nil
+    result.should equal nil
 
     Dramatis::Runtime.the.quiesce
     
-    result.should == :foobar
+    result.should equal :foobar
 
   end
 
@@ -88,18 +84,18 @@ describe Dramatis::Actor::Name do
 
     retval = ( Dramatis::Actor::Name( name ).continue { |value| result = value } ).foo :bar
 
-    retval.should == nil
-    result.should == nil
+    retval.should equal nil
+    result.should equal nil
 
     Dramatis::Runtime.the.quiesce
 
-    result.should == nil
+    result.should equal nil
 
     Dramatis::Actor::Name( name ).bind object
 
     Dramatis::Runtime.the.quiesce
 
-    result.should == :foobar
+    result.should equal :foobar
 
   end
 
@@ -108,8 +104,8 @@ describe Dramatis::Actor::Name do
     result = nil
     name = Dramatis::Actor::Name( name ).continue { |v| result = v }
     retval = Dramatis::Actor::Name( name ).bind Object.new
-    retval.should == nil
-    result.should == nil
+    retval.should equal nil
+    result.should equal nil
     Dramatis::Runtime.the.quiesce
     result.should_not == nil
   end

@@ -46,7 +46,7 @@ class Dramatis::Runtime::Scheduler
   def maybe_deadlock
     # warn "maybe_deadlock #{Thread.current} #{Thread.main} threads #{@running_threads} queue #{@queue.length} #{Thread.list.join(" ")} qg #{@quiescing}"
     if @running_threads == 0 and @queue.length == 0 and @suspended_continuations.length > 0 and !@quiescing
-      # deadlock
+      # p "deadlock!"
       begin
         begin
           raise Dramatis::Deadlock.new
@@ -194,10 +194,15 @@ class Dramatis::Runtime::Scheduler
           thread = Thread.current
           actors.each do |actor|
             thread[:dramatis_actor] = actor.name
+
+
+
+
             actor.deadlock deadlock
           end
           thread[:dramatis_actor] = nil
         end
+
         @mutex.synchronize { maybe_deadlock }
     
         @mutex.synchronize do

@@ -275,12 +275,16 @@ class Dramatis::Runtime::Actor::Main < Dramatis::Runtime::Actor
   end
 
   def finalize
-    schedule
-    Dramatis::Runtime::Scheduler.the.main_at_exit
+    if !@at_exit_run
+      @at_exit_run = true
+      schedule
+      Dramatis::Runtime::Scheduler.the.main_at_exit
+    end
   end
 
   def initialize
     super Object.new
+    @at_exit_run = false
     at_exit { finalize }
   end
 

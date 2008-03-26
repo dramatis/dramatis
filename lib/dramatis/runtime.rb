@@ -31,8 +31,8 @@ class Dramatis::Runtime
   def maybe_raise_exceptions
     @mutex.synchronize do
       if !@exceptions.empty?
-        warn "no maybe about it"
-        @exceptions.each do |exception|
+        # warn "no maybe about it"
+        false and @exceptions.each do |exception|
           pp "#{exception}", exception.backtrace
         end
         raise Exception.new( @exceptions )
@@ -57,10 +57,14 @@ class Dramatis::Runtime
   end
 
   def exception exception
-    warn "runtime recording exception: " + exception.to_s
+    # warn "runtime recording exception: " + exception.to_s
     @mutex.synchronize do
       @exceptions << exception
     end
+  end
+
+  def at_exit
+    Dramatis::Runtime::Actor::Main.the.finalize
   end
 
   private

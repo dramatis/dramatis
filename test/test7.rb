@@ -40,7 +40,7 @@ aB = b.new anA
 ( Dramatis::Actor::Name( aB ).continue nil ).startB
 
 warn "b4"
-Dramatis::Runtime.the.quiesce
+# Dramatis::Runtime.the.quiesce
 warn "a5"
 
 warn "expect a final deadlock"
