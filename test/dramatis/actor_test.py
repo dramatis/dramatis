@@ -6,6 +6,8 @@ import os.path
 
 sys.path[0:0] = [ os.path.join( os.path.dirname( inspect.getabsfile( inspect.currentframe() ) ), '..', '..', 'lib' ) ]
 
+print sys.path
+
 import unittest
 
 from dramatis import Actor
@@ -26,19 +28,11 @@ def main(): unittest.main()
 if __name__ == '__main__': main()
 
 f = '''
-require File.join( File.dirname(__FILE__), "..", '/spec_helper.rb' )
-
-require 'dramatis/runtime'
-require 'dramatis/actor/name'
-
-describe Dramatis::Actor do
 
   after do
     Dramatis::Runtime.the.quiesce
     Thread.list.length.should equal 1
   end
-
-  Actor = Dramatis::Actor
 
   it "should be creatable from an acts_as class and return the right type" do
 
