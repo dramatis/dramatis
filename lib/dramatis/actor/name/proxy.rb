@@ -14,8 +14,9 @@ class Dramatis::Actor::Name::Proxy
   # i'm assuming lexical scope over object scope
 
   def continue options = {}, &continuation
-    raise "hell" if ( options == nil and continuation ) or
-                     ( options and !continuation )
+    raise "contradictory options passed to continue" \
+        if ( options == nil and continuation ) or
+           ( options and !continuation )
     a, o = @name.instance_eval { [ @actor, @options ] }
     @name = Dramatis::Actor::Name.new a
     @name.instance_eval do
