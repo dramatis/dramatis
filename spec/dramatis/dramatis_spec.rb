@@ -12,4 +12,6 @@ describe Dramatis do
 
   it "should have a nice way to cast actor creation"
 
+  it "should allow threads to be locked to actors, e.g., for fox"
+
 end
