@@ -23,7 +23,7 @@ class Chat::Client
 
     @window << "connected to server #{@server}\n"
 
-    @window << "logging in ...\n"
+    @window << "logging in ... "
 
     begin
       @group = @server.login group, user, actor.name
@@ -44,7 +44,6 @@ class Chat::Client
 
   def close
     @group.logout actor.name
-    0 #?
   end
 
 end
