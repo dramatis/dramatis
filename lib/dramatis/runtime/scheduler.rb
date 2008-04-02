@@ -12,11 +12,16 @@ class Dramatis::Runtime::Scheduler
   def checkio; false; end
 
   def self.reset
+    @@the.reset
     @@the = nil
   end
 
   def self.the
     @@the ||= self.new
+  end
+
+  def reset
+    # pp @suspended_continuations
   end
 
   def schedule task
@@ -245,7 +250,7 @@ class Dramatis::Runtime::Scheduler
                   end
                 end
               end
-              # checkio and warn "#{Thread.current} retiring #{@running_threads}"
+              checkio and warn "#{Thread.current} retiring #{@running_threads}"
             end
           end
         end

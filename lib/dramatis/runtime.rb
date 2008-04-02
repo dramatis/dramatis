@@ -18,6 +18,12 @@ class Dramatis::Runtime
   end
 
   def self.reset
+    # this swallows exceptions: it's assumed to be used to clean up a failed test
+    # so there's no connection between tests
+    begin
+      Dramatis::Runtime.the.quiesce
+    rescue Exception => e
+    end
     Dramatis::Runtime::Scheduler.reset    
     Dramatis::Runtime::Actor::Main.reset    
     @@the = nil
@@ -72,6 +78,15 @@ class Dramatis::Runtime
     @mutex.synchronize do
       @exceptions << exception
       warn "runtime recording exception: #{exception} #{@exceptions.length}" if warnings?
+      # backtrace
+    end
+  end
+
+  def backtrace
+    begin
+      raise "backtrace"
+    rescue ::Exception => e
+      pp e.backtrace
     end
   end
 

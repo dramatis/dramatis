@@ -6,9 +6,13 @@ require 'dramatis/actor/name'
 describe Dramatis::Actor do
 
   after do
-    Dramatis::Runtime.the.exceptions.length.should equal 0
-    Dramatis::Runtime.the.quiesce
-    Thread.list.length.should equal 1
+    begin
+      Dramatis::Runtime.the.exceptions.length.should equal 0
+      Dramatis::Runtime.the.quiesce
+      Thread.list.length.should equal 1
+    ensure
+      Dramatis::Runtime.reset
+    end
   end
 
   Actor = Dramatis::Actor

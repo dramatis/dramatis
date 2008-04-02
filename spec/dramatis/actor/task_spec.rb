@@ -6,34 +6,51 @@ require 'dramatis/actor'
 describe Dramatis::Runtime::Task do
 
   after do
-    Dramatis::Runtime.the.quiesce
-    warn "after " + Thread.list.join( " " ) if Thread.list.length != 1
-    Thread.list.length.should == 1
+    begin
+      Dramatis::Runtime.the.quiesce
+      Dramatis::Runtime.the.exceptions.length.should equal 0
+      Thread.list.length.should equal 1
+    ensure
+      Dramatis::Runtime.reset
+    end
   end
 
   it "should return errors to calling actor even when non-rpc (non-main)" do
-
-    pending
-
-    def do_call callee
-      lambda { Dramatis::Actor::cast( callee ).call } \
-        .should raise_error "something"
-    end
-
     callerClass = Class.new do
       Dramatis::Actor::acts_as self
-      def call spec, callee
-        spec.do_call callee
+      def initalize
+        @exception = nil
+      end
+      def caller callee
+        Dramatis::Actor::cast( callee ).callee
+      end
+      def dramatis_exception e
+        @exception = e
+      end
+      def exception
+        raise @exception if @exception
       end
     end
 
     caller = callerClass.new
     callee = Dramatis::Actor.new Object.new
 
-    caller.call self, callee
+    caller.caller callee
+
+    lambda { caller.exception }.should raise_error NoMethodError
   end
 
   it "should do something reasonable when the caller is main" do
+    callee = Dramatis::Actor.new Object.new
+    lambda { callee.callee }.should raise_error NoMethodError
+    Dramatis::Actor::cast( callee ).callee
+    Dramatis::Runtime::the.warnings = false
+    lambda { Dramatis::Runtime.the.quiesce }.should raise_error Dramatis::Runtime::Exception
+    Dramatis::Runtime::the.warnings = true
+    Dramatis::Runtime.the.exceptions.length.should equal 1
+    Dramatis::Runtime.the.clear_exceptions
   end
+
+  it "should call dramatis_exception on main if that works(?)"
 
 end
