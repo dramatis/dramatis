@@ -1,6 +1,10 @@
 require File.join( File.dirname(__FILE__), "..", '/spec_helper.rb' )
 
+require 'dramatis'
+
 describe Dramatis do
+
+  it "should send exceptions to actors in the non-rpc case"
 
   it "should give nice continuation-based backtraces on exceptions"
 

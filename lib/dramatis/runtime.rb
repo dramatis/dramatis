@@ -25,16 +25,19 @@ class Dramatis::Runtime
 
   def quiesce
     Dramatis::Runtime::Scheduler.the.quiesce
-    maybe_raise_exceptions
+    maybe_raise_exceptions true
   end
 
-  def maybe_raise_exceptions
+  def maybe_raise_exceptions quiescing
     @mutex.synchronize do
       if !@exceptions.empty?
         # warn "no maybe about it"
-        warn "the following exceptions were raised and not caught"
-        true and @exceptions.each do |exception|
-          pp "#{exception}", exception.backtrace
+        if !quiescing and warnings?
+          warn "the following #{@exceptions.length} exception(s) were raised and not caught"
+          @exceptions.each do |exception|
+            warn "#{exception}"
+            pp exception.backtrace
+          end
         end
         raise Exception.new( @exceptions )
       end
@@ -53,15 +56,31 @@ class Dramatis::Runtime
 
   def clear_exceptions
     @mutex.synchronize do
+      # warn "runtime clearing exceptions"
       @exceptions.clear
     end
   end
 
   def exception exception
-    # warn "runtime recording exception: " + exception.to_s
+    if false
+      begin
+        raise "hell"
+      rescue ::Exception => e
+        pp e.backtrace
+      end
+    end
     @mutex.synchronize do
       @exceptions << exception
+      warn "runtime recording exception: #{exception} #{@exceptions.length}" if warnings?
     end
+  end
+
+  def warnings= value
+    @warnings = value
+  end
+
+  def warnings?
+    @warnings
   end
 
   def at_exit
@@ -71,6 +90,7 @@ class Dramatis::Runtime
   private
 
   def initialize
+    @warnings = true
     @mutex = Mutex.new
     @exceptions = []
   end

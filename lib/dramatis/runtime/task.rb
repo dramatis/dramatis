@@ -29,10 +29,13 @@ class Dramatis::Runtime::Task
 
     @call_thread = nil
 
-    actor = Dramatis::Actor.current.instance_eval { @actor }
+    name = Dramatis::Actor.current
+    actor = name.instance_eval { @actor }
     if actor.call_threading?
       # warn "oct #{options[:call_thread]} act #{actor.call_thread}"
-      raise "hell" if options[:call_thread] and actor.call_thread and options[:call_thread] != actor.call_thread
+      raise "hell" if options[:call_thread] and
+                       actor.call_thread and
+                       options[:call_thread] != actor.call_thread
       @call_thread = actor.call_thread
       if @call_thread == nil
         @call_thread = self.to_s
@@ -43,14 +46,14 @@ class Dramatis::Runtime::Task
 
     case options[:continuation]
     when :none
-      @continuation = Continuation::None.new @call_thread
+      @continuation = Continuation::None.new name, @call_thread
     when :rpc
-      @continuation = Continuation::RPC.new @call_thread
+      @continuation = Continuation::RPC.new name, @call_thread
     when Proc
-      @continuation = Continuation::Proc.new @call_thread, options[:continuation],
-                                                             options[:exception]
+      @continuation = Continuation::Proc.new name,  @call_thread, options[:continuation],
+                                                                    options[:exception]
     else
-      raise "hell 2 " + options.inspect
+      raise Dramatis::Internal.new "invalid contiunation type"
     end
   end
 
@@ -78,10 +81,13 @@ class Dramatis::Runtime::Task
       end
 
       def exception exception
-        Dramatis::Runtime.the.exception exception
+        # warn "except nil #{exception}"
+        # true and pp exception.backtrace
+        Dramatis::Actor::cast( @name ).dramatis_exception exception
       end
 
-      def initialize call_thread
+      def initialize name, call_thread
+        @name = name
       end
     end
 
@@ -91,7 +97,7 @@ class Dramatis::Runtime::Task
         @actor.instance_eval { @actor }
       end
 
-      def initialize call_thread
+      def initialize name, call_thread
         # all the synchronizaton here probably gets tossed
         # proof:
         # to create the continuation, you have to have the actor lock
@@ -107,8 +113,6 @@ class Dramatis::Runtime::Task
         @mutex = Mutex.new
         @wait = ConditionVariable.new
         @call_thread = call_thread
-        current = Dramatis::Actor.current
-        actor = current.instance_eval { @actor }
         # warn "contiunation to #{actor}"
         @actor = Dramatis::Actor::Name( Dramatis::Actor.current ).send :continuation, self, :call_thread => call_thread
       end
@@ -191,6 +195,7 @@ class Dramatis::Runtime::Task
       end
 
       def continuation_exception exception
+        # warn "except rpc"
         @mutex.synchronize do
           raise "hell" if @state != :start and @state != :waiting
           @type = :exception
@@ -209,21 +214,22 @@ class Dramatis::Runtime::Task
 
     class Proc
 
-      def initialize call_thread, result, except
+      def initialize name, call_thread, result, except
         # p "p.n #{call_thread} #{result} #{except}"
         @result_block = result
         @exception_block = except
-        @actor = Dramatis::Actor::Name( Dramatis::Actor.current ).send :continuation, self, :call_thread => call_thread
+        @name = name
+        @continuation = Dramatis::Actor::Name( Dramatis::Actor.current ).send :continuation, self, :call_thread => call_thread
       end
 
       def queued; end
 
       def result result
-        @actor.result result
+        @continuation.result result
       end
 
       def exception exception
-        @actor.exception exception
+        @continuation.exception exception
       end
 
       def continuation_result result
@@ -232,10 +238,11 @@ class Dramatis::Runtime::Task
 
       def continuation_exception exception
         # warn "delivering #{exception} => #{@exception_block}"
+        # pp exception.backtrace
         if @exception_block
           @exception_block.call exception
         else
-          Dramatis::Runtime.the.exception exception
+          Dramatis::Actor::cast( @name ).dramatis_exception exception
         end
       end
 

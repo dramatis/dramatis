@@ -6,6 +6,7 @@ require 'dramatis/actor/name'
 describe Dramatis::Actor do
 
   after do
+    Dramatis::Runtime.the.exceptions.length.should equal 0
     Dramatis::Runtime.the.quiesce
     Thread.list.length.should equal 1
   end
@@ -78,7 +79,11 @@ describe Dramatis::Actor do
 
     ( Dramatis::Actor::Name( aB ).continue nil ).startB
 
+    Dramatis::Runtime::the.warnings = false
+
     lambda { Dramatis::Runtime.the.at_exit }.should raise_error Dramatis::Runtime::Exception
+
+    Dramatis::Runtime::the.warnings = true
 
     Dramatis::Runtime.reset
 
@@ -170,8 +175,7 @@ describe Dramatis::Actor do
         # more obvious
 
         class << self
-          def fromB
-          end
+          def fromB; end
         end
         
       end
@@ -200,8 +204,7 @@ describe Dramatis::Actor do
         @count += 1
       end
 
-      def shouldDeadlock
-      end
+      def shouldDeadlock; end
 
     end
 
@@ -231,7 +234,13 @@ describe Dramatis::Actor do
 
     Dramatis::Runtime.the.exceptions.length.should equal 0
 
+    Dramatis::Runtime::the.warnings = false
+
     lambda { aB.shouldDeadlock }.should raise_error Dramatis::Deadlock
+
+    lambda { Dramatis::Runtime.the.quiesce }.should raise_error Dramatis::Runtime::Exception
+
+    Dramatis::Runtime::the.warnings = true
 
     Dramatis::Runtime.the.exceptions.length.should equal 2
 
@@ -313,6 +322,10 @@ describe Dramatis::Actor do
       def a other
         result = lambda { |r| @block_called = true }
         except = lambda do |exception|
+
+          # FIX: lambda is overridden, I think, so get it back to
+          # the spec class and normal processing should work
+
           # rspec seems to have problems with normal "should" stuff
           # in this block ... this causes a failure, which is good
           # (though it does cascacde, which isn't great, but not worth

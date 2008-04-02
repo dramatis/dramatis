@@ -50,6 +50,15 @@ describe Dramatis::Actor::Name do
     Dramatis::Actor::Name( name ).continue(nil).foo( :bar )
   end
 
+  it "should have a nice short method for casts" do
+    object = mock(Object.new)
+    object.should_receive(:foo).with(:bar)
+    name = Dramatis::Actor.new object
+    Dramatis::Actor::cast( name ).foo( :bar )
+  end
+
+  it "should suport cast from the object interface"
+
   it "shouldn't be possible to bind twice" do
     name = Dramatis::Actor.new
     Dramatis::Actor::Name( name ).bind Object.new
@@ -108,6 +117,12 @@ describe Dramatis::Actor::Name do
     result.should equal nil
     Dramatis::Runtime.the.quiesce
     result.should_not == nil
+  end
+
+  it "should provide a url, if asked" do
+    actor = Dramatis::Actor.new Object.new
+    url = Dramatis::Actor::Name( actor ).url
+    url.should match %r[http://]
   end
 
   it "unbound names should queue messages and deliver them in order"

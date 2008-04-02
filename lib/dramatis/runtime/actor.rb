@@ -24,6 +24,7 @@ class Dramatis::Runtime::Actor
     if !object
       @gate.refuse :object
     end
+    @gate.always( ( [ :object, :dramatis_exception ] ), true )
     blocked!
     @queue = []
     @mutex = Mutex.new
@@ -137,7 +138,7 @@ class Dramatis::Runtime::Actor
           self.send method, *args
           # p "sent actor #{method}"
         when :object
-          # p "send object #{@object} #{method}"
+          # p "send object #{@object} #{method} #{args.length}"
           v = @object.send method, *args
           # p "sent object #{method}"
           v
@@ -260,10 +261,25 @@ end
 class Dramatis::Runtime::Actor::Main < Dramatis::Runtime::Actor
 
   class Object
+
     class Exception < ::Exception; end
-    def method_missing
+
+    def method_missing *args
       raise Exception.new( "must use Actor#become to enable main actor" )
     end
+
+    def dramatis_exception e
+      if Dramatis::Runtime.the.warnings?
+        warn "exception on main thread: #{e}"
+        begin
+          raise "backtrace"
+        rescue ::Exception => e
+          pp e.backtrace
+        end
+      end
+      Dramatis::Runtime.the.exception e
+    end
+
   end
 
   def self.the

@@ -9,6 +9,8 @@ require 'pp'
 
 class Dramatis::Runtime::Scheduler
 
+  def checkio; false; end
+
   def self.reset
     @@the = nil
   end
@@ -44,7 +46,7 @@ class Dramatis::Runtime::Scheduler
   # must be called with @mutex locked
   # must be called after @running_threads decremented
   def maybe_deadlock
-    # warn "maybe_deadlock #{Thread.current} #{Thread.main} threads #{@running_threads} queue #{@queue.length} #{Thread.list.join(" ")} qg #{@quiescing}"
+    # warn "maybe_deadlock #{Thread.current} #{Thread.main} threads #{@running_threads} queue #{@queue.length} #{Thread.list.join(" ")} qg #{@quiescing} scl #{@suspended_continuations.length}"
     if @running_threads == 0 and @queue.length == 0 and @suspended_continuations.length > 0 and !@quiescing
       # p "deadlock!"
       begin
@@ -58,11 +60,8 @@ class Dramatis::Runtime::Scheduler
     end
   end
 
-  def checkio; false; end
-
   def suspend_notification continuation
     @mutex.synchronize do
-      # deadlock if @state == :idle
       if @state == :idle
         @state = :running
         @running_threads = 1
@@ -71,6 +70,11 @@ class Dramatis::Runtime::Scheduler
       end
       checkio and warn "#{Thread.current} checkin 0 #{Thread.main} #{@running_threads}"
       @running_threads -= 1
+      begin
+        raise "cane" if @running_threads < 0
+      rescue ::Exception => e
+        pp e.backtrace
+      end
       if @state == :waiting
         @wait.signal
       end
@@ -88,7 +92,6 @@ class Dramatis::Runtime::Scheduler
 
   def quiesce
     main_at_exit true
-    @main_state = :running
   end
 
   def main_at_exit quiescing = false
@@ -96,8 +99,7 @@ class Dramatis::Runtime::Scheduler
     # warn "main has exited: waiting" if !quiescing
     @mutex.synchronize do
       @quiescing = quiescing
-      checkio and warn "#{Thread.current} main maybe checkin 1 #{@running_threads} #{@state} #{quiescing}"
-
+      checkio and warn "#{Thread.current} main maybe checkin 1 #{@running_threads} #{@state} #{@main_state} #{quiescing}"
       if @state != :idle
         @running_threads -= 1
         if @state == :waiting
@@ -106,6 +108,7 @@ class Dramatis::Runtime::Scheduler
       end
 
       raise "hell #{@main_state.to_s}" if @main_state != :running and @main_state != :may_finish
+      checkio and warn "#{Thread.current} main signaled #{@running_threads} #{@state} #{@main_state} #{quiescing}"
 
       if @main_state == :running
         if @state != :idle
@@ -129,12 +132,13 @@ class Dramatis::Runtime::Scheduler
           @main_state = :may_finish
         end
       end
+      @main_state = :running if @quiescing
       @quiescing = false
     end
-    raise "hell #{@main_state.to_s}" if @main_state != :may_finish
+    raise "hell #{@main_state.to_s}" if @main_state != :may_finish and @main_state != :running
     # warn "?threads? #{Thread.list.join(' ')}"
     # warn "main has exited: done"
-    Dramatis::Runtime::the.maybe_raise_exceptions
+    Dramatis::Runtime::the.maybe_raise_exceptions quiescing
   end
 
   def << actor

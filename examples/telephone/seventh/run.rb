@@ -21,7 +21,7 @@ phrases.each do |phrase|
   begin
     sally.whisper phrase
   rescue Dramatis::Deadlock
-    warn "woah: got a deadlock"
+    warn "woah: got a deadlock: that shouln't happen"
   end
 end
 

@@ -5,7 +5,8 @@ class Dramatis::Actor::Name; end
 class Dramatis::Actor::Name::Proxy
 
   def initialize name
-    raise "hell: " + name.inspect if !name or !name.kind_of? Dramatis::Actor::Name
+    raise "hell: " + name.inspect \
+      if !name or !name.kind_of? Dramatis::Actor::Name
     @name = name
   end
 
@@ -29,6 +30,10 @@ class Dramatis::Actor::Name::Proxy
 
   def bind behavior
     actor_send :bind, behavior
+  end
+
+  def url
+    "http://something"
   end
 
   private

@@ -13,6 +13,10 @@ module Dramatis::Actor
     Proxy.new( *args, &block )
   end
 
+  def self.cast name
+    self.Name( name ).continue nil
+  end
+
   def self.acts_as cls, opts = {}
 
     if opts[:new] != :object
@@ -22,9 +26,13 @@ module Dramatis::Actor
           object = allocate
           ( class << object; self; end ).send :define_method, :actor,
                                 ( lambda { new_actor.object_interface } )
+          ( class << object; self; end ).send :define_method,
+                                               :dramatis_exception,
+                                ( lambda { |e| Dramatis::Runtime.the.exception e } )
           new_actor.bind object
           new_actor.instance_eval { @gate.refuse :object }
-          new_actor.actor_send [ :object_initialize, *args ], :continuation => :rpc
+          new_actor.actor_send [ :object_initialize, *args ], 
+                                 :continuation => :rpc
           new_actor.name
         end
       end
