@@ -21,9 +21,6 @@ module Dramatis::Actor
 
     if opts[:new] != :object
       cls.class_eval do
-        def dramatis_exception e
-          Dramatis::Runtime.the.exception e
-        end
         def self.new *args
           new_actor = Runtime::Actor.new
           object = allocate

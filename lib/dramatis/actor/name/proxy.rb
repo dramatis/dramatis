@@ -32,6 +32,10 @@ class Dramatis::Actor::Name::Proxy
     actor_send :bind, behavior
   end
 
+  def exception exception
+    actor_send :exception, exception
+  end
+
   def url
     "http://something"
   end

@@ -51,6 +51,27 @@ describe Dramatis::Runtime::Task do
     Dramatis::Runtime.the.clear_exceptions
   end
 
+  it "should default to global when no dramatis_exception defined" do
+    callerClass = Class.new do
+      Dramatis::Actor::acts_as self
+      def caller callee
+        Dramatis::Actor::cast( callee ).callee
+      end
+    end
+
+    caller = callerClass.new
+    callee = Dramatis::Actor.new Object.new
+
+    Dramatis::Runtime::the.warnings = false
+    caller.caller callee
+    lambda { Dramatis::Runtime.the.quiesce }.should raise_error Dramatis::Runtime::Exception
+    Dramatis::Runtime::the.warnings = true
+
+    lambda { raise Dramatis::Runtime.the.exceptions[0] }.should raise_error NoMethodError
+    Dramatis::Runtime.the.clear_exceptions
+      
+  end
+
   it "should call dramatis_exception on main if that works(?)"
 
 end

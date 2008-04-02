@@ -83,7 +83,7 @@ class Dramatis::Runtime::Task
       def exception exception
         # warn "except nil #{exception}"
         # true and pp exception.backtrace
-        Dramatis::Actor::cast( @name ).dramatis_exception exception
+        Dramatis::Actor::Name( Dramatis::Actor::cast( @name ) ).exception exception
       end
 
       def initialize name, call_thread

@@ -62,6 +62,15 @@ class Dramatis::Runtime::Actor
     self
   end
 
+  def exception exception
+    if @object.respond_to? :dramatis_exception
+      @object.dramatis_exception exception
+    else
+      Dramatis::Runtime::the.exception exception
+    end
+    self
+  end
+
   def deadlock e
     tasks = nil
     @mutex.synchronize do
