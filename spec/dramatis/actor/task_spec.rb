@@ -8,8 +8,8 @@ describe Dramatis::Runtime::Task do
   after do
     begin
       Dramatis::Runtime.the.quiesce
-      Dramatis::Runtime.the.exceptions.length.should equal 0
-      Thread.list.length.should equal 1
+      Dramatis::Runtime.the.exceptions.length.should equal( 0 )
+      Thread.list.length.should equal( 1 )
     ensure
       Dramatis::Runtime.reset
     end
@@ -37,17 +37,17 @@ describe Dramatis::Runtime::Task do
 
     caller.caller callee
 
-    lambda { caller.exception }.should raise_error NoMethodError
+    lambda { caller.exception }.should raise_error( NoMethodError )
   end
 
   it "should do something reasonable when the caller is main" do
     callee = Dramatis::Actor.new Object.new
-    lambda { callee.callee }.should raise_error NoMethodError
+    lambda { callee.callee }.should raise_error( NoMethodError )
     Dramatis::Actor::cast( callee ).callee
     Dramatis::Runtime::the.warnings = false
-    lambda { Dramatis::Runtime.the.quiesce }.should raise_error Dramatis::Runtime::Exception
+    lambda { Dramatis::Runtime.the.quiesce }.should raise_error( Dramatis::Runtime::Exception )
     Dramatis::Runtime::the.warnings = true
-    Dramatis::Runtime.the.exceptions.length.should equal 1
+    Dramatis::Runtime.the.exceptions.length.should equal( 1 )
     Dramatis::Runtime.the.clear_exceptions
   end
 
@@ -64,10 +64,10 @@ describe Dramatis::Runtime::Task do
 
     Dramatis::Runtime::the.warnings = false
     caller.caller callee
-    lambda { Dramatis::Runtime.the.quiesce }.should raise_error Dramatis::Runtime::Exception
+    lambda { Dramatis::Runtime.the.quiesce }.should raise_error( Dramatis::Runtime::Exception )
     Dramatis::Runtime::the.warnings = true
 
-    lambda { raise Dramatis::Runtime.the.exceptions[0] }.should raise_error NoMethodError
+    lambda { raise Dramatis::Runtime.the.exceptions[0] }.should raise_error( NoMethodError )
     Dramatis::Runtime.the.clear_exceptions
       
   end

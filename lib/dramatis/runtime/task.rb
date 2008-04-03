@@ -53,7 +53,7 @@ class Dramatis::Runtime::Task
       @continuation = Continuation::Proc.new name,  @call_thread, options[:continuation],
                                                                     options[:exception]
     else
-      raise Dramatis::Internal.new "invalid contiunation type"
+      raise Dramatis::Internal.new( "invalid contiunation type" )
     end
   end
 

@@ -7,9 +7,9 @@ describe Dramatis::Actor do
 
   after do
     begin
-      Dramatis::Runtime.the.exceptions.length.should equal 0
+      Dramatis::Runtime.the.exceptions.length.should equal( 0 )
       Dramatis::Runtime.the.quiesce
-      Thread.list.length.should equal 1
+      Thread.list.length.should equal( 1 )
     ensure
       Dramatis::Runtime.reset
     end
@@ -41,11 +41,11 @@ describe Dramatis::Actor do
 
   it "should create a new name when invoked with new" do
     name = Actor.new Object.new
-    name.should be_a_kind_of Actor::Name
+    name.should be_a_kind_of( Actor::Name )
   end
 
   it "should deadlock if an rpc is made to an unbound name" do
-    lambda { Dramatis::Actor.new.foo }.should raise_error Dramatis::Deadlock
+    lambda { Dramatis::Actor.new.foo }.should raise_error( Dramatis::Deadlock )
   end
 
   it "should return NoMethodError even when not a direct call" do
@@ -57,7 +57,7 @@ describe Dramatis::Actor do
     end
     a = cls.new
     b = cls.new
-    lambda { a.rpc b }.should raise_error NoMethodError
+    lambda { a.rpc b }.should raise_error( NoMethodError )
   end
 
   it "should obey refuse" do
@@ -85,7 +85,7 @@ describe Dramatis::Actor do
 
     Dramatis::Runtime::the.warnings = false
 
-    lambda { Dramatis::Runtime.the.at_exit }.should raise_error Dramatis::Runtime::Exception
+    lambda { Dramatis::Runtime.the.at_exit }.should raise_error( Dramatis::Runtime::Exception )
 
     Dramatis::Runtime::the.warnings = true
 
@@ -134,30 +134,30 @@ describe Dramatis::Actor do
 
     aB_cast = Dramatis::Actor::Name( aB ).continue nil
 
-    aB.count.should equal 0
+    aB.count.should equal( 0 )
 
     aB.increment
 
-    aB.count.should equal 1
+    aB.count.should equal( 1 )
 
     aB_cast.increment
 
     Dramatis::Runtime.the.quiesce
 
-    aB.count.should equal 2
+    aB.count.should equal( 2 )
     
     aB_cast.startB
     aB_cast.increment
 
     Dramatis::Runtime.the.quiesce
 
-    aB.count.should equal 2
+    aB.count.should equal( 2 )
 
     anA.allow
 
     Dramatis::Runtime.the.quiesce
 
-    aB.count.should equal 3
+    aB.count.should equal( 3 )
   end
 
   it "should block calls when in an rpc is inflight and there is no call threading" do
@@ -217,42 +217,42 @@ describe Dramatis::Actor do
 
     aB_cast = Dramatis::Actor::Name( aB ).continue nil
 
-    aB.count.should equal 0
+    aB.count.should equal( 0 )
 
     aB.increment
 
-    aB.count.should equal 1
+    aB.count.should equal( 1 )
 
     aB_cast.increment
 
     Dramatis::Runtime.the.quiesce
 
-    aB.count.should equal 2
+    aB.count.should equal( 2 )
 
     aB_cast.startB
     aB_cast.increment
 
     Dramatis::Runtime.the.quiesce
 
-    aB.count.should equal 2
+    aB.count.should equal( 2 )
 
-    Dramatis::Runtime.the.exceptions.length.should equal 0
+    Dramatis::Runtime.the.exceptions.length.should equal( 0 )
 
     Dramatis::Runtime::the.warnings = false
 
-    lambda { aB.shouldDeadlock }.should raise_error Dramatis::Deadlock
+    lambda { aB.shouldDeadlock }.should raise_error( Dramatis::Deadlock )
 
-    lambda { Dramatis::Runtime.the.quiesce }.should raise_error Dramatis::Runtime::Exception
+    lambda { Dramatis::Runtime.the.quiesce }.should raise_error( Dramatis::Runtime::Exception )
 
     Dramatis::Runtime::the.warnings = true
 
-    Dramatis::Runtime.the.exceptions.length.should equal 2
+    Dramatis::Runtime.the.exceptions.length.should equal( 2 )
 
     Dramatis::Runtime.the.clear_exceptions
 
-    Dramatis::Runtime.the.exceptions.length.should equal 0
+    Dramatis::Runtime.the.exceptions.length.should equal( 0 )
 
-    aB.count.should equal 2
+    aB.count.should equal( 2 )
     
     anA.allow
 
@@ -261,7 +261,7 @@ describe Dramatis::Actor do
 
     Dramatis::Runtime.the.quiesce
 
-    aB.count.should equal 3
+    aB.count.should equal( 3 )
 
   end
 
@@ -274,7 +274,7 @@ describe Dramatis::Actor do
       def b; end
     end
 
-    lambda { a.new.a }.should raise_error Dramatis::Deadlock
+    lambda { a.new.a }.should raise_error( Dramatis::Deadlock )
   end
 
   it "should block block continuations during an rpc w/o call threading " do

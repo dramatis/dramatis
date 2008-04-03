@@ -9,12 +9,12 @@ describe Dramatis::Actor::Name do
   after do
     Dramatis::Runtime.the.quiesce
     warn "after " + Thread.list.join( " " ) if Thread.list.length != 1
-    Thread.list.length.should == 1
+    Thread.list.length.should equal( 1 )
   end
 
   it "should return NoMethodError as appropriate" do
     actor = Dramatis::Actor.new Object.new
-    lambda { actor.foo }.should raise_error NoMethodError
+    lambda { actor.foo }.should raise_error( NoMethodError )
   end
 
   it "should recreate errors rather just forward them(?)"
@@ -27,12 +27,12 @@ describe Dramatis::Actor::Name do
 
   it "should allow messages to unbound" do
     lambda { Dramatis::Actor.new.foo }.
-      should raise_error Dramatis::Deadlock
+      should raise_error( Dramatis::Deadlock )
   end
 
   it "should be creatable bound" do
     name = Dramatis::Actor.new Object.new
-    name.should be_kind_of Dramatis::Actor::Name
+    name.should be_kind_of( Dramatis::Actor::Name )
   end
 
   it "should allow and execute messages to bound names" do
@@ -40,7 +40,7 @@ describe Dramatis::Actor::Name do
     object.should_receive(:foo).with(:bar).and_return(:foobar)
     name = Dramatis::Actor.new object
     result = name.foo :bar
-    result.should == :foobar
+    result.should equal( :foobar )
   end
 
   it "should deliver messages with nil continuations" do
@@ -62,7 +62,7 @@ describe Dramatis::Actor::Name do
   it "shouldn't be possible to bind twice" do
     name = Dramatis::Actor.new
     Dramatis::Actor::Name( name ).bind Object.new
-    lambda { Dramatis::Actor::Name( name ).bind Object.new }.should raise_error Dramatis::BindError
+    lambda { Dramatis::Actor::Name( name ).bind Object.new }.should raise_error( Dramatis::BindError )
   end
 
   it "should allow and execute block continuations" do
@@ -73,12 +73,12 @@ describe Dramatis::Actor::Name do
 
     result = nil
     retval = ( Dramatis::Actor::Name( name ).continue  {|value| result = value } ).foo :bar
-    retval.should equal nil
-    result.should equal nil
+    retval.should be_nil
+    result.should be_nil
 
     Dramatis::Runtime.the.quiesce
     
-    result.should equal :foobar
+    result.should equal( :foobar )
 
   end
 
@@ -93,18 +93,18 @@ describe Dramatis::Actor::Name do
 
     retval = ( Dramatis::Actor::Name( name ).continue { |value| result = value } ).foo :bar
 
-    retval.should equal nil
-    result.should equal nil
+    retval.should be_nil
+    result.should be_nil
 
     Dramatis::Runtime.the.quiesce
 
-    result.should equal nil
+    result.should be_nil
 
     Dramatis::Actor::Name( name ).bind object
 
     Dramatis::Runtime.the.quiesce
 
-    result.should equal :foobar
+    result.should equal( :foobar )
 
   end
 
@@ -113,16 +113,16 @@ describe Dramatis::Actor::Name do
     result = nil
     name = Dramatis::Actor::Name( name ).continue { |v| result = v }
     retval = Dramatis::Actor::Name( name ).bind Object.new
-    retval.should equal nil
-    result.should equal nil
+    retval.should equal( nil )
+    result.should equal( nil )
     Dramatis::Runtime.the.quiesce
-    result.should_not == nil
+    result.should_not be_nil
   end
 
   it "should provide a url, if asked" do
     actor = Dramatis::Actor.new Object.new
     url = Dramatis::Actor::Name( actor ).url
-    url.should match %r[http://]
+    url.should match( %r[http://] )
   end
 
   it "unbound names should queue messages and deliver them in order"
