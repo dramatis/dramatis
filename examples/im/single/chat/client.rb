@@ -44,6 +44,7 @@ class Chat::Client
 
   def close
     @group.logout actor.name
+    0
   end
 
 end
