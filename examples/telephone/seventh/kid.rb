@@ -22,8 +22,7 @@ class Kid
   def whisper what
     @heard = mangle what
     if @next
-      next_kid = Actor::Name( @next ).continue nil
-      next_kid.whisper @heard
+      Actor::cast( @next ).whisper @heard
     end
     actor.accept :ask
     actor.refuse :whisper
