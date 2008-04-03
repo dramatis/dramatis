@@ -255,10 +255,6 @@ class Dramatis::Runtime::Task
 
     class Future
 
-      def _actor
-        @actor.instance_eval { @actor }
-      end
-      
       def initialize name, call_thread
         @state = :start
         @mutex = Mutex.new
