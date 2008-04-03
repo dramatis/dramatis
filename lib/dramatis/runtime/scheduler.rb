@@ -96,6 +96,7 @@ class Dramatis::Runtime::Scheduler
   end
 
   def quiesce
+    Dramatis::Runtime::Actor::Main.the.quiesce
     main_at_exit true
   end
 
@@ -337,7 +338,9 @@ class Dramatis::Runtime::Scheduler
     actor = thread[:dramatis_actor]
     if !actor
       if thread == Thread.main
+        # p "here", actor
         actor = Dramatis::Runtime::Actor::Main.the.name
+        # p "there", actor
       end
     else
       # this is a debugging path; can go away

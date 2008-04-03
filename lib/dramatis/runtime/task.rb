@@ -219,7 +219,9 @@ class Dramatis::Runtime::Task
         @result_block = result
         @exception_block = except
         @name = name
-        @continuation = Dramatis::Actor::Name( Dramatis::Actor.current ).send :continuation, self, :call_thread => call_thread
+        @continuation = \
+          Dramatis::Actor::Name( Dramatis::Actor.current ) \
+             .send :continuation, self, :call_thread => call_thread
       end
 
       def queued; end

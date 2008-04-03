@@ -7,8 +7,8 @@ describe Dramatis::Actor do
 
   after do
     begin
-      Dramatis::Runtime.the.exceptions.length.should equal( 0 )
       Dramatis::Runtime.the.quiesce
+      Dramatis::Runtime.the.exceptions.length.should equal( 0 )
       Thread.list.length.should equal( 1 )
     ensure
       Dramatis::Runtime.reset

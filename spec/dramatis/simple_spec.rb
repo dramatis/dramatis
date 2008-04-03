@@ -6,13 +6,13 @@ require 'dramatis/runtime'
 describe Dramatis::Actor do
 
   after do
-    Dramatis::Runtime.reset
-  end
-
-  after do
-    Dramatis::Runtime.the.quiesce
-    warn "after " + Thread.list.join( " " ) if Thread.list.length != 1
-    Thread.list.length.should == 1
+    begin
+      Dramatis::Runtime.the.quiesce
+      Dramatis::Runtime.the.exceptions.length.should equal( 0 )
+      Thread.list.length.should equal( 1 )
+    ensure
+      Dramatis::Runtime.reset
+    end
   end
 
   it "should be creatable w/o requiring name" do

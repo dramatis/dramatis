@@ -194,7 +194,7 @@ class Dramatis::Runtime::Actor
   # note called from task.rb, too
   def schedule continuation = nil
     @mutex.synchronize do
-      # warn ">schd #{self} #{@queue.join(' ')}"
+      # warn ">schd #{self} #{@state} #{@queue.join(' ')}"
       task = nil
       index = 0
       while task == nil and index < @queue.length do
@@ -269,7 +269,7 @@ end
 
 class Dramatis::Runtime::Actor::Main < Dramatis::Runtime::Actor
 
-  class Object
+  class DefaultBehavior
 
     class Exception < ::Exception; end
 
@@ -299,6 +299,10 @@ class Dramatis::Runtime::Actor::Main < Dramatis::Runtime::Actor
     @@the = nil
   end
 
+  def quiesce
+    schedule
+  end
+
   def finalize
     if !@at_exit_run
       @at_exit_run = true
@@ -308,9 +312,11 @@ class Dramatis::Runtime::Actor::Main < Dramatis::Runtime::Actor
   end
 
   def initialize
-    super Object.new
+    super DefaultBehavior.new
     @at_exit_run = false
     at_exit { finalize }
+    # ???
+    runnable!
   end
 
 end

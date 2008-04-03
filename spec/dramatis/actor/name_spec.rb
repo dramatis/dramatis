@@ -7,9 +7,13 @@ require 'dramatis/actor/name'
 describe Dramatis::Actor::Name do
 
   after do
-    Dramatis::Runtime.the.quiesce
-    warn "after " + Thread.list.join( " " ) if Thread.list.length != 1
-    Thread.list.length.should equal( 1 )
+    begin
+      Dramatis::Runtime.the.exceptions.length.should equal( 0 )
+      Dramatis::Runtime.the.quiesce
+      Thread.list.length.should equal( 1 )
+    ensure
+      Dramatis::Runtime.reset
+    end
   end
 
   it "should return NoMethodError as appropriate" do
@@ -72,9 +76,10 @@ describe Dramatis::Actor::Name do
     actor.should_receive(:foo).with(:bar).and_return(:foobar)
 
     result = nil
-    retval = ( Dramatis::Actor::Name( name ).continue  {|value| result = value } ).foo :bar
+    retval = ( Dramatis::Actor::Name( name ).continue { |value| p "execd!"; result = value } ).foo :bar
     retval.should be_nil
     result.should be_nil
+    result.should be_nil # to perhaps highlight a threading problem
 
     Dramatis::Runtime.the.quiesce
     
