@@ -5,7 +5,7 @@ $:.push File.join( File.dirname(__FILE__), ".." )
 
 require 'kid'
 
-tom = Kid.new "Tom"
+tom = Kid.new "Tom", self
 becky = Kid.new "Becky", tom
 dick = Kid.new "Dick", becky
 jane = Kid.new "Jane", dick

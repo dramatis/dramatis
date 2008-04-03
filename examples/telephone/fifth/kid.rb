@@ -22,8 +22,7 @@ class Kid
     @heard = mangle what
     # puts "#{self} heard #{@heard}"
     if @next
-      next_kid = Actor::Name( @next ).continue nil
-      next_kid.whisper @heard
+      Actor::cast( @next ).whisper @heard
     end
   end
 
