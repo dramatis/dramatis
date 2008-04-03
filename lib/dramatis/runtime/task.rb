@@ -318,7 +318,7 @@ class Dramatis::Runtime::Task
       end
 
       def queued
-        return Dramatis::Runtime::Future.new self
+        return Dramatis::Runtime::Future.new( self )
       end
 
       def result result

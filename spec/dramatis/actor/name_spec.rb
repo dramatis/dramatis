@@ -76,7 +76,7 @@ describe Dramatis::Actor::Name do
     actor.should_receive(:foo).with(:bar).and_return(:foobar)
 
     result = nil
-    retval = ( Dramatis::Actor::Name( name ).continue { |value| p "execd!"; result = value } ).foo :bar
+    retval = ( Dramatis::Actor::Name( name ).continue { |value| result = value } ).foo :bar
     retval.should be_nil
     result.should be_nil
     result.should be_nil # to perhaps highlight a threading problem

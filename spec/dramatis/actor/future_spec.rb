@@ -64,7 +64,7 @@ describe Dramatis::Actor do
 
     x.should be_kind_of( Dramatis::Runtime::Future )
 
-    lambda { x.to_sym }.should raise_error NoMethodError
+    lambda { x.to_sym }.should raise_error( NoMethodError )
 
   end
 
@@ -79,8 +79,8 @@ describe Dramatis::Actor do
     x = future_name.foo :bar
     
     x.should be_kind_of( Dramatis::Runtime::Future )
-    ( x + 0 ).should equal( 12345 )
-    ( 0 + x ).should equal( 12345 )
+    ( x + 0 ).should == 12345
+    ( 0 + x ).should == 12345
 
   end
 
@@ -99,7 +99,7 @@ describe Dramatis::Actor do
 
     x.should be_kind_of( Fixnum )
 
-    x.should equal( 12345 )
+    x.should == 12345
 
   end
 
