@@ -28,6 +28,16 @@ class Dramatis::Actor::Name::Proxy
     @name
   end
 
+  def future
+    a, o = @name.instance_eval { [ @actor, @options ] }
+    @name = Dramatis::Actor::Name.new a
+    @name.instance_eval do
+      @options = o.dup
+      @options[:continuation] = :future
+    end
+    @name
+  end
+
   def bind behavior
     actor_send :bind, behavior
   end

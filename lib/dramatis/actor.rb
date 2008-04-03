@@ -17,6 +17,10 @@ module Dramatis::Actor
     self.Name( name ).continue nil
   end
 
+  def self.future name
+    self.Name( name ).future
+  end
+
   def self.acts_as cls, opts = {}
 
     if opts[:new] != :object

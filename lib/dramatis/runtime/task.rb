@@ -2,6 +2,7 @@ module Dramatis; end
 class Dramatis::Runtime; end
 
 require 'dramatis/runtime/scheduler'
+require 'dramatis/runtime/future'
 require 'thread'
 
 class Dramatis::Runtime::Task
@@ -49,6 +50,8 @@ class Dramatis::Runtime::Task
       @continuation = Continuation::None.new name, @call_thread
     when :rpc
       @continuation = Continuation::RPC.new name, @call_thread
+    when :future
+      @continuation = Continuation::Future.new name, @call_thread
     when Proc
       @continuation = Continuation::Proc.new name,  @call_thread, options[:continuation],
                                                                     options[:exception]
@@ -250,6 +253,120 @@ class Dramatis::Runtime::Task
 
     end
 
+    class Future
+
+      def _actor
+        @actor.instance_eval { @actor }
+      end
+      
+      def initialize name, call_thread
+        @state = :start
+        @mutex = Mutex.new
+        @wait = ConditionVariable.new
+        @call_thread = call_thread
+        # warn "contiunation to #{actor}"
+        @actor = Dramatis::Actor::Name( Dramatis::Actor.current ) \
+          .send :continuation, self, :call_thread => call_thread
+      end
+
+      def ready?
+        @mutex.synchronize { @state == :done  or @state == :signaled }
+      end
+
+      def value
+        @mutex.synchronize do
+          if @state == :start
+            @state = :waiting
+            begin
+              tag = to_s
+              call_thread = @call_thread
+              @actor.instance_eval do
+                @actor.instance_eval do
+                  @call_thread = call_thread
+                end
+                @actor.gate.only [ :continuation, tag ], :tag => tag
+                @actor.schedule self
+              end
+              begin
+                Dramatis::Runtime::Scheduler.the.suspend_notification self
+                @wait.wait @mutex
+                # this causes a deadlock if the waking thread, which may be
+                # retiring, does so before this thead has awakend and notified
+                # the scheduler
+                # sleep 1
+              ensure
+                # Dramatis::Runtime::Scheduler.the.wakeup_notification self
+              end
+            ensure
+              tag = to_s
+              @actor.instance_eval do
+                @actor.gate.default_by_tag tag
+              end
+            end
+            raise "hell" if @state != :done
+          end
+        end
+
+        raise "hell " + @type.inspect if ![ :return, :exception ].include? @type
+        case @type
+        when :return
+          return @value
+        when :exception
+          begin
+            # raise "hell for #{@value}"
+          rescue Exception => e
+            pp "#{e}", e.backtrace
+          end
+          raise @value
+        end
+      end
+
+      def queued
+        return Dramatis::Runtime::Future.new self
+      end
+
+      def result result
+        @actor.result result
+      end
+
+      def exception exception
+        # warn "4 exception " + exception.to_s
+        # warn "4 exception " + exception.backtrace.join("\n")
+        @actor.exception exception
+        # warn "4 delivered ".to_s
+      end
+
+      def continuation_result result
+        @mutex.synchronize do
+          raise "hell" if @state != :start and @state != :waiting
+          @type = :return
+          @value = result
+          if @state == :start
+            @state = :signaled
+          else
+            @state = :done
+            Dramatis::Runtime::Scheduler.the.wakeup_notification self
+            @wait.signal
+          end
+        end
+      end
+
+      def continuation_exception exception
+        # warn "except rpc"
+        @mutex.synchronize do
+          raise "hell" if @state != :start and @state != :waiting
+          @type = :exception
+          @value = exception
+          if @state == :start
+            @state = :signaled
+          else
+            @state = :done
+            Dramatis::Runtime::Scheduler.the.wakeup_notification self
+            @wait.signal
+          end
+        end
+      end
+    end
   end
 
 end
