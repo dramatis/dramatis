@@ -7,7 +7,7 @@ require 'chat'
 password = "xyzzy"
 group = "general"
 
-screen = Chat::Screen.new
+screen = Chat::Screen::Fox.new
 
 server = Chat::Server.new password
 

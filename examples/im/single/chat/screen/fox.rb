@@ -7,6 +7,10 @@ require 'fox16'
 
 module Chat::Screen::Fox
 
+  def self.new *args
+    Server.new( *args )
+  end
+
   class Server
 
     Dramatis::Actor::acts_as self
