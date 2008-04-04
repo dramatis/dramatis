@@ -2,7 +2,7 @@
 
 # cf. http://www.softwaresecretweapons.com/jspwiki/doug-lea-is-a-grandfather-of-all-scala-actors
 
-$:.push File.join( File.dirname(__FILE__), "..", "..", "lib" )
+$:.push File.join( File.dirname(__FILE__), "..", "lib" )
 
 require 'dramatis/actor'
 

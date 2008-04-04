@@ -3,6 +3,7 @@ class Dramatis::Runtime; end
 
 require 'dramatis/runtime/task'
 require 'dramatis/runtime/gate'
+require 'dramatis/runtime/timer'
 require 'thread'
 require 'pp' #FIX
 
@@ -253,10 +254,17 @@ class Dramatis::Runtime::Actor
     def name
       @actor.name
     end
+    def timeout value, *args
+      @actor.timeout value, *args
+    end
     private
     def initialize actor
       @actor = actor
     end
+  end
+
+  def timeout value, *args
+    @timer ||= Dramatis::Runtime::Timer.new
   end
 
 end
