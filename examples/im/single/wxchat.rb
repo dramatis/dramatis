@@ -3,7 +3,7 @@
 $:.push File.join( File.dirname(__FILE__), "..", "..", "..", "lib" )
 
 require 'chat'
-require 'chat/screen/wx'
+require 'chat/screen/wxs'
 
 password = "xyzzy"
 group = "general"
