@@ -18,11 +18,14 @@ I expect a "real" release mid-April. It will still be alpha, but the
 goal between now and then is to add a couple more features, and
 significantly beef up the docs, tutorials, and demos.
 
+repository: git@github.com:mischance/dramatis.git
+
 Mailing list: dramatis@googlegroups.com /
               http://groups.google.com/group/dramatis
+
 IRC: #dramatis @ freenode
 
-Website/Wiki / tracker to come between now and release.
+Website/Wiki/tracker to come between now and release.
 
 That said, I guess I can say:
 
