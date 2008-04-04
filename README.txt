@@ -1,32 +1,47 @@
 = dramatis
 
-* FIX (url)
+* dramatis.mischance.net
 
 == DESCRIPTION:
 
-FIX (describe your package)
+An actor library for dynamic languages.
 
 == FEATURES/PROBLEMS:
 
-* FIX (list of features or problems)
+THIS IS A VERY EARLY VERSION. It's effectively unreleased; I'm sticking
+it on github without announcement to share with a few people that do
+know about it.
+
+Of course, it's on github, so if you REALLY want to go for it, go for it.
+
+I expect a "real" release mid-April. It will still be alpha, but the
+goal between now and then is to add a couple more features, and
+significantly beef up the docs, tutorials, and demos.
+
+Mailing list: 
+
+dramatis@googlegroups.com / http://groups.google.com/group/dramatis
+
+Website/Wiki / tracker to come between now and release.
+
+That said, I guess I can say:
+
+It runs on Ruby 1.8.6, 1.9, and JRuby 1.1 on Linux
+A lot runs on OS X
+
+It's supposed to run on Python 2.5 some day ...
+
+steven
+smparkes@smparkes.net
 
 == SYNOPSIS:
-
-  FIX (code sample of usage)
-
 == REQUIREMENTS:
-
-* FIX (list of requirements)
-
 == INSTALL:
-
-* FIX (sudo gem install, anything else)
-
 == LICENSE:
 
 (The MIT License)
 
-Copyright (c) 2008 FIX
+Copyright (c) 2008 Steven Parkes
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
