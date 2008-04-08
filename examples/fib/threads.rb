@@ -2,7 +2,7 @@
 
 # cf. http://gee.cs.oswego.edu/dl/papers/fj.pdf
 
-# This variant doesnt' produce as many threads and thus stresses
+# This variant doesn't produce as many threads and thus stresses
 # the thread system less.
 
 class Fib
@@ -41,7 +41,7 @@ class Fib
 end
 
 n = begin ARGV.shift.to_i; rescue; end
-n and n > 0 or n = 32
+n and n > 0 or n = 36
 
 threads = begin ARGV.shift.to_i; rescue; end
 threads and threads > 1 or threads = 1
