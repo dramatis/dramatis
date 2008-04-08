@@ -13,6 +13,8 @@ class Dramatis::Runtime
     end
   end
 
+  @@the = nil
+
   def self.the
     @@the ||= self.new
   end

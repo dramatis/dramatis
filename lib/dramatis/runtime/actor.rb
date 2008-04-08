@@ -5,7 +5,8 @@ require 'dramatis/runtime/task'
 require 'dramatis/runtime/gate'
 require 'dramatis/runtime/timer'
 require 'thread'
-require 'pp' #FIX
+
+begin require 'pp'; rescue Exception; end
 
 class Dramatis::Runtime::Actor
 
@@ -298,6 +299,8 @@ class Dramatis::Runtime::Actor::Main < Dramatis::Runtime::Actor
     end
 
   end
+
+  @@the = nil
 
   def self.the
     @@the ||= self.new

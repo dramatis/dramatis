@@ -1,7 +1,7 @@
 module Dramatis; end
 class Dramatis::Runtime; end
 
-require 'pp' # FIX
+begin require 'pp'; rescue Exception; end
 
 class Dramatis::Runtime::Gate
 

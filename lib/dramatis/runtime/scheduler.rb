@@ -5,7 +5,7 @@ require 'dramatis/runtime/actor/main'
 require 'dramatis/runtime'
 require 'dramatis'
 require 'thread'
-require 'pp'
+begin require 'pp'; rescue Exception; end
 
 class Dramatis::Runtime::Scheduler
 
@@ -15,6 +15,8 @@ class Dramatis::Runtime::Scheduler
     @@the.reset
     @@the = nil
   end
+
+  @@the = nil
 
   def self.the
     @@the ||= self.new
