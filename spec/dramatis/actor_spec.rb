@@ -17,10 +17,10 @@ describe Dramatis::Actor do
 
   Actor = Dramatis::Actor
 
-  it "should be creatable from an acts_as class and return the right type" do
+  it "should be creatable from an include-ed class and return the right type" do
 
     f = Class.new do
-      Actor::acts_as self
+      include Dramatis
     end
 
     name = f.new
@@ -28,14 +28,17 @@ describe Dramatis::Actor do
 
   end
 
-  it "should not insert new if not asked to" do
+  it "should be possible to not get an actor name" do
 
     f = Class.new do
-      Actor::acts_as self, :new => :object
+      include Dramatis
+      class << self
+        remove_method :new
+      end
     end
 
     name = f.new
-    name.should_not be_a_kind_of( Actor::Name )
+    name.should be_a_kind_of( f )
 
   end
 
@@ -50,7 +53,7 @@ describe Dramatis::Actor do
 
   it "should return NoMethodError even when not a direct call" do
     cls = Class.new do
-      Dramatis::Actor.acts_as self
+      include Dramatis
       def rpc other
         other.foo
       end
@@ -62,14 +65,14 @@ describe Dramatis::Actor do
 
   it "should obey refuse" do
     a = Class.new do
-      Dramatis::Actor.acts_as self
+      include Dramatis
       def initialize
         actor.refuse :fromB
       end
     end
 
     b = Class.new do
-      Dramatis::Actor.acts_as self
+      include Dramatis
       def initialize anA
         @anA = anA
       end
@@ -96,7 +99,7 @@ describe Dramatis::Actor do
   it "should obey refuse and then recover with default" do
 
     a = Class.new do
-      Dramatis::Actor.acts_as self
+      include Dramatis
       def initialize
         actor.refuse :fromB
       end
@@ -109,7 +112,8 @@ describe Dramatis::Actor do
     end
 
     b = Class.new do
-      Dramatis::Actor.acts_as self
+      include Dramatis
+      include Dramatis
       def initialize anA
         @anA = anA
         @count = 0
@@ -164,7 +168,7 @@ describe Dramatis::Actor do
 
     a = Class.new do
 
-      Dramatis::Actor.acts_as self
+      include Dramatis
 
       def initialize
         actor.refuse :fromB
@@ -188,7 +192,7 @@ describe Dramatis::Actor do
 
     b = Class.new do
 
-      Dramatis::Actor.acts_as self
+      include Dramatis
 
       def initialize anA
         @anA = anA
@@ -267,7 +271,7 @@ describe Dramatis::Actor do
 
   it "should block on recursion in the non-call threaded case" do
     a = Class.new do
-      Dramatis::Actor.acts_as self
+      include Dramatis
       def a
         actor.name.b
       end
@@ -279,7 +283,7 @@ describe Dramatis::Actor do
 
   it "should block block continuations during an rpc w/o call threading " do
     a = Class.new do
-      Dramatis::Actor.acts_as self
+      include Dramatis
       attr_reader :block_called
       def initialize
         @block_called = false
@@ -315,7 +319,7 @@ describe Dramatis::Actor do
 
   it "should call exception blocks on exceptions" do
     a = Class.new do
-      Dramatis::Actor.acts_as self
+      include Dramatis
       attr_reader :block_called, :exception_raised
       def initialize
         actor.refuse :c
@@ -369,7 +373,7 @@ describe Dramatis::Actor do
 
   it "should allow recursion and corecursion when call threading enabled" do
     a = Class.new do
-      Dramatis::Actor.acts_as self
+      include Dramatis
       def initialize
         actor.enable_call_threading
       end

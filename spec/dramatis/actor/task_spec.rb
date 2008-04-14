@@ -17,7 +17,7 @@ describe Dramatis::Runtime::Task do
 
   it "should return errors to calling actor even when non-rpc (non-main)" do
     callerClass = Class.new do
-      Dramatis::Actor::acts_as self
+      include Dramatis
       def initalize
         @exception = nil
       end
@@ -53,7 +53,7 @@ describe Dramatis::Runtime::Task do
 
   it "should default to global when no dramatis_exception defined" do
     callerClass = Class.new do
-      Dramatis::Actor::acts_as self
+      include Dramatis
       def caller callee
         Dramatis::Actor::cast( callee ).callee
       end

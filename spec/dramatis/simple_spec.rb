@@ -18,7 +18,7 @@ describe Dramatis::Actor do
   it "should be creatable w/o requiring name" do
 
     f = Class.new do
-      Dramatis::Actor::acts_as self
+      include Dramatis
     end
 
     name = f.new

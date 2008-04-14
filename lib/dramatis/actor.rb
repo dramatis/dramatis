@@ -21,7 +21,7 @@ module Dramatis::Actor
     self.Name( name ).future
   end
 
-  def self.acts_as cls, opts = {}
+  def self._acts_as cls, opts = {}
 
     if opts[:new] != :object
       cls.class_eval do

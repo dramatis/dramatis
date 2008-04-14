@@ -95,7 +95,7 @@ describe Dramatis::Actor do
     
     x.should be_kind_of( Dramatis::Runtime::Future )
 
-    x = Dramatis::Future( x ).value
+    x = Dramatis.future( x ).value
 
     x.should be_kind_of( Fixnum )
 
@@ -105,7 +105,7 @@ describe Dramatis::Actor do
 
   it "should have a ready? interface" do
     aClass = Class.new do
-      Dramatis::Actor::acts_as self
+      include Dramatis
       def inititialize
         actor.always :ready?
         @state = nil
@@ -115,15 +115,15 @@ describe Dramatis::Actor do
         @future = Dramatis::Actor::future( callee ).callee
       end
       def ready?
-        Dramatis::Future( @future ).ready?
+        future( @future ).ready?
       end
       def value
-        Dramatis::Future( @future ).value
+        future( @future ).value
       end
     end
 
     bClass = Class.new do
-      Dramatis::Actor::acts_as self
+      include Dramatis
       attr_reader :state
       def initialize
         actor.refuse :callee
@@ -156,7 +156,7 @@ describe Dramatis::Actor do
   it "should evalute to the right value when used with a delay" do
 
     aClass = Class.new do
-      Dramatis::Actor::acts_as self
+      include Dramatis
       def inititialize
         actor.always :state
         @state = nil
@@ -168,7 +168,7 @@ describe Dramatis::Actor do
     end
 
     bClass = Class.new do
-      Dramatis::Actor::acts_as self
+      include Dramatis
       attr_reader :state
       def initialize
         actor.refuse :callee
