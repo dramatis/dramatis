@@ -10,11 +10,11 @@ $:.push File.join( File.dirname(__FILE__), "..", "..", "lib" )
 require 'dramatis/actor'
 
 class Fib
-  Dramatis::Actor::acts_as self
+  include Dramatis::Actor
   attr_accessor :value
   def initialize n, level = THREAD_LEVELS
     actor.refuse :value
-    Dramatis::Actor::cast( actor.name ).calc n, level
+    cast( actor.name ).calc n, level
   end
   def calc n, level
     @value = if level == 0

@@ -4,7 +4,7 @@ require 'mangler'
 
 class Kid
 
-  Dramatis::Actor.acts_as self
+  include Dramatis::Actor
   
   def initialize name, next_kid = nil
     @name = name

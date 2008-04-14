@@ -5,6 +5,8 @@ require 'dramatis/actor'
 
 describe Dramatis::Runtime::Task do
 
+  include Dramatis
+
   after do
     begin
       Dramatis::Runtime.the.quiesce
@@ -17,12 +19,12 @@ describe Dramatis::Runtime::Task do
 
   it "should return errors to calling actor even when non-rpc (non-main)" do
     callerClass = Class.new do
-      include Dramatis
+      include Dramatis::Actor
       def initalize
         @exception = nil
       end
       def caller callee
-        Dramatis::Actor::cast( callee ).callee
+        cast( callee ).callee
       end
       def dramatis_exception e
         @exception = e
@@ -43,7 +45,7 @@ describe Dramatis::Runtime::Task do
   it "should do something reasonable when the caller is main" do
     callee = Dramatis::Actor.new Object.new
     lambda { callee.callee }.should raise_error( NoMethodError )
-    Dramatis::Actor::cast( callee ).callee
+    cast( callee ).callee
     Dramatis::Runtime::the.warnings = false
     lambda { Dramatis::Runtime.the.quiesce }.should raise_error( Dramatis::Runtime::Exception )
     Dramatis::Runtime::the.warnings = true
@@ -53,9 +55,9 @@ describe Dramatis::Runtime::Task do
 
   it "should default to global when no dramatis_exception defined" do
     callerClass = Class.new do
-      include Dramatis
+      include Dramatis::Actor
       def caller callee
-        Dramatis::Actor::cast( callee ).callee
+        cast( callee ).callee
       end
     end
 

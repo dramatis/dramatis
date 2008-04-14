@@ -77,6 +77,9 @@ class Dramatis::Runtime::Task
   module Continuation
 
     class None
+
+      include Dramatis
+
       def queued
       end
 
@@ -86,7 +89,7 @@ class Dramatis::Runtime::Task
       def exception exception
         # warn "except nil #{exception}"
         # true and pp exception.backtrace
-        Dramatis::Actor::Name( Dramatis::Actor::cast( @name ) ).exception exception
+        dramatis( cast( @name ) ).exception exception
       end
 
       def initialize name, call_thread
@@ -95,6 +98,8 @@ class Dramatis::Runtime::Task
     end
 
     class RPC
+
+      include Dramatis
 
       def actor
         @actor.instance_eval { @actor }
@@ -117,7 +122,7 @@ class Dramatis::Runtime::Task
         @wait = ConditionVariable.new
         @call_thread = call_thread
         # warn "contiunation to #{actor}"
-        @actor = Dramatis::Actor::Name( Dramatis::Actor.current ).send :continuation, self, :call_thread => call_thread
+        @actor = dramatis( Dramatis::Actor.current ).send :continuation, self, :call_thread => call_thread
       end
 
       def queued
@@ -217,13 +222,15 @@ class Dramatis::Runtime::Task
 
     class Proc
 
+      include Dramatis
+
       def initialize name, call_thread, result, except
         # p "p.n #{call_thread} #{result} #{except}"
         @result_block = result
         @exception_block = except
         @name = name
         @continuation = \
-          Dramatis::Actor::Name( Dramatis::Actor.current ) \
+          dramatis( Dramatis::Actor.current ) \
              .send :continuation, self, :call_thread => call_thread
       end
 
@@ -247,7 +254,7 @@ class Dramatis::Runtime::Task
         if @exception_block
           @exception_block.call exception
         else
-          Dramatis::Actor::cast( @name ).dramatis_exception exception
+          cast( @name ).dramatis_exception exception
         end
       end
 
@@ -255,13 +262,15 @@ class Dramatis::Runtime::Task
 
     class Future
 
+      include Dramatis
+
       def initialize name, call_thread
         @state = :start
         @mutex = Mutex.new
         @wait = ConditionVariable.new
         @call_thread = call_thread
         # warn "contiunation to #{actor}"
-        @actor = Dramatis::Actor::Name( Dramatis::Actor.current ) \
+        @actor = dramatis( Dramatis::Actor.current ) \
           .send :continuation, self, :call_thread => call_thread
       end
 
@@ -318,7 +327,7 @@ class Dramatis::Runtime::Task
       end
 
       def queued
-        return Dramatis::Runtime::Future.new( self )
+        Dramatis::Runtime::Future.new( self )
       end
 
       def result result

@@ -2,7 +2,7 @@ describe "ruby" do
 
   it "should work" do
 
-    module M
+    module Simple2M
 
       class Wrapper
         def initialize wrapped
@@ -19,17 +19,17 @@ describe "ruby" do
 
     end
 
-    class C; include M; end
+    class Simple2C; include Simple2M; end
 
-    C.new.should be_kind_of( M::Wrapper )
+    Simple2C.new.should be_kind_of( Simple2M::Wrapper )
 
-    class C
+    class Simple2C
       class << self
         remove_method :new
       end
     end
 
-    C.new.should be_kind_of( C )
+    Simple2C.new.should be_kind_of( Simple2C )
 
   end
 

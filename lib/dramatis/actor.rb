@@ -9,36 +9,24 @@ module Dramatis::Actor
   Runtime = Dramatis::Runtime
   Proxy = Dramatis::Actor::Name::Proxy
 
-  def self.Name *args, &block
-    Proxy.new( *args, &block )
-  end
-
-  def self.cast name
-    self.Name( name ).continue nil
-  end
-
-  def self.future name
-    self.Name( name ).future
-  end
-
-  def self._acts_as cls, opts = {}
-
-    if opts[:new] != :object
-      cls.class_eval do
-        def self.new *args
-          new_actor = Runtime::Actor.new
-          object = allocate
-          ( class << object; self; end ).send :define_method, :actor,
-                                ( lambda { new_actor.object_interface } )
-          new_actor.bind object
-          new_actor.instance_eval { @gate.refuse :object }
-          new_actor.actor_send [ :object_initialize, *args ], 
-                                 :continuation => :rpc
-          new_actor.name
-        end
+  def self.included cls
+    cls.instance_eval do
+      include Dramatis
+    end
+    class << cls
+      def new *args
+        new_actor = Runtime::Actor.new
+        object = allocate
+        eigenclass = ( class << object; self; end )
+        eigenclass.send :define_method, :actor,
+                ( lambda { new_actor.object_interface } )
+        new_actor.bind object
+        new_actor.instance_eval { @gate.refuse :object }
+        new_actor.actor_send [ :object_initialize, *args ], 
+                               :continuation => :rpc
+        new_actor.name
       end
     end
-
   end
 
   def self.new behavior = nil
@@ -47,6 +35,25 @@ module Dramatis::Actor
 
   def self.current
     Dramatis::Runtime::Scheduler.current
+  end
+
+  if false
+    def self.included cls
+      pp caller(0)
+      warn "Dramatis::Actor included by #{cls}"
+    end
+
+    def self.derived cls
+      warn "Dramatis::Actor included by #{cls}"
+    end
+
+    def self.extended cls
+      warn "Dramatis::Actor included by #{cls}"
+    end
+
+    def self.inherited cls
+      warn "Dramatis::Actor included by #{cls}"
+    end
   end
 
 end

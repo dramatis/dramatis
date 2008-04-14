@@ -5,8 +5,7 @@ require 'mangler'
 
 class Kid
 
-  Dramatis::Actor.acts_as self
-  Actor = Dramatis::Actor
+  include Dramatis::Actor
   
   def initialize name, next_kid = nil
     @name = name
@@ -22,7 +21,7 @@ class Kid
   def whisper what
     @heard = mangle what
     if @next
-      Actor::cast( @next ).whisper @heard
+      cast( @next ).whisper @heard
     end
     actor.accept :ask
     actor.refuse :whisper

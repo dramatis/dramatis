@@ -3,7 +3,13 @@ require File.join( File.dirname(__FILE__), "..", '/spec_helper.rb' )
 require 'dramatis/runtime'
 require 'dramatis/actor/name'
 
-describe Dramatis::Actor do
+# NB: don't use the module name here: rspec wants to include described
+# modules ... and making the result into an actor, well, needless to say,
+# it's not a good idea
+
+describe "Dramatis::Actor" do
+
+  include Dramatis
 
   after do
     begin
@@ -20,7 +26,7 @@ describe Dramatis::Actor do
   it "should be creatable from an include-ed class and return the right type" do
 
     f = Class.new do
-      include Dramatis
+      include Dramatis::Actor
     end
 
     name = f.new
@@ -31,7 +37,7 @@ describe Dramatis::Actor do
   it "should be possible to not get an actor name" do
 
     f = Class.new do
-      include Dramatis
+      include Dramatis::Actor
       class << self
         remove_method :new
       end
@@ -53,7 +59,7 @@ describe Dramatis::Actor do
 
   it "should return NoMethodError even when not a direct call" do
     cls = Class.new do
-      include Dramatis
+      include Dramatis::Actor
       def rpc other
         other.foo
       end
@@ -65,14 +71,14 @@ describe Dramatis::Actor do
 
   it "should obey refuse" do
     a = Class.new do
-      include Dramatis
+      include Dramatis::Actor
       def initialize
         actor.refuse :fromB
       end
     end
 
     b = Class.new do
-      include Dramatis
+      include Dramatis::Actor
       def initialize anA
         @anA = anA
       end
@@ -84,7 +90,7 @@ describe Dramatis::Actor do
     anA = a.new
     aB = b.new anA
 
-    ( Dramatis::Actor::Name( aB ).continue nil ).startB
+    ( dramatis( aB ).continue nil ).startB
 
     Dramatis::Runtime::the.warnings = false
 
@@ -99,7 +105,7 @@ describe Dramatis::Actor do
   it "should obey refuse and then recover with default" do
 
     a = Class.new do
-      include Dramatis
+      include Dramatis::Actor
       def initialize
         actor.refuse :fromB
       end
@@ -112,8 +118,8 @@ describe Dramatis::Actor do
     end
 
     b = Class.new do
-      include Dramatis
-      include Dramatis
+      include Dramatis::Actor
+      include Dramatis::Actor
       def initialize anA
         @anA = anA
         @count = 0
@@ -136,7 +142,7 @@ describe Dramatis::Actor do
     anA = a.new
     aB = b.new anA
 
-    aB_cast = Dramatis::Actor::Name( aB ).continue nil
+    aB_cast = dramatis( aB ).continue nil
 
     aB.count.should equal( 0 )
 
@@ -168,7 +174,7 @@ describe Dramatis::Actor do
 
     a = Class.new do
 
-      include Dramatis
+      include Dramatis::Actor
 
       def initialize
         actor.refuse :fromB
@@ -192,7 +198,7 @@ describe Dramatis::Actor do
 
     b = Class.new do
 
-      include Dramatis
+      include Dramatis::Actor
 
       def initialize anA
         @anA = anA
@@ -219,7 +225,7 @@ describe Dramatis::Actor do
     anA = a.new
     aB = b.new anA
 
-    aB_cast = Dramatis::Actor::Name( aB ).continue nil
+    aB_cast = dramatis( aB ).continue nil
 
     aB.count.should equal( 0 )
 
@@ -271,7 +277,7 @@ describe Dramatis::Actor do
 
   it "should block on recursion in the non-call threaded case" do
     a = Class.new do
-      include Dramatis
+      include Dramatis::Actor
       def a
         actor.name.b
       end
@@ -283,7 +289,7 @@ describe Dramatis::Actor do
 
   it "should block block continuations during an rpc w/o call threading " do
     a = Class.new do
-      include Dramatis
+      include Dramatis::Actor
       attr_reader :block_called
       def initialize
         @block_called = false
@@ -292,7 +298,7 @@ describe Dramatis::Actor do
       end
       def a other
         block = lambda { |c| @block_called = true }
-        ( Dramatis::Actor::Name( other ).continue( &block ) ).b
+        ( dramatis( other ).continue( &block ) ).b
         other.c
       end
       def enable
@@ -304,7 +310,7 @@ describe Dramatis::Actor do
 
     a1 = a.new
     a2 = a.new
-    ( Dramatis::Actor::Name( a1 ).continue nil ).a a2
+    ( dramatis( a1 ).continue nil ).a a2
 
     Dramatis::Runtime.the.quiesce
 
@@ -319,7 +325,7 @@ describe Dramatis::Actor do
 
   it "should call exception blocks on exceptions" do
     a = Class.new do
-      include Dramatis
+      include Dramatis::Actor
       attr_reader :block_called, :exception_raised
       def initialize
         actor.refuse :c
@@ -341,8 +347,8 @@ describe Dramatis::Actor do
           raise exception if exception.to_s != "hell"
           @exception_raised = true
         end
-        ( Dramatis::Actor::Name( other ).continue :exception => except, &result ).bb
-        ( Dramatis::Actor::Name( other ).continue :exception => except, &result ).b
+        ( dramatis( other ).continue :exception => except, &result ).bb
+        ( dramatis( other ).continue :exception => except, &result ).b
         other.c
       end
       def enable
@@ -357,7 +363,7 @@ describe Dramatis::Actor do
 
     a1 = a.new
     a2 = a.new
-    ( Dramatis::Actor::Name( a1 ).continue nil ).a a2
+    ( dramatis( a1 ).continue nil ).a a2
 
     Dramatis::Runtime.the.quiesce
 
@@ -373,7 +379,7 @@ describe Dramatis::Actor do
 
   it "should allow recursion and corecursion when call threading enabled" do
     a = Class.new do
-      include Dramatis
+      include Dramatis::Actor
       def initialize
         actor.enable_call_threading
       end

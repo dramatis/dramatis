@@ -4,7 +4,7 @@ require 'dramatis/actor'
 
 class Chat::Server
 
-  Dramatis::Actor.acts_as self
+  include Dramatis::Actor
 
   def initialize password
     @password = password
@@ -29,7 +29,7 @@ class Chat::Server
   end
 
   class Connection
-    Dramatis::Actor.acts_as self
+    include Dramatis::Actor
     def initialize server
       @server = server
     end
@@ -40,12 +40,12 @@ class Chat::Server
   end
 
   class Group
-    Dramatis::Actor.acts_as self
+    include Dramatis::Actor
 
     def initialize name, user, client
       @name = name
       @clients = { client => user }
-      @cast = Dramatis::Actor::Name( actor.name ).continue nil
+      @cast = dramatis( actor.name ).continue nil
 
       @cast << { :user => user, :client => client, :string => "I'm starting the group" }
     end
@@ -63,7 +63,7 @@ class Chat::Server
 
     def << opts
       @clients.each_key do |client|
-        ( Dramatis::Actor::Name( client ).continue nil )  << opts
+        ( dramatis( client ).continue nil )  << opts
       end
     end
 

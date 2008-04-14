@@ -12,7 +12,7 @@ require 'pp'
 
 a = Class.new do
 
-  Dramatis::Actor.acts_as self
+  include Dramatis::Actor
 
   def initialize
     actor.enable_call_threading

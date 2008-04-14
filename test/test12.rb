@@ -9,7 +9,7 @@ require 'pp'
 
 a = Class.new do
 
-  Dramatis::Actor.acts_as self
+  include Dramatis::Actor
 
   attr_reader :block_called
 
@@ -23,7 +23,7 @@ a = Class.new do
       warn "block continuation #{c}"
       @block_called = true
     end
-    ( Dramatis::Actor::Name( other ).continue( &block ) ).b
+    ( dramatis( other ).continue( &block ) ).b
     other.c
   end
   
@@ -43,7 +43,7 @@ end
 
 a1 = a.new
 a2 = a.new
-( Dramatis::Actor::Name( a1 ).continue nil ).a a2
+( dramatis( a1 ).continue nil ).a a2
 
 Dramatis::Runtime.the.quiesce
 

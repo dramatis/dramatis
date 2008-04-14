@@ -12,12 +12,12 @@ module Chat::Screen::WX
   end
 
   class Server
-    Dramatis::Actor::acts_as self
+    include Dramatis::Actor
     attr_reader :wx
     def initialize
       actor.always :wx, true
       @wx = App.new
-      Dramatis::Actor::cast( @wx ).run
+      cast( @wx ).run
     end
 
     def new *args
@@ -26,7 +26,7 @@ module Chat::Screen::WX
     end
 
     class App < Wx::App
-      Dramatis::Actor::acts_as self
+      include Dramatis::Actor
       def run
         main_loop
       end

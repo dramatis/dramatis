@@ -4,7 +4,7 @@ require 'dramatis/actor'
 
 class Chat::Client
 
-  Dramatis::Actor.acts_as self
+  include Dramatis::Actor
 
   def initialize screen, server, password, group, user
 

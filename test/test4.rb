@@ -8,7 +8,7 @@ require 'dramatis/runtime'
 require 'pp'
 
 class Foo
-  Dramatis::Actor::acts_as self
+  include Dramatis::Actor
   def foo arg
     raise "hell" if arg != :bar
     :foobar
@@ -18,7 +18,7 @@ end
 actor = Foo.new
 
 result = nil
-retval = ( Dramatis::Actor::Name( actor ).continue {|value| result = value } ).foo :bar
+retval = ( dramatis( actor ).continue {|value| result = value } ).foo :bar
 
 raise "hell: [#{retval.inspect}]" if retval != nil
 

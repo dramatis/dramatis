@@ -7,7 +7,7 @@ $:.push File.join( File.dirname(__FILE__), "..", "lib" )
 require 'dramatis/actor'
 
 class Auction
-  Dramatis::Actor::acts_as self
+  include Dramatis::Actor
   def initialize seller, min_bid, closing
     @seller = seller
     @min_bid = min_bid
@@ -28,7 +28,7 @@ class Auction
   def offer bid, bidder
     if bid >= @max_bid + @bid_increment
       if @max_bid >= @min_bid
-        Dramatis::Actor::cast( @max_bidder ).beaten_offer bid
+        cast( @max_bidder ).beaten_offer bid
       end
       @max_bid = bid
       @max_bidder = bidder
@@ -51,7 +51,7 @@ seller = Dramatis::Actor.new Object.new
 auction = Auction.new seller, MIN_BID, CLOSING
 
 class Client
-  Dramatis::Actor::acts_as self
+  include Dramatis::Actor
   def initialize id, increment, top, auction
     @id = id
     @increment = increment
@@ -79,7 +79,7 @@ class Client
   def beaten_offer max_bid
     log("beaten offer: #{max_bid}")
     @max = max_bid
-    Dramatis::Actor::cast( actor.name ).bid
+    cast( actor.name ).bid
   end
   def log string
     puts "client #{@id}: #{string}"

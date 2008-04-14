@@ -4,7 +4,9 @@ require 'dramatis/runtime'
 require 'dramatis'
 require 'dramatis/actor/name'
 
-describe Dramatis::Actor::Name do
+describe Dramatis do
+
+  include Dramatis
 
   after do
     begin
@@ -51,22 +53,22 @@ describe Dramatis::Actor::Name do
     object = mock(Object.new)
     object.should_receive(:foo).with(:bar)
     name = Dramatis::Actor.new object
-    Dramatis::Actor::Name( name ).continue(nil).foo( :bar )
+    dramatis( name ).continue(nil).foo( :bar )
   end
 
   it "should have a nice short method for casts" do
     object = mock(Object.new)
     object.should_receive(:foo).with(:bar)
     name = Dramatis::Actor.new object
-    Dramatis::Actor::cast( name ).foo( :bar )
+    cast( name ).foo( :bar )
   end
 
   it "should suport cast from the object interface"
 
   it "shouldn't be possible to bind twice" do
     name = Dramatis::Actor.new
-    Dramatis::Actor::Name( name ).bind Object.new
-    lambda { Dramatis::Actor::Name( name ).bind Object.new }.should raise_error( Dramatis::BindError )
+    dramatis( name ).bind Object.new
+    lambda { dramatis( name ).bind Object.new }.should raise_error( Dramatis::BindError )
   end
 
   it "should allow and execute block continuations" do
@@ -76,7 +78,7 @@ describe Dramatis::Actor::Name do
     actor.should_receive(:foo).with(:bar).and_return(:foobar)
 
     result = nil
-    retval = ( Dramatis::Actor::Name( name ).continue { |value| result = value } ).foo :bar
+    retval = ( dramatis( name ).continue { |value| result = value } ).foo :bar
     retval.should be_nil
     result.should be_nil
     result.should be_nil # to perhaps highlight a threading problem
@@ -96,7 +98,7 @@ describe Dramatis::Actor::Name do
 
     result = nil
 
-    retval = ( Dramatis::Actor::Name( name ).continue { |value| result = value } ).foo :bar
+    retval = ( dramatis( name ).continue { |value| result = value } ).foo :bar
 
     retval.should be_nil
     result.should be_nil
@@ -105,7 +107,7 @@ describe Dramatis::Actor::Name do
 
     result.should be_nil
 
-    Dramatis::Actor::Name( name ).bind object
+    dramatis( name ).bind object
 
     Dramatis::Runtime.the.quiesce
 
@@ -116,8 +118,8 @@ describe Dramatis::Actor::Name do
   it "should be possible to bind with a non-rpc continuation" do
     name = Dramatis::Actor.new
     result = nil
-    name = Dramatis::Actor::Name( name ).continue { |v| result = v }
-    retval = Dramatis::Actor::Name( name ).bind Object.new
+    name = dramatis( name ).continue { |v| result = v }
+    retval = dramatis( name ).bind Object.new
     retval.should equal( nil )
     result.should equal( nil )
     Dramatis::Runtime.the.quiesce
@@ -126,7 +128,7 @@ describe Dramatis::Actor::Name do
 
   it "should provide a url, if asked" do
     actor = Dramatis::Actor.new Object.new
-    url = Dramatis::Actor::Name( actor ).url
+    url = dramatis( actor ).url
     url.should match( %r[http://] )
   end
 

@@ -2,6 +2,6 @@ require 'dramatis/actor'
 
 class Bank
 
-  Dramatis::Actor.acts_as self
+  include Dramatis::Actor
 
 end

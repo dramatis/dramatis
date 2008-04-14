@@ -9,7 +9,7 @@ module Chat::Screen::Fox
 
   class Server
 
-    Dramatis::Actor::acts_as self
+    include Dramatis::Actor
 
     attr_reader :fox
 
@@ -17,7 +17,7 @@ module Chat::Screen::Fox
       actor.always :fox, true
       @fox = Fox::FXApp.new
       @fox.create
-      ( Dramatis::Actor::Name( Runtime.new ).continue nil ).run @fox
+      ( dramatis( Runtime.new ).continue nil ).run @fox
     end
 
     def new *args
@@ -25,7 +25,7 @@ module Chat::Screen::Fox
     end
 
     class Runtime
-      Dramatis::Actor::acts_as self
+      include Dramatis::Actor
       def run fox
         fox.run
       end
@@ -35,7 +35,7 @@ module Chat::Screen::Fox
 
   class Window
 
-    Dramatis::Actor::acts_as self
+    include Dramatis::Actor
 
     def initialize server, client, options
       
@@ -71,7 +71,7 @@ module Chat::Screen::Fox
         if data.index( @options[:prompt] ) == 0
           data = data[ @options[:prompt].length..-1 ]
         end
-        Dramatis::Actor::Name( @client ).continue( nil ) >> data
+        dramatis( @client ).continue( nil ) >> data
       end
 
       @window.create

@@ -9,7 +9,7 @@ require 'pp'
 
 a = Class.new do
 
-  Dramatis::Actor.acts_as self
+  include Dramatis::Actor
 
   def a
     p "b4b"

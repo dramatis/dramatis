@@ -3,7 +3,13 @@ require File.join( File.dirname(__FILE__), "..", "..", '/spec_helper.rb' )
 require 'dramatis/actor'
 require 'dramatis'
 
-describe Dramatis::Actor do
+# NB: don't use the module name here: rspec wants to include described
+# modules ... and making the result into an actor, well, needless to say,
+# it's not a good idea
+
+describe "Dramatis::Actor" do
+
+  include Dramatis
 
   after do
     begin
@@ -20,7 +26,7 @@ describe Dramatis::Actor do
     object = Object.new
     actor = Dramatis::Actor.new object
 
-    future_name = Dramatis::Actor::future( actor )
+    future_name = future( actor )
 
   end
 
@@ -30,7 +36,7 @@ describe Dramatis::Actor do
     object.should_receive(:foo).with(:bar).and_return(:foobar)
     actor = Dramatis::Actor.new object
 
-    future_name = Dramatis::Actor::future( actor )
+    future_name = future( actor )
 
     x = future_name.foo :bar
 
@@ -44,7 +50,7 @@ describe Dramatis::Actor do
     object.should_receive(:foo).with(:bar).and_return(:foobar)
     actor = Dramatis::Actor.new object
 
-    future_name = Dramatis::Actor::future( actor )
+    future_name = future( actor )
 
     x = future_name.foo :bar
 
@@ -58,7 +64,7 @@ describe Dramatis::Actor do
     object = Object.new
     actor = Dramatis::Actor.new object
 
-    future_name = Dramatis::Actor::future( actor )
+    future_name = future( actor )
 
     x = future_name.bar :bar
 
@@ -74,7 +80,7 @@ describe Dramatis::Actor do
     object.should_receive(:foo).with(:bar).and_return(12345)
     actor = Dramatis::Actor.new object
 
-    future_name = Dramatis::Actor::future( actor )
+    future_name = future( actor )
 
     x = future_name.foo :bar
     
@@ -89,13 +95,13 @@ describe Dramatis::Actor do
     object.should_receive(:foo).with(:bar).and_return(12345)
     actor = Dramatis::Actor.new object
 
-    future_name = Dramatis::Actor::future( actor )
+    future_name = future( actor )
 
     x = future_name.foo :bar
     
     x.should be_kind_of( Dramatis::Runtime::Future )
 
-    x = Dramatis.future( x ).value
+    x = Future( x ).value
 
     x.should be_kind_of( Fixnum )
 
@@ -105,25 +111,25 @@ describe Dramatis::Actor do
 
   it "should have a ready? interface" do
     aClass = Class.new do
-      include Dramatis
+      include Dramatis::Actor
       def inititialize
         actor.always :ready?
         @state = nil
         @future = nil
       end
       def caller callee
-        @future = Dramatis::Actor::future( callee ).callee
+        @future = future( callee ).callee
       end
       def ready?
-        future( @future ).ready?
+        Future( @future ).ready?
       end
       def value
-        future( @future ).value
+        Future( @future ).value
       end
     end
 
     bClass = Class.new do
-      include Dramatis
+      include Dramatis::Actor
       attr_reader :state
       def initialize
         actor.refuse :callee
@@ -156,19 +162,19 @@ describe Dramatis::Actor do
   it "should evalute to the right value when used with a delay" do
 
     aClass = Class.new do
-      include Dramatis
+      include Dramatis::Actor
       def inititialize
         actor.always :state
         @state = nil
         @future = nil
       end
       def caller callee
-        @future = Dramatis::Actor::future( callee ).callee
+        @future = future( callee ).callee
       end
     end
 
     bClass = Class.new do
-      include Dramatis
+      include Dramatis::Actor
       attr_reader :state
       def initialize
         actor.refuse :callee

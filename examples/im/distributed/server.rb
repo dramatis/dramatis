@@ -7,5 +7,5 @@ require 'chat'
 
 server = Chat::Server.new ARGV
 
-puts Dramatis::Actor::Name( server ).url
+puts dramatis( server ).url
 

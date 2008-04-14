@@ -9,7 +9,7 @@ require 'pp'
 
 a = Class.new do
 
-  Dramatis::Actor.acts_as self
+  include Dramatis::Actor
 
   def initialize
     actor.refuse :fromB
@@ -19,7 +19,7 @@ end
 
 b = Class.new do
 
-  Dramatis::Actor.acts_as self
+  include Dramatis::Actor
 
   def initialize anA
     @anA = anA
@@ -37,7 +37,7 @@ end
 anA = a.new
 aB = b.new anA
 
-( Dramatis::Actor::Name( aB ).continue nil ).startB
+( dramatis( aB ).continue nil ).startB
 
 warn "b4"
 # Dramatis::Runtime.the.quiesce

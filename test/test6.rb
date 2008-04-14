@@ -8,7 +8,7 @@ require 'dramatis/runtime'
 require 'pp'
 
 cls = Class.new do
-  Dramatis::Actor.acts_as self
+  include Dramatis::Actor
 
   def rpc other
     warn "e"

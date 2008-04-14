@@ -7,7 +7,7 @@ $:.push File.join( File.dirname(__FILE__), "..", "..", "lib" )
 require 'dramatis/actor'
 
 class Fib
-  Dramatis::Actor::acts_as self
+  include Dramatis::Actor
   THRESHOLD = 13
   attr_accessor :value
   def initialize n

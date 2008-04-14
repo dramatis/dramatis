@@ -9,7 +9,7 @@ require 'pp'
 
 a = Class.new do
 
-  Dramatis::Actor.acts_as self
+  include Dramatis::Actor
   
   attr_reader :block_called, :exception_raised
 
@@ -30,8 +30,8 @@ a = Class.new do
       warn "exception continuation"
       @exception_raised = true
     end
-    ( Dramatis::Actor::Name( other ).continue :exception => except, &result ).bb
-    ( Dramatis::Actor::Name( other ).continue :exception => except, &result ).b
+    ( dramatis( other ).continue :exception => except, &result ).bb
+    ( dramatis( other ).continue :exception => except, &result ).b
     other.c
   end
   
@@ -55,7 +55,7 @@ end
 
 a1 = a.new
 a2 = a.new
-( Dramatis::Actor::Name( a1 ).continue nil ).a a2
+( dramatis( a1 ).continue nil ).a a2
 
 Dramatis::Runtime.the.quiesce
 

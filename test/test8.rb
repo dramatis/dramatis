@@ -11,7 +11,7 @@ require 'pp'
 
 a = Class.new do
 
-  Dramatis::Actor.acts_as self
+  include Dramatis::Actor
 
   def initialize
     actor.refuse :fromB
@@ -37,7 +37,7 @@ end
 
 b = Class.new do
 
-  Dramatis::Actor.acts_as self
+  include Dramatis::Actor
 
   def initialize anA
     @anA = anA
@@ -69,7 +69,7 @@ end
 anA = a.new
 aB = b.new anA
 
-aB_cast = Dramatis::Actor::Name( aB ).continue nil
+aB_cast = dramatis( aB ).continue nil
 
 c = aB.count
 

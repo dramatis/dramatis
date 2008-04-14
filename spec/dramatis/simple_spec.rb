@@ -3,7 +3,11 @@ require File.join( File.dirname(__FILE__), "..", '/spec_helper.rb' )
 require 'dramatis/actor'
 require 'dramatis/runtime'
 
-describe Dramatis::Actor do
+# NB: don't use the module name here: rspec wants to include described
+# modules ... and making the result into an actor, well, needless to say,
+# it's not a good idea
+
+describe "Dramatis::Actor" do
 
   after do
     begin
@@ -18,7 +22,7 @@ describe Dramatis::Actor do
   it "should be creatable w/o requiring name" do
 
     f = Class.new do
-      include Dramatis
+      include Dramatis::Actor
     end
 
     name = f.new
