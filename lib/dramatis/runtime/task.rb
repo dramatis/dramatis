@@ -176,10 +176,8 @@ class Dramatis::Runtime::Task
         when :return
           return @value
         when :exception
-          begin
-            # raise "hell for #{@value}"
-          rescue Exception => e
-            pp "#{e}", e.backtrace
+          if Dramatis::Deadlock === @value 
+            @value = Dramatis::Deadlock.new @value
           end
           raise @value
         end

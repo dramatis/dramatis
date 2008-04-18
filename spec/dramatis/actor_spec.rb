@@ -426,4 +426,34 @@ describe "Dramatis::Actor" do
     anA.test.should be_true
   end
 
+  it "should raise deadlocks relative to the caller, not the detector" do
+
+    a = Class.new do
+      include Dramatis::Actor
+      def deadlock
+        actor.name.deadlock
+      end
+    end
+
+    anA = a.new
+
+    line = nil
+    begin 
+      line = __LINE__
+      anA.deadlock
+      raise "fail: should not get here"
+    rescue Dramatis::Deadlock => deadlock
+      succeeded = 
+      deadlock.backtrace.each do |frame|
+        ex_file, ex_line = frame.split ':'
+        if ex_file == __FILE__
+          ex_line.to_i.should == line.to_i + 1
+          break ex_line.to_i == line.to_i + 1
+        end
+      end
+      succeeded.should be_true
+    end
+    
+  end
+
 end
