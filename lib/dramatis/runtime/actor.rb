@@ -15,6 +15,7 @@ class Dramatis::Runtime::Actor
   end
 
   attr_reader :object_interface
+  attr_reader :object
   attr_reader :gate
   attr_reader :call_thread
 
@@ -145,15 +146,19 @@ class Dramatis::Runtime::Actor
       result = 
         case dest
         when :actor
-          # p "send actor #{method}"
+          # FIX: do name folding; needs test
           self.send method, *args
           # p "sent actor #{method}"
         when :object
           # p "send object #{@object} #{method} #{args.length}"
           v = @object.send method, *args
+          if v.object_id == @object.object_id
+            v = name
+          end
           # p "sent object #{method}"
           v
         when :continuation
+          # FIX: name folding?
           # p "send continuation #{method}"
           continuation_name = method
           # warn "c is #{continuation_name}"

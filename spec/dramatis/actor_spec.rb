@@ -398,5 +398,32 @@ describe "Dramatis::Actor" do
     a.new.a # recursion
     a.new.c # co-recursion
   end
+  
+  it "should map self returns into an actor name" do
+    a = Class.new do
+      include Dramatis::Actor
+      def me
+        self
+      end
+    end
+    anA = a.new
+    anA.should be_kind_of( Dramatis::Actor::Name )
+    anA.me.should be_kind_of( Dramatis::Actor::Name )
+  end
+
+  it "should map self in actor method calls to name" do
+    a = Class.new do
+      include Dramatis::Actor
+      def test
+        actor.always :f, true
+        actor.name.f self
+      end
+      def f ref
+        ref.object_id != self.object_id
+      end
+    end
+    anA = a.new
+    anA.test.should be_true
+  end
 
 end

@@ -9,6 +9,7 @@ class PingPong
   include Dramatis::Actor
 
   def initialize name
+    actor.enable_call_threading
     @name = name
   end
 

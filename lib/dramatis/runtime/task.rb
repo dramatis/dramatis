@@ -26,12 +26,21 @@ class Dramatis::Runtime::Task
   def initialize actor, dest, args, options
     @actor = actor
     @dest = dest
-    @args = args
+    @args = args.dup
 
     @call_thread = nil
 
     name = Dramatis::Actor.current
     actor = name.instance_eval { @actor }
+
+    object_id = actor.object.object_id
+
+    @args.each_with_index do |arg,i|
+      if arg.object_id == object_id
+        @args[i] = name
+      end
+    end
+
     if actor.call_threading?
       # warn "oct #{options[:call_thread]} act #{actor.call_thread}"
       raise "hell" if options[:call_thread] and

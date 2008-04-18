@@ -183,7 +183,6 @@ class Dramatis::Runtime::Scheduler
 
     begin
       while true
-        task = nil
         @mutex.synchronize do
           # warn "qe #{@queue.empty?} tr '#{@running_threads}'"
           while @queue.empty? and @running_threads != 0
@@ -225,6 +224,8 @@ class Dramatis::Runtime::Scheduler
 
             task = @queue.shift
             
+            # p "task #{task}"
+
             begin
               raise "hell!!!!" if task == nil
             rescue Exception => e
@@ -235,10 +236,17 @@ class Dramatis::Runtime::Scheduler
 
             @running_threads += 1
 
-            Thread.new task do |selected|
+            # p "tasket #{task}"
+            
+            Thread.new do
+
+              # "tasky", task
+
+              # "tasketx #{task}"
+
               checkio and warn "#{Thread.current} spining up #{@running_threads}"
               begin
-                deliver selected
+                deliver task
               rescue Exception => e
                 warn "unexptected deliver error #{e}"
                 raise e
