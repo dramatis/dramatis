@@ -1,0 +1,217 @@
+h1. PingPong tutorial
+
+This example creates two actors that send messages back and forth, a bit like a ping pong ball. It's adapted from the Scala Example[http://lamp.epfl.ch/~phaller/doc/ActorsTutorial.html]. The code for the final version is in source:examples/pingpong. There are three version. The serial version (@serial.rb) and the actor version (@actor.rb@) we'll develop here. For reference, there's a version closer to the orignal Scala version in @scala.rb@.
+
+For our example, we'll have two objects, @ping@ and @pong@ that pass a token back and forth. We'll make the token be the number of volleys left to perform.
+
+We'll start with a simple native Ruby version. We'll need a class with a @pingpong@ method. The method will take a count, the number of volleys left to play, and a refernce to the partner that it is volleying with. With a little extra code so that we can see what is going on, it looks like this:
+
+<pre><code class="ruby">
+  def pingpong count, partner
+    if count == 0
+      puts "#{@name}: done"
+    else
+      if count % 500 == 0 || count % 500 == 1
+        puts "#{@name}: pingpong #{count}"
+      end
+      partner.pingpong count-1, self
+    end
+  end
+</code></pre>
+
+That's really all there is to it. All we need is the class wrapper and few lines to actlually create a couple of objects and start the ball rolling (or volleying, as the case may be):
+
+<pre><code class="ruby">
+class PingPong
+
+  def initialize name
+    @name = name
+  end
+
+  def pingpong count, partner
+    if count == 0
+      puts "#{@name}: done"
+    else
+      if count % 500 == 0 || count % 500 == 1
+        puts "#{@name}: pingpong #{count}"
+      end
+      partner.pingpong count-1, self
+    end
+  end
+
+end
+
+ping = PingPong.new "ping"
+pong = PingPong.new "pong"
+
+ping.pingpong ARGV[0].to_i, pong
+</code></pre>
+
+To see what happens, I can run a thousand volleys on my machine:
+<pre><code>
+$ ruby serial.rb 1000
+ping: pingpong 1000
+pong: pingpong 501
+ping: pingpong 500
+pong: pingpong 1
+ping: done
+$ 
+</code></pre>
+Great. If I get a little adventurous and try to go to ten thousand volleys, something bad happens, though:
+<pre><code>
+$ ruby serial.rb 10000
+ping: pingpong 10000
+pong: pingpong 9501
+ping: pingpong 9500
+pong: pingpong 9001
+ping: pingpong 9000
+pong: pingpong 8501
+ping: pingpong 8500
+pong: pingpong 8001
+ping: pingpong 8000
+pong: pingpong 7501
+ping: pingpong 7500
+pong: pingpong 7001
+ping: pingpong 7000
+pong: pingpong 6501
+ping: pingpong 6500
+pong: pingpong 6001
+ping: pingpong 6000
+Exception `SystemStackError' at serial.rb:13 - stack level too deep
+serial.rb:13:in `pingpong': stack level too deep (SystemStackError)
+        from serial.rb:16:in `pingpong'
+        from serial.rb:25
+$ 
+</code></pre>
+The trouble is that our little loop, that looks like it's just passing data back and forth, is actually doing this recursively. Although our @pingpong@ method doesn't return a useful value, we still have to call it recusviely. Serial languages have no native way of expressing this volleying kind of communication between objects. It's cerainly possible to write a message passing layer, but it's a fair amount of code.
+
+Lets look at making this into an actor program in dramatis. To make a normal class into an actor, first we need to mixin a dramatis class:
+<pre><code class="ruby">
+class PingPong
+  include Dramtis::Actor
+  ...
+</code></pre>
+for which we need a require statement to bring in the library:
+<pre><code class="ruby">
+require 'dramatis/actor'
+</code></pre>
+That's will get us started. Our objects are now actors that have their own internal thread, use message passing, etc. If actors are similar to normal objects, this might actually work.
+
+However, when we try to run it, but we get an error:
+<pre><code>
+$ ./actor.rb  100
+./actor.rb:22:in `pingpong': Dramatis::Deadlock (Dramatis::Deadlock)
+        from ./actor.rb:22:in `pingpong'
+        from ./actor.rb:31
+$ 
+</code></pre>
+What's the problem? Starting at the top of the stack, we see where we kick off the volley by sending a @pingpong@ to our actor named @ping@. It dutifully sends a @pingpong@ to its partner, the actor named @pong@. This works fine. Now @pong@ tries to volley to @ping@ and something unexpected happens. dramatis is telling us that a deadlock has occured while executing this code.
+
+Why would that be? We need to think again a little bit about how actors work.
+
+Actors are concurrent objects.  That is, they are bit like a chimera of a thread and an object: they have normal object properies but they also have some thread properties. It's the thread property that is tripping us up here.
+
+In our serial version, each time each actor calls @pingpong@ on its parnter, the single thread in the program pushes the arugments, @count-1@ and @self@, and the return address, onto the stack and then jumps to the target method. It all happens in one stack, on one thread.
+
+In actors, each actor has its own thread and its own stack. Actor method calls, then, are inter-thread communication. The actions at a high level are very similar, though: the caller is still gathering up the arguments and return address, but instaed of puhing them on to its own stack and then jumping to method, it just passes them off to the actor runtime to deal with. The runtime maintains a queue of these tasks and will arrange for the target actor to run this task when it reaches the front of the queue and the actor is not executing another task.
+
+Why isn't this working then? And also, what is our calling actor doing between giving the task to the runtime and getting an answer back?
+
+It turns out the answer to the second question answers the first.
+
+Actors don't wait on other actors. They only wait for _accetable_ tasks (we'll see in a moment that the defintion of _acceptable task_ is key here.) As long as they have an acceptable task to execute and they aren't already executing a task, they'll execute it.
+
+But it sure looks our @PingPong@ actors are waiting for the result from the other actor.
+Generally, actor methods run to completelion without interruption. But we see that's not exactly the case here. It's still completely true that actor methods 
+
+Actor methods also execute without interruption ... from external sources. However, as we see in this example, an actor can choose to 
+
+So if our task is waiting for the result of the @pingpong@ method, how does it get the result? It's actually sent back to caller from the callee. Remember when we said that the calling actor passed its argument _and the return address_ to the actor runtime? Well, the when the callee finally returns (in our cases it's not returning any paritculasrly useful value, but the runtime doesn't know whtat), the runtime sends a special message that the caling actor receives as the return value to the actor method call.
+
+We've been assuming up until this point that even if things happen internally differently, a normal looking call results in normal behavior. In many cases that's true.
+
+And everything works like it did before. We can run it and get the same results we did before:
+<pre><code>
+$ ruby pingpong.rb 1000
+ping: pingpong 1000
+pong: pingpong 501
+ping: pingpong 500
+pong: pingpong 1
+ping: done
+$ 
+</code></pre>
+Same results (though slower; more on that in a bit).
+
+The runtime changed, which tells us something different is going on, but beyond that, are there any behavior differences?
+
+Of course, it would be reasonable to aska couple of questions. First, what, if anything, chagned? We can prove somethign changed simply by running our failing case again:
+<pre><code>
+$ /usr/bin/ruby actor.rb 10000
+ping: pingpong 10000
+pong: pingpong 9501
+ping: pingpong 9500
+pong: pingpong 9001
+ping: pingpong 9000
+pong: pingpong 8501
+ping: pingpong 8500
+pong: pingpong 8001
+ping: pingpong 8000
+pong: pingpong 7501
+ping: pingpong 7500
+pong: pingpong 7001
+ping: pingpong 7000
+pong: pingpong 6501
+ping: pingpong 6500
+pong: pingpong 6001
+ping: pingpong 6000
+actor.rb:16:in `pingpong': stack level too deep (SystemStackError)
+        from actor.rb:22:in `pingpong'
+        from ./../../lib/dramatis/runtime/actor.rb:153:in `send'
+        from ./../../lib/dramatis/runtime/actor.rb:153:in `deliver'
+        from ./../../lib/dramatis/runtime/task.rb:72:in `deliver'
+        from ./../../lib/dramatis/runtime/scheduler.rb:327:in `deliver'
+        from ./../../lib/dramatis/runtime/scheduler.rb:241:in `run'
+        from ./../../lib/dramatis/runtime/scheduler.rb:238:in `initialize'
+        from ./../../lib/dramatis/runtime/scheduler.rb:238:in `new'
+         ... 11 levels...
+        from ./../../lib/dramatis/runtime/actor.rb:123:in `common_send'
+        from ./../../lib/dramatis/runtime/actor.rb:92:in `actor_send'
+        from ./../../lib/dramatis/actor.rb:25:in `new'
+        from actor.rb:28
+smparkes@barronpark ~/work/dramatis/gem/dramatis/examples/pingpong $ 
+</code></pre>
+It's still failing, but it's failing differently. In particular, the exception backtace is different. 
+
+Why is it diffefent? Lets look at what changed in our program. In particluar, lets look at the statement that actually started our volley:
+<pre><code>
+ping.pingpong ARGV[0].to_i, pong
+</code></pre>
+Although we didn't change this line, what it means changed when we made mixed @Dramatis::Actor@ into our class. In partciular, the result of 
+<pre><code>
+ping = PingPong.new "ping"
+</code></pre>
+changed in subtle but profound way. Instead of getting back a reference to a @PingPong@ object, we got back a proxy object, a @Dramatis::Actor::Name@. We'll call this the _actor name_ from now on.
+
+Actor names stand in for native object references for actors. By default and by design, they behave a lot like native references from a caller's perspective. A caller can use them to call the object's methods and get the retruend refslts. However, beneath the covers, the way this happens follows actor smantics.
+
+In parciular, each actor has its own virtual thread and its methods, when called via an actor anem, are only executed on its thread. There is no difference in the way that method is defined. _when called via an actor name_ is the key here: if called via a native reference, native recusvie semantics will result. In dramatis, actor semantics are controlled by the use of actor names.
+
+Actor methods are not executed on the caller's thread. Instead, the dramatis runtime adds the actor method call to a queue for the target actor. At some point in the future, when the target actor is not executing any other method, this call will make it to the front of the queue for the actor and the runtime will invoke it. At that point, the method will be invoked as it normally would be. From the point of view of the actor, very little has changed.
+
+So, if actors are using an off-stack queue, why are we still getting a stack error. We need to go back and look at our @pingpong@ function, at the call to partner, in particular:
+<pre><code>
+partner.pingpong count-1, self
+</code></pre>
+We know the first time through @pingpong@ partner 
+
+<pre><code>
+</code></pre>
+
+<pre><code>
+</code></pre>
+
+<pre><code>
+</code></pre>
+
+<pre><code>
+</code></pre>
