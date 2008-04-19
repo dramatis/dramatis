@@ -56,14 +56,7 @@ class Dramatis::Runtime::Scheduler
     # warn "maybe_deadlock #{Thread.current} #{Thread.main} threads #{@running_threads} queue #{@queue.length} #{Thread.list.join(" ")} qg #{@quiescing} scl #{@suspended_continuations.length}"
     if @running_threads == 0 and @queue.length == 0 and @suspended_continuations.length > 0 and !@quiescing
       # p "deadlock!"
-      begin
-        begin
-          raise Dramatis::Deadlock.new
-        rescue Dramatis::Deadlock => deadlock
-          # pp deadlock.backtrace
-          raise deadlock
-        end
-      end
+      raise Dramatis::Deadlock.new
     end
   end
 

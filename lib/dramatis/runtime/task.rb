@@ -177,7 +177,7 @@ class Dramatis::Runtime::Task
           return @value
         when :exception
           if Dramatis::Deadlock === @value 
-            @value = Dramatis::Deadlock.new @value
+            @value = Dramatis::Deadlock.new nil, :next => @value
           end
           raise @value
         end
