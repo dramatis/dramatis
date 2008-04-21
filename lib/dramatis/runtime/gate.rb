@@ -3,7 +3,7 @@ class Dramatis::Runtime; end
 
 begin require 'pp'; rescue Exception; end
 
-class Dramatis::Runtime::Gate
+class Dramatis::Runtime::Gate  #:nodoc: all
 
   def self.new
     gate = Case.new

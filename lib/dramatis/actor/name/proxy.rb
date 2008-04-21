@@ -2,7 +2,7 @@ module Dramatis; end
 module Dramatis::Actor; end
 class Dramatis::Actor::Name; end
 
-class Dramatis::Actor::Name::Proxy
+class Dramatis::Actor::Name::Proxyx
 
   def initialize name
     raise "hell: " + name.inspect \

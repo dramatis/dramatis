@@ -1,7 +1,7 @@
 require File.join( File.dirname(__FILE__), "..", "..", '/spec_helper.rb' )
 
 require 'dramatis/actor'
-require 'dramatis'
+require 'dramatis/future'
 
 # NB: don't use the module name here: rspec wants to include described
 # modules ... and making the result into an actor, well, needless to say,
@@ -40,7 +40,7 @@ describe "Dramatis::Actor" do
 
     x = future_name.foo :bar
 
-    x.should be_kind_of( Dramatis::Runtime::Future )
+    x.should be_kind_of( Dramatis::Future )
 
   end
 
@@ -54,7 +54,7 @@ describe "Dramatis::Actor" do
 
     x = future_name.foo :bar
 
-    x.should be_kind_of( Dramatis::Runtime::Future )
+    x.should be_kind_of( Dramatis::Future )
     x.to_sym.should equal( :foobar )
 
   end
@@ -68,7 +68,7 @@ describe "Dramatis::Actor" do
 
     x = future_name.bar :bar
 
-    x.should be_kind_of( Dramatis::Runtime::Future )
+    x.should be_kind_of( Dramatis::Future )
 
     lambda { x.to_sym }.should raise_error( NoMethodError )
 
@@ -84,7 +84,7 @@ describe "Dramatis::Actor" do
 
     x = future_name.foo :bar
     
-    x.should be_kind_of( Dramatis::Runtime::Future )
+    x.should be_kind_of( Dramatis::Future )
     ( x + 0 ).should == 12345
     ( 0 + x ).should == 12345
 
@@ -99,7 +99,7 @@ describe "Dramatis::Actor" do
 
     x = future_name.foo :bar
     
-    x.should be_kind_of( Dramatis::Runtime::Future )
+    x.should be_kind_of( Dramatis::Future )
 
     x = Future( x ).value
 

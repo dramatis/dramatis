@@ -2,10 +2,10 @@ module Dramatis; end
 class Dramatis::Runtime; end
 
 require 'dramatis/runtime/scheduler'
-require 'dramatis/runtime/future'
+require 'dramatis/future'
 require 'thread'
 
-class Dramatis::Runtime::Task
+class Dramatis::Runtime::Task #:nodoc: all
 
   attr_reader :actor
 
@@ -334,7 +334,7 @@ class Dramatis::Runtime::Task
       end
 
       def queued
-        Dramatis::Runtime::Future.new( self )
+        Dramatis::Future.new( self )
       end
 
       def result result

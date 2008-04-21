@@ -3,7 +3,7 @@ module Dramatis::Shoes; end
 
 require 'dramatis/shoes/runtime'
 
-module Dramatis::Shoes
+module Dramatis::Shoes #:nodoc: all
   
   def self.runtime
     @runtime ||= Dramatis::Shoes::Runtime.new

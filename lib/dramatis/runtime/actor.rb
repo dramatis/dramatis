@@ -4,11 +4,12 @@ class Dramatis::Runtime; end
 require 'dramatis/runtime/task'
 require 'dramatis/runtime/gate'
 require 'dramatis/runtime/timer'
+require 'dramatis/actor/interface'
 require 'thread'
 
 begin require 'pp'; rescue Exception; end
 
-class Dramatis::Runtime::Actor
+class Dramatis::Runtime::Actor #:nodoc: all
 
   def name
     @name ||= Dramatis::Actor::Name.new self
@@ -32,7 +33,7 @@ class Dramatis::Runtime::Actor
     @queue = []
     @mutex = Mutex.new
     @continuations = {}
-    @object_interface = ObjectInterface.new self
+    @object_interface = Dramatis::Actor::Interface.new self
     Dramatis::Runtime::Scheduler.the << self
   end
   
@@ -238,7 +239,7 @@ class Dramatis::Runtime::Actor
     @state == :runnable
   end
 
-  class ObjectInterface
+  class ObjectInterfacex
     def gate
       @actor.gate
     end
@@ -281,7 +282,7 @@ end
 # at_exit calls are suspect. Of course, if the main actor tracks multilple
 # runtimes, it might be okay.
 
-class Dramatis::Runtime::Actor::Main < Dramatis::Runtime::Actor
+class Dramatis::Runtime::Actor::Main < Dramatis::Runtime::Actor  #:nodoc: all
 
   class DefaultBehavior
 

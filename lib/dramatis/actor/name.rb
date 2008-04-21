@@ -2,7 +2,6 @@ module Dramatis; end
 module Dramatis::Actor; end
 class Dramatis::Actor::Name; end
 
-require 'dramatis/runtime/name_server'
 require 'dramatis/actor'
 
 class Dramatis::Actor::Name

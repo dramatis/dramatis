@@ -5,12 +5,14 @@ class Dramatis::BindError < Dramatis::Error; end
 class Dramatis::Internal < Dramatis::Error; end
 
 require 'dramatis/deadlock'
-require 'dramatis/future/proxy'
+
+require 'dramatis/future/interface'
+require 'dramatis/actor/name/interface'
 
 module Dramatis
 
-  def dramatis *args, &block
-    Dramatis::Actor::Name::Proxy.new( *args, &block )
+  def dramatis *args, &block 
+   Dramatis::Actor::Name::Interface.new( *args, &block )
   end
 
   module_function :dramatis
@@ -28,7 +30,7 @@ module Dramatis
   module_function :future
 
   def Future *args, &block
-    Dramatis::Future::Proxy.new( *args, &block )
+    Dramatis::Future::Interface.new( *args, &block )
   end
 
   module_function :Future

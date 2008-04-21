@@ -1,13 +1,7 @@
 module Dramatis; end
-module Dramatis::Future; end
+class Dramatis::Future; end
 
-class Dramatis::Future::Proxy
-
-  def initialize *args, &block
-    @future = args.shift
-    @args = args
-    @block = block
-  end
+class Dramatis::Future::Proxyx
 
   def value
     @future.instance_eval do
@@ -19,6 +13,12 @@ class Dramatis::Future::Proxy
     @future.instance_eval do
       @continuation.ready?
     end
+  end
+
+  def initialize *args, &block
+    @future = args.shift
+    @args = args
+    @block = block
   end
 
 end

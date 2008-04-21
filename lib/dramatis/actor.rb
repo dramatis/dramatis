@@ -1,13 +1,9 @@
 module Dramatis; end
 module Dramatis::Actor; end
 
-require 'dramatis/actor/name/proxy'
-require 'dramatis/actor/name'
+require 'dramatis/runtime/actor'
 
 module Dramatis::Actor
-
-  Runtime = Dramatis::Runtime
-  Proxy = Dramatis::Actor::Name::Proxy
 
   def self.included cls
     cls.instance_eval do
@@ -15,7 +11,7 @@ module Dramatis::Actor
     end
     class << cls
       def new *args
-        new_actor = Runtime::Actor.new
+        new_actor = Dramatis::Runtime::Actor.new
         object = allocate
         eigenclass = ( class << object; self; end )
         eigenclass.send :define_method, :actor,
@@ -30,7 +26,7 @@ module Dramatis::Actor
   end
 
   def self.new behavior = nil
-    ( Runtime::Actor.new behavior ).name
+    ( Dramatis::Runtime::Actor.new behavior ).name
   end
 
   def self.current

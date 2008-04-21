@@ -7,7 +7,7 @@ require 'dramatis'
 require 'thread'
 begin require 'pp'; rescue Exception; end
 
-class Dramatis::Runtime::Scheduler
+class Dramatis::Runtime::Scheduler #:nodoc: all
 
   def checkio; false; end
 
