@@ -14,6 +14,7 @@ class PingPong
         puts "#{@name}: pingpong #{count}"
       end
       partner.pingpong count-1, self
+      # sleep 0.001
     end
   end
 

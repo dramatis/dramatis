@@ -19,8 +19,9 @@ class PingPong
       if count % 500 == 0 || count % 500 == 1
         puts "#{@name}: pingpong #{count}"
       end
-      partner.pingpong count-1, self
+      cast( partner ).pingpong count-1, self
     end
+    # sleep 0.001
   end
 
 end
