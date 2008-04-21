@@ -30,7 +30,7 @@ module Dramatis::Actor
   end
 
   def self.current
-    Dramatis::Runtime::Scheduler.current
+    Dramatis::Runtime::Scheduler.actor
   end
 
   if false

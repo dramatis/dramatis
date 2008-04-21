@@ -7,7 +7,14 @@ require 'dramatis/runtime'
 
 require 'pp'
 
+include Dramatis
+
 # no call threading case
+
+# This test is trying to recover from deadlock ... which is a little iffy. Seems to work but not
+# recommended.
+
+# Deadlock recovery needs to be beefed up.
 
 a = Class.new do
 
@@ -18,7 +25,7 @@ a = Class.new do
   end
 
   def allow
-    p "allow delivered"
+    # p "allow delivered"
     actor.default :fromB
 
     # just for the hell of it,
@@ -46,18 +53,18 @@ b = Class.new do
   end
 
   def startB
-    p ">> startB"
+    # p ">> startB"
     @anA.fromB
-    p "<< startB"
+    # p "<< startB"
   end
 
   def count
-    p ">count< #{@count}"
+    # p ">count< #{@count}"
     @count
   end
 
   def increment
-    p ">increment<"
+    # p ">increment<"
     @count += 1
   end
 
@@ -69,7 +76,7 @@ end
 anA = a.new
 aB = b.new anA
 
-aB_cast = dramatis( aB ).continue nil
+aB_cast = interface( aB ).continue nil
 
 c = aB.count
 
@@ -81,46 +88,46 @@ raise "hell" if aB.count != 1
 
 aB_cast.increment
 
-Dramatis::Runtime.the.quiesce
+Dramatis::Runtime.current.warnings = false
+
+Dramatis::Runtime.current.quiesce
 
 raise "hell" if aB.count != 2
 
 aB_cast.startB
 aB_cast.increment
 
-Dramatis::Runtime.the.quiesce
+Dramatis::Runtime.current.quiesce
 
 raise "hell" if aB.count != 2
-
-raise "hell" if Dramatis::Runtime.the.exceptions.length != 0
+raise "hell" if Dramatis::Runtime.current.exceptions.length != 0
 
 begin
   aB.shouldDeadlock
   raise "this should raise a deadlock since aB should be waiting on the fromB rpc"
-rescue Dramatis::Deadlock
-  # note: this clears the pending methods and continuations, so the count should still be
-  # 2 and the startB isn't pending anymore
-  p "good! got it"
-  pp Dramatis::Runtime.the.exceptions
-  raise "hell #{Dramatis::Runtime.the.exceptions.length}" if Dramatis::Runtime.the.exceptions.length != 2
-  Dramatis::Runtime.the.clear_exceptions
-  raise "hell" if Dramatis::Runtime.the.exceptions.length != 0
+rescue Dramatis::Deadlock => deadlock
+  begin
+    Dramatis::Runtime.current.quiesce
+  rescue Dramatis::Deadlock
+  rescue Dramatis::Runtime::Exception
+  end
+  raise "hell #{Dramatis::Runtime.current.exceptions.length}" if Dramatis::Runtime.current.exceptions.length != 2
+  Dramatis::Runtime.current.clear_exceptions
+  raise "hell" if Dramatis::Runtime.current.exceptions.length != 0
 end
 
 raise "hell" if aB.count != 2
 
-p "b4 allow"
+# p "b4 allow"
 anA.allow
-p "a4 allow"
+# p "a4 allow"
 
 # should get through fine now
 
 aB_cast.startB
 aB_cast.increment
 
-Dramatis::Runtime.the.quiesce
+Dramatis::Runtime.current.quiesce
 
-aise "hell" if aB.count != 3
-
-
+raise "hell" if aB.count != 3
 

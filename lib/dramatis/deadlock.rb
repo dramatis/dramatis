@@ -12,7 +12,13 @@ class Dramatis::Deadlock < Dramatis::Error
     @raw_backtrace = []
   end
 
+  # how things stand:
+  # r18 and r19 call set_backtrace after at the raise
+  # jr never calls it; instead the base class synthesizes it at the first backtrace call
+  # as far as frames go, it seems lke jr elides sends sometimes
+
   def set_backtrace *args
+    # p "sbt!"
     # pp args[0]
     array = @raw_backtrace = args[0]
     if @next
@@ -53,7 +59,8 @@ class Dramatis::Deadlock < Dramatis::Error
 
       if !skipping and 
          ( ( file =~ %r{/runtime/task} and func =~ %r{\Wqueued\W} ) or
-           ( file =~ %r{/runtime/actor} and func =~ %r{\Wsend\W} )  )
+           ( file =~ %r{/runtime/actor} and func =~ %r{\Wsend\W} ) or # r18, r19
+           ( file =~ %r{/runtime/actor} and func =~ %r{\Wdeliver\W} )  ) # jr
         # p "skipping"
         skipping = true
         next
@@ -70,7 +77,20 @@ class Dramatis::Deadlock < Dramatis::Error
     end
 
     # pp "filt", filtered
+    # pp args[0]
     super filtered
+    # super args[0]
+  end
+
+  def backtrace
+    if @raw_backtrace.empty?
+      bt = super
+      if bt
+        set_backtrace  bt
+      end
+    end
+    # p "d"
+    super
   end
 
 end

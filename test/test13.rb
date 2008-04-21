@@ -7,6 +7,8 @@ require 'dramatis/runtime'
 
 require 'pp'
 
+include Dramatis
+
 a = Class.new do
 
   include Dramatis::Actor
@@ -21,17 +23,17 @@ a = Class.new do
 
   def a other
     result = lambda do |r|
-      warn "block continuation #{r}"
+      # warn "block continuation #{r}"
       @block_called = true
     end
     except = lambda do |exception|
-      warn "#{exception} (a good thing)"
+      # warn "#{exception} (a good thing)"
       raise "hell: #{exception.to_s}" if exception.to_s != "hell"
-      warn "exception continuation"
+      # warn "exception continuation"
       @exception_raised = true
     end
-    ( dramatis( other ).continue :exception => except, &result ).bb
-    ( dramatis( other ).continue :exception => except, &result ).b
+    ( interface( other ).continue :exception => except, &result ).bb
+    ( interface( other ).continue :exception => except, &result ).b
     other.c
   end
   
@@ -55,15 +57,15 @@ end
 
 a1 = a.new
 a2 = a.new
-( dramatis( a1 ).continue nil ).a a2
+( interface( a1 ).continue nil ).a a2
 
-Dramatis::Runtime.the.quiesce
+Dramatis::Runtime.current.quiesce
 
 raise "hell" if a1.block_called
 raise "hell" if !a1.exception_raised
 
 a2.enable
 
-Dramatis::Runtime.the.quiesce
+Dramatis::Runtime.current.quiesce
 
 raise "hell" if !a1.block_called

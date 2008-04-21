@@ -98,7 +98,7 @@ class Dramatis::Runtime::Task #:nodoc: all
       def exception exception
         # warn "except nil #{exception}"
         # true and pp exception.backtrace
-        dramatis( cast( @name ) ).exception exception
+        interface( cast( @name ) ).exception exception
       end
 
       def initialize name, call_thread
@@ -131,7 +131,7 @@ class Dramatis::Runtime::Task #:nodoc: all
         @wait = ConditionVariable.new
         @call_thread = call_thread
         # warn "contiunation to #{actor}"
-        @actor = dramatis( Dramatis::Actor.current ).send :continuation, self, :call_thread => call_thread
+        @actor = interface( Dramatis::Actor.current ).send :continuation, self, :call_thread => call_thread
       end
 
       def queued
@@ -152,14 +152,14 @@ class Dramatis::Runtime::Task #:nodoc: all
                 @actor.schedule self
               end
               begin
-                Dramatis::Runtime::Scheduler.the.suspend_notification self
+                Dramatis::Runtime::Scheduler.current.suspend_notification self
                 @wait.wait @mutex
                 # this causes a deadlock if the waking thread, which may be
                 # retiring, does so before this thead has awakend and notified
                 # the scheduler
                 # sleep 1
               ensure
-                # Dramatis::Runtime::Scheduler.the.wakeup_notification self
+                # Dramatis::Runtime::Scheduler.current.wakeup_notification self
               end
             ensure
               tag = to_s
@@ -203,7 +203,7 @@ class Dramatis::Runtime::Task #:nodoc: all
             @state = :signaled
           else
             @state = :done
-            Dramatis::Runtime::Scheduler.the.wakeup_notification self
+            Dramatis::Runtime::Scheduler.current.wakeup_notification self
             @wait.signal
           end
         end
@@ -219,7 +219,7 @@ class Dramatis::Runtime::Task #:nodoc: all
             @state = :signaled
           else
             @state = :done
-            Dramatis::Runtime::Scheduler.the.wakeup_notification self
+            Dramatis::Runtime::Scheduler.current.wakeup_notification self
             @wait.signal
           end
         end
@@ -237,7 +237,7 @@ class Dramatis::Runtime::Task #:nodoc: all
         @exception_block = except
         @name = name
         @continuation = \
-          dramatis( Dramatis::Actor.current ) \
+          interface( Dramatis::Actor.current ) \
              .send :continuation, self, :call_thread => call_thread
       end
 
@@ -277,7 +277,7 @@ class Dramatis::Runtime::Task #:nodoc: all
         @wait = ConditionVariable.new
         @call_thread = call_thread
         # warn "contiunation to #{actor}"
-        @actor = dramatis( Dramatis::Actor.current ) \
+        @actor = interface( Dramatis::Actor.current ) \
           .send :continuation, self, :call_thread => call_thread
       end
 
@@ -300,14 +300,14 @@ class Dramatis::Runtime::Task #:nodoc: all
                 @actor.schedule self
               end
               begin
-                Dramatis::Runtime::Scheduler.the.suspend_notification self
+                Dramatis::Runtime::Scheduler.current.suspend_notification self
                 @wait.wait @mutex
                 # this causes a deadlock if the waking thread, which may be
                 # retiring, does so before this thead has awakend and notified
                 # the scheduler
                 # sleep 1
               ensure
-                # Dramatis::Runtime::Scheduler.the.wakeup_notification self
+                # Dramatis::Runtime::Scheduler.current.wakeup_notification self
               end
             ensure
               tag = to_s
@@ -357,7 +357,7 @@ class Dramatis::Runtime::Task #:nodoc: all
             @state = :signaled
           else
             @state = :done
-            Dramatis::Runtime::Scheduler.the.wakeup_notification self
+            Dramatis::Runtime::Scheduler.current.wakeup_notification self
             @wait.signal
           end
         end
@@ -373,7 +373,7 @@ class Dramatis::Runtime::Task #:nodoc: all
             @state = :signaled
           else
             @state = :done
-            Dramatis::Runtime::Scheduler.the.wakeup_notification self
+            Dramatis::Runtime::Scheduler.current.wakeup_notification self
             @wait.signal
           end
         end

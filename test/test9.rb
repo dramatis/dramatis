@@ -7,6 +7,8 @@ require 'dramatis/runtime'
 
 require 'pp'
 
+include Dramatis
+
 # no call threading case
 
 a = Class.new do
@@ -18,7 +20,7 @@ a = Class.new do
   end
 
   def allow
-    p "allow delivered"
+    # p "allow delivered"
     actor.default :fromB
 
     # just for the hell of it,
@@ -46,18 +48,18 @@ b = Class.new do
   end
 
   def startB
-    p ">> startB"
+    # p ">> startB"
     @anA.fromB
-    p "<< startB"
+    # p "<< startB"
   end
 
   def count
-    p ">count< #{@count}"
+    # p ">count< #{@count}"
     @count
   end
 
   def increment
-    p ">increment<"
+    # p ">increment<"
     @count += 1
   end
 
@@ -69,7 +71,7 @@ end
 anA = a.new
 aB = b.new anA
 
-aB_cast = dramatis( aB ).continue nil
+aB_cast = interface( aB ).continue nil
 
 c = aB.count
 
@@ -81,23 +83,23 @@ raise "hell" if aB.count != 1
 
 aB_cast.increment
 
-Dramatis::Runtime.the.quiesce
+Dramatis::Runtime.current.quiesce
 
 raise "hell" if aB.count != 2
 
 aB_cast.startB
 aB_cast.increment
 
-Dramatis::Runtime.the.quiesce
+Dramatis::Runtime.current.quiesce
 
 raise "hell" if aB.count != 2
 
-p "b4 allow"
+# p "b4 allow"
 anA.allow
-p "a4 allow"
+# p "a4 allow"
 
-Dramatis::Runtime.the.quiesce
+Dramatis::Runtime.current.quiesce
 
-p "c4"
+# p "c4"
 raise "hell" if aB.count != 3
-p "d4"
+# p "d4"

@@ -8,11 +8,12 @@ require 'pp'
 
 begin
   Dramatis::Actor.new.foo
+  raise "hell"
 rescue Dramatis::Deadlock => e
-  puts "got expected #{e}"
+  # puts "got expected #{e}"
 end
 # pp Thread.list
-Dramatis::Runtime.the.quiesce
+Dramatis::Runtime.current.quiesce
 # pp Thread.list
 raise "hell" if Thread.list.length > 1
 

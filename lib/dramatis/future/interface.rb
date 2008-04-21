@@ -1,7 +1,7 @@
 module Dramatis; end
 class Dramatis::Future; end
 
-class Dramatis::Future::Proxyx
+class Dramatis::Future::Interface
 
   def value
     @future.instance_eval do

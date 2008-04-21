@@ -1,4 +1,4 @@
-module Dramatis #:nodoc:
+module Dramatis
   module VERSION #:nodoc:
     MAJOR = 0
     MINOR = 0

@@ -7,5 +7,5 @@ require 'chat'
 
 server = Chat::Server.new ARGV
 
-puts dramatis( server ).url
+puts interface( server ).url
 

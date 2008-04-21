@@ -7,6 +7,8 @@ require 'dramatis/runtime'
 
 require 'pp'
 
+include Dramatis
+
 a = Class.new do
 
   include Dramatis::Actor
@@ -37,10 +39,10 @@ end
 anA = a.new
 aB = b.new anA
 
-( dramatis( aB ).continue nil ).startB
+( interface( aB ).continue nil ).startB
 
 warn "b4"
-# Dramatis::Runtime.the.quiesce
+# Dramatis::Runtime.current.quiesce
 warn "a5"
 
 warn "expect a final deadlock"

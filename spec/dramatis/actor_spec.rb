@@ -13,8 +13,8 @@ describe "Dramatis::Actor" do
 
   after do
     begin
-      Dramatis::Runtime.the.quiesce
-      Dramatis::Runtime.the.exceptions.length.should equal( 0 )
+      Dramatis::Runtime.current.quiesce
+      Dramatis::Runtime.current.exceptions.length.should equal( 0 )
       Thread.list.length.should equal( 1 )
     ensure
       Dramatis::Runtime.reset
@@ -90,13 +90,13 @@ describe "Dramatis::Actor" do
     anA = a.new
     aB = b.new anA
 
-    ( dramatis( aB ).continue nil ).startB
+    ( interface( aB ).continue nil ).startB
 
-    Dramatis::Runtime::the.warnings = false
+    Dramatis::Runtime.current.warnings = false
 
-    lambda { Dramatis::Runtime.the.at_exit }.should raise_error( Dramatis::Runtime::Exception )
+    lambda { Dramatis::Runtime.current.at_exit }.should raise_error( Dramatis::Runtime::Exception )
 
-    Dramatis::Runtime::the.warnings = true
+    Dramatis::Runtime.current.warnings = true
 
     Dramatis::Runtime.reset
 
@@ -142,7 +142,7 @@ describe "Dramatis::Actor" do
     anA = a.new
     aB = b.new anA
 
-    aB_cast = dramatis( aB ).continue nil
+    aB_cast = interface( aB ).continue nil
 
     aB.count.should equal( 0 )
 
@@ -152,20 +152,20 @@ describe "Dramatis::Actor" do
 
     aB_cast.increment
 
-    Dramatis::Runtime.the.quiesce
+    Dramatis::Runtime.current.quiesce
 
     aB.count.should equal( 2 )
     
     aB_cast.startB
     aB_cast.increment
 
-    Dramatis::Runtime.the.quiesce
+    Dramatis::Runtime.current.quiesce
 
     aB.count.should equal( 2 )
 
     anA.allow
 
-    Dramatis::Runtime.the.quiesce
+    Dramatis::Runtime.current.quiesce
 
     aB.count.should equal( 3 )
   end
@@ -225,7 +225,7 @@ describe "Dramatis::Actor" do
     anA = a.new
     aB = b.new anA
 
-    aB_cast = dramatis( aB ).continue nil
+    aB_cast = interface( aB ).continue nil
 
     aB.count.should equal( 0 )
 
@@ -235,32 +235,32 @@ describe "Dramatis::Actor" do
 
     aB_cast.increment
 
-    Dramatis::Runtime.the.quiesce
+    Dramatis::Runtime.current.quiesce
 
     aB.count.should equal( 2 )
 
     aB_cast.startB
     aB_cast.increment
 
-    Dramatis::Runtime.the.quiesce
+    Dramatis::Runtime.current.quiesce
 
     aB.count.should equal( 2 )
 
-    Dramatis::Runtime.the.exceptions.length.should equal( 0 )
+    Dramatis::Runtime.current.exceptions.length.should equal( 0 )
 
-    Dramatis::Runtime::the.warnings = false
+    Dramatis::Runtime.current.warnings = false
 
     lambda { aB.shouldDeadlock }.should raise_error( Dramatis::Deadlock )
 
-    lambda { Dramatis::Runtime.the.quiesce }.should raise_error( Dramatis::Runtime::Exception )
+    lambda { Dramatis::Runtime.current.quiesce }.should raise_error( Dramatis::Runtime::Exception )
 
-    Dramatis::Runtime::the.warnings = true
+    Dramatis::Runtime.current.warnings = true
 
-    Dramatis::Runtime.the.exceptions.length.should equal( 2 )
+    Dramatis::Runtime.current.exceptions.length.should equal( 2 )
 
-    Dramatis::Runtime.the.clear_exceptions
+    Dramatis::Runtime.current.clear_exceptions
 
-    Dramatis::Runtime.the.exceptions.length.should equal( 0 )
+    Dramatis::Runtime.current.exceptions.length.should equal( 0 )
 
     aB.count.should equal( 2 )
     
@@ -269,7 +269,7 @@ describe "Dramatis::Actor" do
     aB_cast.startB
     aB_cast.increment
 
-    Dramatis::Runtime.the.quiesce
+    Dramatis::Runtime.current.quiesce
 
     aB.count.should equal( 3 )
 
@@ -298,7 +298,7 @@ describe "Dramatis::Actor" do
       end
       def a other
         block = lambda { |c| @block_called = true }
-        ( dramatis( other ).continue( &block ) ).b
+        ( interface( other ).continue( &block ) ).b
         other.c
       end
       def enable
@@ -310,15 +310,15 @@ describe "Dramatis::Actor" do
 
     a1 = a.new
     a2 = a.new
-    ( dramatis( a1 ).continue nil ).a a2
+    ( interface( a1 ).continue nil ).a a2
 
-    Dramatis::Runtime.the.quiesce
+    Dramatis::Runtime.current.quiesce
 
     a1.block_called.should be_false
 
     a2.enable
 
-    Dramatis::Runtime.the.quiesce
+    Dramatis::Runtime.current.quiesce
 
     a1.block_called.should be_true
   end
@@ -347,8 +347,8 @@ describe "Dramatis::Actor" do
           raise exception if exception.to_s != "hell"
           @exception_raised = true
         end
-        ( dramatis( other ).continue :exception => except, &result ).bb
-        ( dramatis( other ).continue :exception => except, &result ).b
+        ( interface( other ).continue :exception => except, &result ).bb
+        ( interface( other ).continue :exception => except, &result ).b
         other.c
       end
       def enable
@@ -363,16 +363,16 @@ describe "Dramatis::Actor" do
 
     a1 = a.new
     a2 = a.new
-    ( dramatis( a1 ).continue nil ).a a2
+    ( interface( a1 ).continue nil ).a a2
 
-    Dramatis::Runtime.the.quiesce
+    Dramatis::Runtime.current.quiesce
 
     a1.block_called.should be_false
     a1.exception_raised.should be_true
 
     a2.enable
 
-    Dramatis::Runtime.the.quiesce
+    Dramatis::Runtime.current.quiesce
 
     a1.block_called.should be_true
   end
@@ -449,6 +449,8 @@ describe "Dramatis::Actor" do
       raise "fail: should not get here"
     rescue Dramatis::Deadlock => deadlock
       bt = deadlock.backtrace
+
+      # pp bt
 
       f, l = bt[0].split ':'
       f.should == __FILE__

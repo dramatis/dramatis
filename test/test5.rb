@@ -1,4 +1,4 @@
-#!/bin/env ruby-w
+#!/bin/env ruby
 require 'pp'
 def foo *args
   pp args

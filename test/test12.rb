@@ -7,6 +7,8 @@ require 'dramatis/runtime'
 
 require 'pp'
 
+include Dramatis
+
 a = Class.new do
 
   include Dramatis::Actor
@@ -20,10 +22,10 @@ a = Class.new do
 
   def a other
     block = lambda do |c|
-      warn "block continuation #{c}"
+      # warn "block continuation #{c}"
       @block_called = true
     end
-    ( dramatis( other ).continue( &block ) ).b
+    ( interface( other ).continue( &block ) ).b
     other.c
   end
   
@@ -43,15 +45,15 @@ end
 
 a1 = a.new
 a2 = a.new
-( dramatis( a1 ).continue nil ).a a2
+( interface( a1 ).continue nil ).a a2
 
-Dramatis::Runtime.the.quiesce
+Dramatis::Runtime.current.quiesce
 
 raise "hell" if a1.block_called
 
 a2.enable
 
-Dramatis::Runtime.the.quiesce
+Dramatis::Runtime.current.quiesce
 
 raise "hell" if !a1.block_called
 

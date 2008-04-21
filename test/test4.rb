@@ -5,6 +5,8 @@ $:.push File.join( File.dirname(__FILE__), "..", "lib" )
 require 'dramatis/actor/name'
 require 'dramatis/runtime'
 
+include Dramatis
+
 require 'pp'
 
 class Foo
@@ -18,10 +20,10 @@ end
 actor = Foo.new
 
 result = nil
-retval = ( dramatis( actor ).continue {|value| result = value } ).foo :bar
+retval = ( interface( actor ).continue {|value| result = value } ).foo :bar
 
 raise "hell: [#{retval.inspect}]" if retval != nil
 
-Dramatis::Runtime.the.quiesce
+Dramatis::Runtime.current.quiesce
 
 raise "hell: [#{result.inspect}]" if result != :foobar

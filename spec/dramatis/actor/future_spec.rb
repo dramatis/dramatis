@@ -13,8 +13,8 @@ describe "Dramatis::Actor" do
 
   after do
     begin
-      Dramatis::Runtime.the.quiesce
-      Dramatis::Runtime.the.exceptions.length.should equal( 0 )
+      Dramatis::Runtime.current.quiesce
+      Dramatis::Runtime.current.exceptions.length.should equal( 0 )
       Thread.list.length.should equal( 1 )
     ensure
       Dramatis::Runtime.reset
@@ -101,7 +101,7 @@ describe "Dramatis::Actor" do
     
     x.should be_kind_of( Dramatis::Future )
 
-    x = Future( x ).value
+    x = interface( x ).value
 
     x.should be_kind_of( Fixnum )
 
@@ -121,10 +121,10 @@ describe "Dramatis::Actor" do
         @future = future( callee ).callee
       end
       def ready?
-        Future( @future ).ready?
+        interface( @future ).ready?
       end
       def value
-        Future( @future ).value
+        interface( @future ).value
       end
     end
 
@@ -151,7 +151,7 @@ describe "Dramatis::Actor" do
     
     b.allow
 
-    Dramatis::Runtime.the.quiesce
+    Dramatis::Runtime.current.quiesce
     
     a.ready?.should be_true
 

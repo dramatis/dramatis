@@ -12,14 +12,14 @@ class Dramatis::Runtime::Scheduler #:nodoc: all
   def checkio; false; end
 
   def self.reset
-    @@the.reset
-    @@the = nil
+    @@current.reset
+    @@current = nil
   end
 
-  @@the = nil
+  @@current = nil
 
-  def self.the
-    @@the ||= self.new
+  def self.current
+    @@current ||= self.new
   end
 
   def reset
@@ -91,7 +91,7 @@ class Dramatis::Runtime::Scheduler #:nodoc: all
   end
 
   def quiesce
-    Dramatis::Runtime::Actor::Main.the.quiesce
+    Dramatis::Runtime::Actor::Main.current.quiesce
     main_at_exit true
   end
 
@@ -139,7 +139,7 @@ class Dramatis::Runtime::Scheduler #:nodoc: all
     raise "hell #{@main_state.to_s}" if @main_state != :may_finish and @main_state != :running
     # warn "?threads? #{Thread.list.join(' ')}"
     # warn "main has exited: done"
-    Dramatis::Runtime::the.maybe_raise_exceptions quiescing
+    Dramatis::Runtime.current.maybe_raise_exceptions quiescing
   end
 
   def << actor
@@ -265,7 +265,7 @@ class Dramatis::Runtime::Scheduler #:nodoc: all
       warn "1 *? exception " + exception.to_s
       warn "smp!!! " + exception.backtrace.join("\n")
       # pp exception.backtrace
-      Dramatis::Runtime.the.exception exception
+      Dramatis::Runtime.current.exception exception
     end
 
     checkio and warn "scheduler giving up the ghost #{@queue.length} #{Thread.current}"
@@ -279,7 +279,7 @@ class Dramatis::Runtime::Scheduler #:nodoc: all
       actors.each { |actor| actor.deadlock deadlock }
     rescue Exception => exception
       warn "2 exception " + exception.to_s
-      Dramatis::Runtime.the.exception exception
+      Dramatis::Runtime.current.exception exception
     end
     
     checkio and warn "scheduler giving up after final deadlock check #{@queue.length} #{Thread.current}"
@@ -330,27 +330,27 @@ class Dramatis::Runtime::Scheduler #:nodoc: all
     rescue Exception => exception
       warn "2 exception " + exception.to_s
       # pp exception.backtrace
-      Dramatis::Runtime.the.exception exception
+      Dramatis::Runtime.current.exception exception
     ensure
       thread[:dramatis_actor] = nil
     end
   end
 
-  def self.current
+  def self.actor
     thread = Thread.current
     actor = thread[:dramatis_actor]
     if !actor
       if thread == Thread.main
         # p "here", actor
-        actor = Dramatis::Runtime::Actor::Main.the.name
+        actor = Dramatis::Runtime::Actor::Main.current.name
         # p "there", actor
       end
     else
       # this is a debugging path; can go away
       raise "hell" if thread == Thread.main and
-                       actor != Dramatis::Runtime::Actor::Main.the
+                       actor != Dramatis::Runtime::Actor::Main.current
       raise "hell" if thread != Thread.main and
-                       actor == Dramatis::Runtime::Actor::Main.the
+                       actor == Dramatis::Runtime::Actor::Main.current
     end
     actor
   end

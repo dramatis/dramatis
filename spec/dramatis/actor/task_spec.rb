@@ -9,8 +9,8 @@ describe Dramatis::Runtime::Task do
 
   after do
     begin
-      Dramatis::Runtime.the.quiesce
-      Dramatis::Runtime.the.exceptions.length.should equal( 0 )
+      Dramatis::Runtime.current.quiesce
+      Dramatis::Runtime.current.exceptions.length.should equal( 0 )
       Thread.list.length.should equal( 1 )
     ensure
       Dramatis::Runtime.reset
@@ -39,6 +39,8 @@ describe Dramatis::Runtime::Task do
 
     caller.caller callee
 
+    Dramatis::Runtime.current.quiesce
+
     lambda { caller.exception }.should raise_error( NoMethodError )
   end
 
@@ -46,11 +48,11 @@ describe Dramatis::Runtime::Task do
     callee = Dramatis::Actor.new Object.new
     lambda { callee.callee }.should raise_error( NoMethodError )
     cast( callee ).callee
-    Dramatis::Runtime::the.warnings = false
-    lambda { Dramatis::Runtime.the.quiesce }.should raise_error( Dramatis::Runtime::Exception )
-    Dramatis::Runtime::the.warnings = true
-    Dramatis::Runtime.the.exceptions.length.should equal( 1 )
-    Dramatis::Runtime.the.clear_exceptions
+    Dramatis::Runtime.current.warnings = false
+    lambda { Dramatis::Runtime.current.quiesce }.should raise_error( Dramatis::Runtime::Exception )
+    Dramatis::Runtime.current.warnings = true
+    Dramatis::Runtime.current.exceptions.length.should equal( 1 )
+    Dramatis::Runtime.current.clear_exceptions
   end
 
   it "should default to global when no dramatis_exception defined" do
@@ -64,13 +66,13 @@ describe Dramatis::Runtime::Task do
     caller = callerClass.new
     callee = Dramatis::Actor.new Object.new
 
-    Dramatis::Runtime::the.warnings = false
+    Dramatis::Runtime.current.warnings = false
     caller.caller callee
-    lambda { Dramatis::Runtime.the.quiesce }.should raise_error( Dramatis::Runtime::Exception )
-    Dramatis::Runtime::the.warnings = true
+    lambda { Dramatis::Runtime.current.quiesce }.should raise_error( Dramatis::Runtime::Exception )
+    Dramatis::Runtime.current.warnings = true
 
-    lambda { raise Dramatis::Runtime.the.exceptions[0] }.should raise_error( NoMethodError )
-    Dramatis::Runtime.the.clear_exceptions
+    lambda { raise Dramatis::Runtime.current.exceptions[0] }.should raise_error( NoMethodError )
+    Dramatis::Runtime.current.clear_exceptions
       
   end
 

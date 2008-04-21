@@ -45,7 +45,7 @@ class Chat::Server
     def initialize name, user, client
       @name = name
       @clients = { client => user }
-      @cast = dramatis( actor.name ).continue nil
+      @cast = interface( actor.name ).continue nil
 
       @cast << { :user => user, :client => client, :string => "I'm starting the group" }
     end
@@ -63,7 +63,7 @@ class Chat::Server
 
     def << opts
       @clients.each_key do |client|
-        ( dramatis( client ).continue nil )  << opts
+        ( interface( client ).continue nil )  << opts
       end
     end
 

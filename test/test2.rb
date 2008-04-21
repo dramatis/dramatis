@@ -4,7 +4,9 @@ $:.push File.join( File.dirname(__FILE__), "..", "lib" )
 
 require 'dramatis/actor/name'
 
+include Dramatis
+
 name = Dramatis::Actor.new
 
-dramatis( name ).bind Object.new
+interface( name ).bind Object.new
 

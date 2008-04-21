@@ -1,38 +1,39 @@
-module Dramatis; end
+module Dramatis #:doc:
+end
 
 class Dramatis::Error < StandardError; end
-class Dramatis::BindError < Dramatis::Error; end
-class Dramatis::Internal < Dramatis::Error; end
+class Dramatis::Error::Name < StandardError; end
+class Dramatis::Error::Bind < Dramatis::Error; end
 
 require 'dramatis/deadlock'
 
 require 'dramatis/future/interface'
 require 'dramatis/actor/name/interface'
 
-module Dramatis
+module Dramatis #:doc:
 
-  def dramatis *args, &block 
-   Dramatis::Actor::Name::Interface.new( *args, &block )
+  def interface *args, &block 
+    interface = nil    
+    begin
+      interface = args[0].class.const_get( :Interface )
+    rescue NameError => name_error
+      raise Dramatis::Error::Name.new(  "object is not a dramatis interfacable object" )
+    end
+    interface.new( *args, &block )
   end
 
-  module_function :dramatis
+  module_function :interface
 
   def cast name
-    dramatis( name ).continue nil
+    interface( name ).continue nil
   end
 
   module_function :cast
 
   def future name
-    dramatis( name ).future
+    interface( name ).future
   end
 
   module_function :future
-
-  def Future *args, &block
-    Dramatis::Future::Interface.new( *args, &block )
-  end
-
-  module_function :Future
 
 end

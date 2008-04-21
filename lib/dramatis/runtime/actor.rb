@@ -5,6 +5,7 @@ require 'dramatis/runtime/task'
 require 'dramatis/runtime/gate'
 require 'dramatis/runtime/timer'
 require 'dramatis/actor/interface'
+require 'dramatis/actor/name'
 require 'thread'
 
 begin require 'pp'; rescue Exception; end
@@ -34,7 +35,7 @@ class Dramatis::Runtime::Actor #:nodoc: all
     @mutex = Mutex.new
     @continuations = {}
     @object_interface = Dramatis::Actor::Interface.new self
-    Dramatis::Runtime::Scheduler.the << self
+    Dramatis::Runtime::Scheduler.current << self
   end
   
   def call_threading?
@@ -57,7 +58,7 @@ class Dramatis::Runtime::Actor #:nodoc: all
 
   def bind object
     # warn "bind #{object} #{@object} #{@gate}"
-    raise Dramatis::BindError if @object
+    raise Dramatis::Error::Bind if @object
     @object = object
     # warn "okay?"
     # p @gate
@@ -70,7 +71,7 @@ class Dramatis::Runtime::Actor #:nodoc: all
     if @object.respond_to? :dramatis_exception
       @object.dramatis_exception exception
     else
-      Dramatis::Runtime::the.exception exception
+      Dramatis::Runtime.current.exception exception
     end
     self
   end
@@ -126,7 +127,7 @@ class Dramatis::Runtime::Actor #:nodoc: all
       # FIX arguments to gate
       if !runnable? and ( @gate.accepts?(  *( [ task.type, task.method ] + task.arguments ) ) or current_call_thread?( task.call_thread ) )
         runnable!
-        Dramatis::Runtime::Scheduler.the.schedule task
+        Dramatis::Runtime::Scheduler.current.schedule task
       else
         # warn "+>schd #{self} #{@queue.join(' ')}"
         @queue << task
@@ -216,7 +217,7 @@ class Dramatis::Runtime::Actor #:nodoc: all
         index += 1
       end
       if task 
-        Dramatis::Runtime::Scheduler.the.schedule task
+        Dramatis::Runtime::Scheduler.current.schedule task
       else
         blocked!
       end
@@ -237,37 +238,6 @@ class Dramatis::Runtime::Actor #:nodoc: all
   def runnable?
     # warn "runnable? #{self} #{@state}"
     @state == :runnable
-  end
-
-  class ObjectInterfacex
-    def gate
-      @actor.gate
-    end
-    def refuse *args
-      @actor.gate.refuse( :object, *args )
-    end
-    def accept *args
-      @actor.gate.accept( :object, *args )
-    end
-    def default *args
-      @actor.gate.default( [ :object ] + args )
-    end
-    def always args, value
-      @actor.gate.always( ( [ :object ] + Array( args ) ), value )
-    end
-    def enable_call_threading
-      @actor.enable_call_threading
-    end
-    def name
-      @actor.name
-    end
-    def timeout value, *args
-      @actor.timeout value, *args
-    end
-    private
-    def initialize actor
-      @actor = actor
-    end
   end
 
   def timeout value, *args
@@ -293,27 +263,23 @@ class Dramatis::Runtime::Actor::Main < Dramatis::Runtime::Actor  #:nodoc: all
     end
 
     def dramatis_exception e
-      if Dramatis::Runtime.the.warnings?
+      if Dramatis::Runtime.current.warnings?
         warn "exception on main thread: #{e}"
-        begin
-          raise "backtrace"
-        rescue ::Exception => e
-          pp e.backtrace
-        end
+        # pp caller
       end
-      Dramatis::Runtime.the.exception e
+      Dramatis::Runtime.current.exception e
     end
 
   end
 
-  @@the = nil
+  @@current = nil
 
-  def self.the
-    @@the ||= self.new
+  def self.current
+    @@current ||= self.new
   end
 
   def self.reset
-    @@the = nil
+    @@current = nil
   end
 
   def quiesce
@@ -324,7 +290,7 @@ class Dramatis::Runtime::Actor::Main < Dramatis::Runtime::Actor  #:nodoc: all
     if !@at_exit_run
       @at_exit_run = true
       schedule
-      Dramatis::Runtime::Scheduler.the.main_at_exit
+      Dramatis::Runtime::Scheduler.current.main_at_exit
     end
   end
 

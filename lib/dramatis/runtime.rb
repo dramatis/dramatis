@@ -13,26 +13,26 @@ class Dramatis::Runtime
     end
   end
 
-  @@the = nil
+  @@current = nil
 
-  def self.the
-    @@the ||= self.new
+  def self.current
+    @@current ||= self.new
   end
 
   def self.reset
-    # this swallows exceptions: it's assumed to be used to clean up a failed test
-    # so there's no connection between tests
+    # this swallows exceptions: it's assumed to be used to clean up
+    # a failed test so there's no connection between tests
     begin
-      Dramatis::Runtime.the.quiesce
+      Dramatis::Runtime.current.quiesce
     rescue Exception => e
     end
     Dramatis::Runtime::Scheduler.reset    
     Dramatis::Runtime::Actor::Main.reset    
-    @@the = nil
+    @@current = nil
   end
 
   def quiesce
-    Dramatis::Runtime::Scheduler.the.quiesce
+    Dramatis::Runtime::Scheduler.current.quiesce
     maybe_raise_exceptions true
   end
 
@@ -43,8 +43,8 @@ class Dramatis::Runtime
         if !quiescing and warnings?
           warn "the following #{@exceptions.length} exception(s) were raised and not caught"
           @exceptions.each do |exception|
-            warn "#{exception}"
-            pp exception.backtrace
+            # warn "#{exception}"
+            # pp exception.backtrace
           end
         end
         raise Exception.new( @exceptions )
@@ -79,8 +79,9 @@ class Dramatis::Runtime
     end
     @mutex.synchronize do
       @exceptions << exception
-      warn "runtime recording exception: #{exception} #{@exceptions.length}" if warnings?
+      warn "runtime recording exception: #{exception} [#{@exceptions.length}]" if warnings?
       # backtrace
+      # pp exception.backtrace
     end
   end
 
@@ -101,7 +102,7 @@ class Dramatis::Runtime
   end
 
   def at_exit
-    Dramatis::Runtime::Actor::Main.the.finalize
+    Dramatis::Runtime::Actor::Main.current.finalize
   end
 
   private

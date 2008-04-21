@@ -21,7 +21,7 @@ module Chat::Screen::Fox
       actor.always :fox, true
       @fox = Fox::FXApp.new
       @fox.create
-      ( dramatis( Runtime.new ).continue nil ).run @fox
+      ( interface( Runtime.new ).continue nil ).run @fox
     end
 
     def new *args
@@ -75,7 +75,7 @@ module Chat::Screen::Fox
         if data.index( @options[:prompt] ) == 0
           data = data[ @options[:prompt].length..-1 ]
         end
-        dramatis( @client ).continue( nil ) >> data
+        interface( @client ).continue( nil ) >> data
       end
 
       @window.create

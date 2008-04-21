@@ -30,7 +30,7 @@ if __name__ == '__main__': main()
 f = '''
 
   after do
-    Dramatis::Runtime.the.quiesce
+    Dramatis::Runtime.current.quiesce
     Thread.list.length.should equal 1
   end
 
@@ -100,7 +100,7 @@ f = '''
 
     ( Dramatis::Actor::Name( aB ).continue nil ).startB
 
-    lambda { Dramatis::Runtime.the.at_exit }.should raise_error Dramatis::Runtime::Exception
+    lambda { Dramatis::Runtime.current.at_exit }.should raise_error Dramatis::Runtime::Exception
 
     Dramatis::Runtime.reset
 
@@ -155,20 +155,20 @@ f = '''
 
     aB_cast.increment
 
-    Dramatis::Runtime.the.quiesce
+    Dramatis::Runtime.current.quiesce
 
     aB.count.should equal 2
     
     aB_cast.startB
     aB_cast.increment
 
-    Dramatis::Runtime.the.quiesce
+    Dramatis::Runtime.current.quiesce
 
     aB.count.should equal 2
 
     anA.allow
 
-    Dramatis::Runtime.the.quiesce
+    Dramatis::Runtime.current.quiesce
 
     aB.count.should equal 3
   end
@@ -240,26 +240,26 @@ f = '''
 
     aB_cast.increment
 
-    Dramatis::Runtime.the.quiesce
+    Dramatis::Runtime.current.quiesce
 
     aB.count.should equal 2
 
     aB_cast.startB
     aB_cast.increment
 
-    Dramatis::Runtime.the.quiesce
+    Dramatis::Runtime.current.quiesce
 
     aB.count.should equal 2
 
-    Dramatis::Runtime.the.exceptions.length.should equal 0
+    Dramatis::Runtime.current.exceptions.length.should equal 0
 
     lambda { aB.shouldDeadlock }.should raise_error Dramatis::Deadlock
 
-    Dramatis::Runtime.the.exceptions.length.should equal 2
+    Dramatis::Runtime.current.exceptions.length.should equal 2
 
-    Dramatis::Runtime.the.clear_exceptions
+    Dramatis::Runtime.current.clear_exceptions
 
-    Dramatis::Runtime.the.exceptions.length.should equal 0
+    Dramatis::Runtime.current.exceptions.length.should equal 0
 
     aB.count.should equal 2
     
@@ -268,7 +268,7 @@ f = '''
     aB_cast.startB
     aB_cast.increment
 
-    Dramatis::Runtime.the.quiesce
+    Dramatis::Runtime.current.quiesce
 
     aB.count.should equal 3
 
@@ -311,13 +311,13 @@ f = '''
     a2 = a.new
     ( Dramatis::Actor::Name( a1 ).continue nil ).a a2
 
-    Dramatis::Runtime.the.quiesce
+    Dramatis::Runtime.current.quiesce
 
     a1.block_called.should be_false
 
     a2.enable
 
-    Dramatis::Runtime.the.quiesce
+    Dramatis::Runtime.current.quiesce
 
     a1.block_called.should be_true
   end
@@ -360,14 +360,14 @@ f = '''
     a2 = a.new
     ( Dramatis::Actor::Name( a1 ).continue nil ).a a2
 
-    Dramatis::Runtime.the.quiesce
+    Dramatis::Runtime.current.quiesce
 
     a1.block_called.should be_false
     a1.exception_raised.should be_true
 
     a2.enable
 
-    Dramatis::Runtime.the.quiesce
+    Dramatis::Runtime.current.quiesce
 
     a1.block_called.should be_true
   end
