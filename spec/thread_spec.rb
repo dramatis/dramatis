@@ -5,7 +5,7 @@ describe "ruby" do
     x = 12;
 
     Thread.new do
-      p x
+      # p x
     end
 
   end
