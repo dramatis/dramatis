@@ -1,3 +1,5 @@
+# :title: Dramatis Actor Library Ruby API
+
 module Dramatis #:doc:
 end
 

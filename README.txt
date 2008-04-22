@@ -1,6 +1,6 @@
 = dramatis
 
-* dramatis.mischance.net
+* http://dramatis.mischance.net
 
 == DESCRIPTION:
 
@@ -8,37 +8,29 @@ An actor library for dynamic languages.
 
 == FEATURES/PROBLEMS:
 
-THIS IS A VERY EARLY VERSION. It's effectively unreleased; I'm sticking
-it on github without announcement to share with a few people that do
-know about it.
+This is an early version, effectively a prerelease, a "pre-alpha". Mostly this means that there is no packaging, i.e., it is not yet available as a gem and the mechanisms for creating the gem (probably) don't work.
 
-Of course, it's on github, so if you REALLY want to go for it, go for it.
+It's available on github to download and does come with documentation, a tutorial, and several examples, all of which (mostly) work, so it's stable enough to being to play with.
 
-I expect a "real" release mid-April. It will still be alpha, but the
-goal between now and then is to add a couple more features, and
-significantly beef up the docs, tutorials, and demos.
+A packaged alpha is expected a few weeks after the prerelease.
 
-repository: git@github.com:dramatis/dramatis.git
-
-Mailing list: dramatis@googlegroups.com /
-              http://groups.google.com/group/dramatis
-
-IRC: #dramatis @ freenode
-
-Website/Wiki/tracker to come between now and release.
-
-That said, I guess I can say:
-
-It runs on Ruby 1.8.6, 1.9, and JRuby 1.1 on Linux
-A lot runs on OS X
-
-It's supposed to run on Python 2.5 some day ...
-
-steven
-smparkes@smparkes.net
+repository::
+        git://github.com/dramatis/dramatis.git
+Mailing list::
+        dramatis@googlegroups.com /
+        http://groups.google.com/group/dramatis
+IRC:: #dramatis @ freenode
+Website/Wiki/tracker:: http://dramatis.mischance.net
 
 == SYNOPSIS:
 == REQUIREMENTS:
+
+All the specs run on Ruby 1.8.6, 1.9, and JRuby 1.1 on Linux and OS X.
+
+At least one small example runs on rubinius but the whole spec suite has not been attempted.
+
+Work on a Python 2.5 port has started.
+
 == INSTALL:
 == LICENSE:
 
