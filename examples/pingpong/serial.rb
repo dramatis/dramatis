@@ -10,7 +10,7 @@ class PingPong
     if count == 0
       puts "#{@name}: done"
     else
-      if count % 500 == 0 || count % 500 == 1
+      if count % 500 == 0 or count % 500 == 1
         puts "#{@name}: pingpong #{count}"
       end
       partner.pingpong count-1, self
