@@ -28,7 +28,7 @@ class Auction
   def offer bid, bidder
     if bid >= @max_bid + @bid_increment
       if @max_bid >= @min_bid
-        cast( @max_bidder ).beaten_offer bid
+        release( @max_bidder ).beaten_offer bid
       end
       @max_bid = bid
       @max_bidder = bidder
@@ -79,7 +79,7 @@ class Client
   def beaten_offer max_bid
     log("beaten offer: #{max_bid}")
     @max = max_bid
-    cast( actor.name ).bid
+    release( actor.name ).bid
   end
   def log string
     puts "client #{@id}: #{string}"

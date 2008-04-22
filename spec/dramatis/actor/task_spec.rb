@@ -24,7 +24,7 @@ describe Dramatis::Runtime::Task do
         @exception = nil
       end
       def caller callee
-        cast( callee ).callee
+        release( callee ).callee
       end
       def dramatis_exception e
         @exception = e
@@ -47,9 +47,9 @@ describe Dramatis::Runtime::Task do
   it "should do something reasonable when the caller is main" do
     callee = Dramatis::Actor.new Object.new
     lambda { callee.callee }.should raise_error( NoMethodError )
-    cast( callee ).callee
+    release( callee ).callee
     Dramatis::Runtime.current.warnings = false
-    lambda { Dramatis::Runtime.current.quiesce }.should raise_error( Dramatis::Runtime::Exception )
+    lambda { Dramatis::Runtime.current.quiesce }.should raise_error( Dramatis::Error::Uncaught )
     Dramatis::Runtime.current.warnings = true
     Dramatis::Runtime.current.exceptions.length.should equal( 1 )
     Dramatis::Runtime.current.clear_exceptions
@@ -59,7 +59,7 @@ describe Dramatis::Runtime::Task do
     callerClass = Class.new do
       include Dramatis::Actor
       def caller callee
-        cast( callee ).callee
+        release( callee ).callee
       end
     end
 
@@ -68,7 +68,7 @@ describe Dramatis::Runtime::Task do
 
     Dramatis::Runtime.current.warnings = false
     caller.caller callee
-    lambda { Dramatis::Runtime.current.quiesce }.should raise_error( Dramatis::Runtime::Exception )
+    lambda { Dramatis::Runtime.current.quiesce }.should raise_error( Dramatis::Error::Uncaught )
     Dramatis::Runtime.current.warnings = true
 
     lambda { raise Dramatis::Runtime.current.exceptions[0] }.should raise_error( NoMethodError )

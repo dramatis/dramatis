@@ -18,4 +18,6 @@ describe Dramatis do
 
   it "should allow threads to be locked to actors, e.g., for fox"
 
+  it "should gc actors"
+
 end

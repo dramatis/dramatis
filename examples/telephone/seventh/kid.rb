@@ -21,7 +21,7 @@ class Kid
   def whisper what
     @heard = mangle what
     if @next
-      cast( @next ).whisper @heard
+      release( @next ).whisper @heard
     end
     actor.accept :ask
     actor.refuse :whisper

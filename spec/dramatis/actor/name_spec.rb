@@ -60,7 +60,7 @@ describe Dramatis do
     object = mock(Object.new)
     object.should_receive(:foo).with(:bar)
     name = Dramatis::Actor.new object
-    cast( name ).foo( :bar )
+    release( name ).foo( :bar )
   end
 
   it "should suport cast from the object interface"
@@ -113,6 +113,12 @@ describe Dramatis do
 
     result.should equal( :foobar )
 
+  end
+
+  it "rpc binds should return an actor name" do
+    name = Dramatis::Actor.new
+    retval = Dramatis.interface( name ).bind Hash.new
+    retval.should be_kind_of( Dramatis::Actor::Name )
   end
 
   it "should be possible to bind with a non-rpc continuation" do

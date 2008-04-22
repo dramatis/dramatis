@@ -64,7 +64,7 @@ class Dramatis::Runtime::Actor #:nodoc: all
     # p @gate
     @gate.accept :object
     # pp @gate
-    self
+    name
   end
 
   def exception exception
@@ -117,12 +117,8 @@ class Dramatis::Runtime::Actor #:nodoc: all
 
     task = Dramatis::Runtime::Task.new( self, dest, args, opts  )
 
+    # warn "#{task.type} #{task.method}"
     # warn "#{self} #{Thread.current} common send r? #{runnable?} g? #{@gate.accepts?( *( [ task.type, task.method ] + task.arguments )  ) } q #{@queue.length}"
-    begin
-      # raise "helly"
-    rescue Exception => e
-      pp e.backtrace
-    end
     @mutex.synchronize do
       # FIX arguments to gate
       if !runnable? and ( @gate.accepts?(  *( [ task.type, task.method ] + task.arguments ) ) or current_call_thread?( task.call_thread ) )

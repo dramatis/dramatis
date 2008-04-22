@@ -10,7 +10,7 @@ class Ping
   include Dramatis::Actor
   def initialize times, pong
     @pings_left = times
-    cast( pong ).ping actor.name 
+    release( pong ).ping actor.name 
   end
   def pong caller
     if @pings_left % 1000 == 0
@@ -18,7 +18,7 @@ class Ping
     end
     if @pings_left > 0
       @pings_left -= 1
-      cast( caller ).ping actor.name
+      release( caller ).ping actor.name
     end
   end
 end
@@ -33,7 +33,7 @@ class Pong
       puts "Pong: ping #{@pong_count}"
     end
     @pong_count += 1
-    cast( caller ).pong actor.name
+    release( caller ).pong actor.name
   end
 end
 

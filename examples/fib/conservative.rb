@@ -14,7 +14,7 @@ class Fib
   attr_accessor :value
   def initialize n, level = THREAD_LEVELS
     actor.refuse :value
-    cast( actor.name ).calc n, level
+    release( actor.name ).calc n, level
   end
   def calc n, level
     @value = if level == 0

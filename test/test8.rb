@@ -109,7 +109,7 @@ rescue Dramatis::Deadlock => deadlock
   begin
     Dramatis::Runtime.current.quiesce
   rescue Dramatis::Deadlock
-  rescue Dramatis::Runtime::Exception
+  rescue Dramatis::Error::Uncaught
   end
   raise "hell #{Dramatis::Runtime.current.exceptions.length}" if Dramatis::Runtime.current.exceptions.length != 2
   Dramatis::Runtime.current.clear_exceptions

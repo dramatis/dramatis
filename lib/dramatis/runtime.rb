@@ -2,22 +2,23 @@ module Dramatis; end
 
 require 'thread'
 
+# Dramatis::Runtime is the top level class managing the running of the
+# various pieces of the dramatis runtime. Typically programs don't
+# need to deal with the runtime directly, though some functions are
+# useful, particularly for debugging and testing.
+
 class Dramatis::Runtime
 
-  class Exception < ::Exception
-    def initialize exceptions
-      @exceptions = exceptions
-    end
-    def to_s
-      super + ": " + @exceptions.join( " "  )
-    end
-  end
-
-  @@current = nil
+  # Returns a reference to the current Dramatis::Runtime object.
 
   def self.current
     @@current ||= self.new
   end
+
+  # Resets the current runtime instance. Note that this method hard
+  # resets counters and ignore exceptions which is generally a bad
+  # idea. It is typical only used in unit test after methods to keep
+  # failing tests from cascading.
 
   def self.reset
     # this swallows exceptions: it's assumed to be used to clean up
@@ -31,12 +32,20 @@ class Dramatis::Runtime
     @@current = nil
   end
 
+  # Causes the runtime to suspend the current thread until there are
+  # no more tasks that can be executed. If no tasks remain, returns
+  # normally. If tasks remain but are gated off,
+  # Dramtis::Error::Deadlock is raised.
+  #
+  # As a side effect, this method releases the current actor to
+  # process messages but does not change the task gate.
+  
   def quiesce
     Dramatis::Runtime::Scheduler.current.quiesce
     maybe_raise_exceptions true
   end
 
-  def maybe_raise_exceptions quiescing
+  def maybe_raise_exceptions quiescing #:nodoc:
     @mutex.synchronize do
       if !@exceptions.empty?
         # warn "no maybe about it"
@@ -47,13 +56,15 @@ class Dramatis::Runtime
             # pp exception.backtrace
           end
         end
-        raise Exception.new( @exceptions )
+        raise Dramatis::Error::Uncaught.new( @exceptions )
       end
       @exceptions.clear
     end
   end
 
-  def exceptions
+  # Returns the list of uncaught exceptions.
+
+  def exceptions 
     result = nil
     @mutex.synchronize do
       result = @exceptions.dup
@@ -61,7 +72,11 @@ class Dramatis::Runtime
     result
   end
 
-
+  # Clears the list of uncaught exceptions. Used in unit tests to
+  # clear expected exceptions.  If exceptions are raised and not
+  # clear, they will be raised at the end of the program via a
+  # Dramatis::Error::Uncaught.
+  
   def clear_exceptions
     @mutex.synchronize do
       # warn "runtime clearing exceptions"
@@ -69,14 +84,7 @@ class Dramatis::Runtime
     end
   end
 
-  def exception exception
-    if false
-      begin
-        raise "hell"
-      rescue ::Exception => e
-        pp e.backtrace
-      end
-    end
+  def exception exception #:nodoc:
     @mutex.synchronize do
       @exceptions << exception
       warn "runtime recording exception: #{exception} [#{@exceptions.length}]" if warnings?
@@ -85,7 +93,7 @@ class Dramatis::Runtime
     end
   end
 
-  def backtrace
+  def backtrace #:nodoc:
     begin
       raise "backtrace"
     rescue ::Exception => e
@@ -93,21 +101,26 @@ class Dramatis::Runtime
     end
   end
 
+  # Enables or disables printing warnings, e.g., when uncaugh
+  # exceptions are detected.
+
   def warnings= value
     @warnings = value
   end
+
+  # Returns true if warnings are enabled.
 
   def warnings?
     @warnings
   end
 
-  def at_exit
+  def at_exit #:nodoc:
     Dramatis::Runtime::Actor::Main.current.finalize
   end
 
   private
 
-  def initialize
+  def initialize #:nodoc:
     @warnings = true
     @mutex = Mutex.new
     @exceptions = []

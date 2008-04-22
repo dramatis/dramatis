@@ -30,7 +30,7 @@ class Dramatis::Runtime::Task #:nodoc: all
 
     @call_thread = nil
 
-    name = Dramatis::Actor.current
+    name = Dramatis::Runtime::Scheduler.actor
     actor = name.instance_eval { @actor }
 
     object_id = actor.object.object_id
@@ -98,7 +98,7 @@ class Dramatis::Runtime::Task #:nodoc: all
       def exception exception
         # warn "except nil #{exception}"
         # true and pp exception.backtrace
-        interface( cast( @name ) ).exception exception
+        interface( release( @name ) ).exception exception
       end
 
       def initialize name, call_thread
@@ -131,7 +131,7 @@ class Dramatis::Runtime::Task #:nodoc: all
         @wait = ConditionVariable.new
         @call_thread = call_thread
         # warn "contiunation to #{actor}"
-        @actor = interface( Dramatis::Actor.current ).send :continuation, self, :call_thread => call_thread
+        @actor = interface( Dramatis::Runtime::Scheduler.actor ).send :continuation, self, :call_thread => call_thread
       end
 
       def queued
@@ -237,7 +237,7 @@ class Dramatis::Runtime::Task #:nodoc: all
         @exception_block = except
         @name = name
         @continuation = \
-          interface( Dramatis::Actor.current ) \
+          interface( Dramatis::Runtime::Scheduler.actor ) \
              .send :continuation, self, :call_thread => call_thread
       end
 
@@ -261,7 +261,7 @@ class Dramatis::Runtime::Task #:nodoc: all
         if @exception_block
           @exception_block.call exception
         else
-          cast( @name ).dramatis_exception exception
+          release( @name ).dramatis_exception exception
         end
       end
 
@@ -277,7 +277,7 @@ class Dramatis::Runtime::Task #:nodoc: all
         @wait = ConditionVariable.new
         @call_thread = call_thread
         # warn "contiunation to #{actor}"
-        @actor = interface( Dramatis::Actor.current ) \
+        @actor = interface( Dramatis::Runtime::Scheduler.actor ) \
           .send :continuation, self, :call_thread => call_thread
       end
 

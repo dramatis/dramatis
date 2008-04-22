@@ -22,7 +22,7 @@ class Kid
     @heard = mangle what
     # puts "#{self} heard #{@heard}"
     if @next
-      cast( @next ).whisper @heard
+      release( @next ).whisper @heard
     end
     actor.accept :ask
   end

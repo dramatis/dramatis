@@ -94,7 +94,7 @@ describe "Dramatis::Actor" do
 
     Dramatis::Runtime.current.warnings = false
 
-    lambda { Dramatis::Runtime.current.at_exit }.should raise_error( Dramatis::Runtime::Exception )
+    lambda { Dramatis::Runtime.current.at_exit }.should raise_error( Dramatis::Error::Uncaught )
 
     Dramatis::Runtime.current.warnings = true
 
@@ -252,7 +252,7 @@ describe "Dramatis::Actor" do
 
     lambda { aB.shouldDeadlock }.should raise_error( Dramatis::Deadlock )
 
-    lambda { Dramatis::Runtime.current.quiesce }.should raise_error( Dramatis::Runtime::Exception )
+    lambda { Dramatis::Runtime.current.quiesce }.should raise_error( Dramatis::Error::Uncaught )
 
     Dramatis::Runtime.current.warnings = true
 

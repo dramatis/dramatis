@@ -17,7 +17,7 @@ module Chat::Screen::WX
     def initialize
       actor.always :wx, true
       @wx = App.new
-      cast( @wx ).run
+      release( @wx ).run
     end
 
     def new *args
