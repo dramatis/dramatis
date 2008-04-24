@@ -1,0 +1,1 @@
+class Name(object): pass
