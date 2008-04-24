@@ -1,6 +1,3 @@
-class Actor(object):
+from __future__ import absolute_import
 
-    @classmethod
-    def acts_as( cls, actor_class ):
-        pass
-
+from dramatis.actor.actor import Actor

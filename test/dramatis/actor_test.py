@@ -3,90 +3,81 @@
 import inspect
 import sys
 import os.path
+import threading
 
 sys.path[0:0] = [ os.path.join( os.path.dirname( inspect.getabsfile( inspect.currentframe() ) ), '..', '..', 'lib' ) ]
 
-print sys.path
+import dramatis
 
-import unittest
+class Actor_Test:
 
-from dramatis import Actor
+    def setup(self): pass
 
-class DramatisActorTest(unittest.TestCase):
+    def teardown(self):
+        try:
+            dramatis.Runtime.current().quiesce()
+            assert len( dramatis.Runtime.current().exceptions() ) == 0
+            assert threading.activeCount() == 1
+        finally:
+            dramatis.Runtime.reset()
 
-    def tearDown(self):
-        pass
+    def test(self):
+        assert True
 
-    def testActsAs(self):
-        class F(object):
-            Actor.acts_as(self)
-            pass
-        f = F()
-        pass
+    # it should be creatable as a derived type and return the right type
+    def test_included(self):
+        class Foo( dramatis.Actor ): pass
+        name = Foo()
+        assert isinstance( name, dramatis.Actor.Name )
 
-def main(): unittest.main()
-if __name__ == '__main__': main()
 
-f = '''
+'''
 
-  after do
-    Dramatis::Runtime.current.quiesce
-    Thread.list.length.should equal 1
-  end
-
-  it "should be creatable from an acts_as class and return the right type" do
+  it "should be possible to not get an actor name" do
 
     f = Class.new do
-      Actor::acts_as self
+      include Dramatis::Actor
+      class << self
+        remove_method :new
+      end
     end
 
     name = f.new
-    name.should be_a_kind_of( Actor::Name )
-
-  end
-
-  it "should not insert new if not asked to" do
-
-    f = Class.new do
-      Actor::acts_as self, :new => :object
-    end
-
-    name = f.new
-    name.should_not be_a_kind_of( Actor::Name )
+    name.should be_a_kind_of( f )
 
   end
 
   it "should create a new name when invoked with new" do
     name = Actor.new Object.new
-    name.should be_a_kind_of Actor::Name
+    name.should be_a_kind_of( Actor::Name )
   end
 
   it "should deadlock if an rpc is made to an unbound name" do
-    lambda { Dramatis::Actor.new.foo }.should raise_error Dramatis::Deadlock
+    lambda { Dramatis::Actor.new.foo }.should raise_error( Dramatis::Deadlock )
   end
 
   it "should return NoMethodError even when not a direct call" do
     cls = Class.new do
-      Dramatis::Actor.acts_as self
+      include Dramatis::Actor
       def rpc other
         other.foo
       end
     end
     a = cls.new
     b = cls.new
-    lambda { a.rpc b }.should raise_error NoMethodError
+    lambda { a.rpc b }.should raise_error( NoMethodError )
   end
 
   it "should obey refuse" do
     a = Class.new do
-      Dramatis::Actor.acts_as self
+      include Dramatis::Actor
       def initialize
         actor.refuse :fromB
       end
     end
 
     b = Class.new do
-      Dramatis::Actor.acts_as self
+      include Dramatis::Actor
       def initialize anA
         @anA = anA
       end
@@ -98,9 +89,13 @@ f = '''
     anA = a.new
     aB = b.new anA
 
-    ( Dramatis::Actor::Name( aB ).continue nil ).startB
+    ( interface( aB ).continue nil ).startB
 
-    lambda { Dramatis::Runtime.current.at_exit }.should raise_error Dramatis::Runtime::Exception
+    Dramatis::Runtime.current.warnings = false
+
+    lambda { Dramatis::Runtime.current.at_exit }.should raise_error( Dramatis::Error::Uncaught )
+
+    Dramatis::Runtime.current.warnings = true
 
     Dramatis::Runtime.reset
 
@@ -109,7 +104,7 @@ f = '''
   it "should obey refuse and then recover with default" do
 
     a = Class.new do
-      Dramatis::Actor.acts_as self
+      include Dramatis::Actor
       def initialize
         actor.refuse :fromB
       end
@@ -122,7 +117,8 @@ f = '''
     end
 
     b = Class.new do
-      Dramatis::Actor.acts_as self
+      include Dramatis::Actor
+      include Dramatis::Actor
       def initialize anA
         @anA = anA
         @count = 0
@@ -145,39 +141,39 @@ f = '''
     anA = a.new
     aB = b.new anA
 
-    aB_cast = Dramatis::Actor::Name( aB ).continue nil
+    aB_cast = interface( aB ).continue nil
 
-    aB.count.should equal 0
+    aB.count.should equal( 0 )
 
     aB.increment
 
-    aB.count.should equal 1
+    aB.count.should equal( 1 )
 
     aB_cast.increment
 
     Dramatis::Runtime.current.quiesce
 
-    aB.count.should equal 2
+    aB.count.should equal( 2 )
     
     aB_cast.startB
     aB_cast.increment
 
     Dramatis::Runtime.current.quiesce
 
-    aB.count.should equal 2
+    aB.count.should equal( 2 )
 
     anA.allow
 
     Dramatis::Runtime.current.quiesce
 
-    aB.count.should equal 3
+    aB.count.should equal( 3 )
   end
 
   it "should block calls when in an rpc is inflight and there is no call threading" do
 
     a = Class.new do
 
-      Dramatis::Actor.acts_as self
+      include Dramatis::Actor
 
       def initialize
         actor.refuse :fromB
@@ -192,8 +188,7 @@ f = '''
         # more obvious
 
         class << self
-          def fromB
-          end
+          def fromB; end
         end
         
       end
@@ -202,7 +197,7 @@ f = '''
 
     b = Class.new do
 
-      Dramatis::Actor.acts_as self
+      include Dramatis::Actor
 
       def initialize anA
         @anA = anA
@@ -222,46 +217,51 @@ f = '''
         @count += 1
       end
 
-      def shouldDeadlock
-      end
+      def shouldDeadlock; end
 
     end
 
     anA = a.new
     aB = b.new anA
 
-    aB_cast = Dramatis::Actor::Name( aB ).continue nil
+    aB_cast = interface( aB ).continue nil
 
-    aB.count.should equal 0
+    aB.count.should equal( 0 )
 
     aB.increment
 
-    aB.count.should equal 1
+    aB.count.should equal( 1 )
 
     aB_cast.increment
 
     Dramatis::Runtime.current.quiesce
 
-    aB.count.should equal 2
+    aB.count.should equal( 2 )
 
     aB_cast.startB
     aB_cast.increment
 
     Dramatis::Runtime.current.quiesce
 
-    aB.count.should equal 2
+    aB.count.should equal( 2 )
 
-    Dramatis::Runtime.current.exceptions.length.should equal 0
+    Dramatis::Runtime.current.exceptions.length.should equal( 0 )
 
-    lambda { aB.shouldDeadlock }.should raise_error Dramatis::Deadlock
+    Dramatis::Runtime.current.warnings = false
 
-    Dramatis::Runtime.current.exceptions.length.should equal 2
+    lambda { aB.shouldDeadlock }.should raise_error( Dramatis::Deadlock )
+
+    lambda { Dramatis::Runtime.current.quiesce }.should raise_error( Dramatis::Error::Uncaught )
+
+    Dramatis::Runtime.current.warnings = true
+
+    Dramatis::Runtime.current.exceptions.length.should equal( 2 )
 
     Dramatis::Runtime.current.clear_exceptions
 
-    Dramatis::Runtime.current.exceptions.length.should equal 0
+    Dramatis::Runtime.current.exceptions.length.should equal( 0 )
 
-    aB.count.should equal 2
+    aB.count.should equal( 2 )
     
     anA.allow
 
@@ -270,25 +270,25 @@ f = '''
 
     Dramatis::Runtime.current.quiesce
 
-    aB.count.should equal 3
+    aB.count.should equal( 3 )
 
   end
 
   it "should block on recursion in the non-call threaded case" do
     a = Class.new do
-      Dramatis::Actor.acts_as self
+      include Dramatis::Actor
       def a
         actor.name.b
       end
       def b; end
     end
 
-    lambda { a.new.a }.should raise_error Dramatis::Deadlock
+    lambda { a.new.a }.should raise_error( Dramatis::Deadlock )
   end
 
   it "should block block continuations during an rpc w/o call threading " do
     a = Class.new do
-      Dramatis::Actor.acts_as self
+      include Dramatis::Actor
       attr_reader :block_called
       def initialize
         @block_called = false
@@ -297,7 +297,7 @@ f = '''
       end
       def a other
         block = lambda { |c| @block_called = true }
-        ( Dramatis::Actor::Name( other ).continue( &block ) ).b
+        ( interface( other ).continue( &block ) ).b
         other.c
       end
       def enable
@@ -309,7 +309,7 @@ f = '''
 
     a1 = a.new
     a2 = a.new
-    ( Dramatis::Actor::Name( a1 ).continue nil ).a a2
+    ( interface( a1 ).continue nil ).a a2
 
     Dramatis::Runtime.current.quiesce
 
@@ -324,7 +324,7 @@ f = '''
 
   it "should call exception blocks on exceptions" do
     a = Class.new do
-      Dramatis::Actor.acts_as self
+      include Dramatis::Actor
       attr_reader :block_called, :exception_raised
       def initialize
         actor.refuse :c
@@ -335,6 +335,10 @@ f = '''
       def a other
         result = lambda { |r| @block_called = true }
         except = lambda do |exception|
+
+          # FIX: lambda is overridden, I think, so get it back to
+          # the spec class and normal processing should work
+
           # rspec seems to have problems with normal "should" stuff
           # in this block ... this causes a failure, which is good
           # (though it does cascacde, which isn't great, but not worth
@@ -342,8 +346,8 @@ f = '''
           raise exception if exception.to_s != "hell"
           @exception_raised = true
         end
-        ( Dramatis::Actor::Name( other ).continue :exception => except, &result ).bb
-        ( Dramatis::Actor::Name( other ).continue :exception => except, &result ).b
+        ( interface( other ).continue :exception => except, &result ).bb
+        ( interface( other ).continue :exception => except, &result ).b
         other.c
       end
       def enable
@@ -358,7 +362,7 @@ f = '''
 
     a1 = a.new
     a2 = a.new
-    ( Dramatis::Actor::Name( a1 ).continue nil ).a a2
+    ( interface( a1 ).continue nil ).a a2
 
     Dramatis::Runtime.current.quiesce
 
@@ -374,7 +378,7 @@ f = '''
 
   it "should allow recursion and corecursion when call threading enabled" do
     a = Class.new do
-      Dramatis::Actor.acts_as self
+      include Dramatis::Actor
       def initialize
         actor.enable_call_threading
       end
@@ -393,6 +397,71 @@ f = '''
     a.new.a # recursion
     a.new.c # co-recursion
   end
+  
+  it "should map self returns into an actor name" do
+    a = Class.new do
+      include Dramatis::Actor
+      def me
+        self
+      end
+    end
+    anA = a.new
+    anA.should be_kind_of( Dramatis::Actor::Name )
+    anA.me.should be_kind_of( Dramatis::Actor::Name )
+  end
 
-end
+  it "should map self in actor method calls to name" do
+    a = Class.new do
+      include Dramatis::Actor
+      def test
+        actor.always :f, true
+        actor.name.f self
+      end
+      def f ref
+        ref.object_id != self.object_id
+      end
+    end
+    anA = a.new
+    anA.test.should be_true
+  end
+
+  it "should raise deadlocks with pretty backtraces" do
+
+    a = Class.new do
+      include Dramatis::Actor
+      def deadlock
+        @@first_line = __LINE__.to_i + 1
+        actor.name.deadlock
+      end
+      def self.first_line
+        @@first_line
+      end
+    end
+
+    anA = a.new
+
+    second_line = nil
+
+    begin 
+      second_line = __LINE__.to_i + 1
+      anA.deadlock
+      raise "fail: should not get here"
+    rescue Dramatis::Deadlock => deadlock
+      bt = deadlock.backtrace
+
+      # pp bt
+
+      f, l = bt[0].split ':'
+      f.should == __FILE__
+      l.to_i.should == a.first_line
+
+      f, l = bt[1].split ':'
+      f.should == __FILE__
+      l.to_i.should == second_line
+
+    end
+    
+  end
+
+
 '''

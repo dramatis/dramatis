@@ -10,3 +10,10 @@ class Runtime:
 
     def quiesce(self):
         pass
+
+    def exceptions(self):
+        return ()
+
+    @classmethod
+    def reset(self):
+        pass
