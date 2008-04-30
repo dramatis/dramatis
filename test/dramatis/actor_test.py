@@ -4,6 +4,7 @@ import inspect
 import sys
 import os.path
 import threading
+import logging
 
 sys.path[0:0] = [ os.path.join( os.path.dirname( inspect.getabsfile( inspect.currentframe() ) ), '..', '..', 'lib' ) ]
 
@@ -25,11 +26,32 @@ class Actor_Test:
         assert True
 
     # it should be creatable as a derived type and return the right type
-    def test_included(self):
-        class Foo( dramatis.Actor ): pass
-        name = Foo()
-        assert isinstance( name, dramatis.Actor.Name )
 
+    def test_included(self):
+        class Foo( dramatis.Actor ):
+            def __init__(self, *args):
+                assert len( args ) == 1
+                assert args[0] == "foobar"
+            def foo(self):
+                return "bar"
+        name = Foo( "foobar" )
+        logging.warning( type( name ) )
+        assert isinstance( name, dramatis.Actor.Name )
+        assert name.foo() == "bar"
+
+    # it should be creatable naked
+
+    def test_included(self):
+        class Foo( object ):
+            def __init__(self, *args):
+                assert len( args ) == 1
+                assert args[0] == "foobar"
+            def foo(self):
+                return "bar"
+        name = dramatis.Actor( Foo( "foobar" ) )
+        logging.warning( type( name ) )
+        assert isinstance( name, dramatis.Actor.Name )
+        assert name.foo() == "bar"
 
 '''
 
