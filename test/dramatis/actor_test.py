@@ -30,26 +30,29 @@ class Actor_Test:
     def test_included(self):
         class Foo( dramatis.Actor ):
             def __init__(self, *args):
+                # logging.warning(type(self))
+                super(Foo,self).__init__()
                 assert len( args ) == 1
                 assert args[0] == "foobar"
             def foo(self):
                 return "bar"
         name = Foo( "foobar" )
-        logging.warning( type( name ) )
+        # logging.warning( type( name ) )
         assert isinstance( name, dramatis.Actor.Name )
         assert name.foo() == "bar"
 
     # it should be creatable naked
 
-    def test_included(self):
+    def test_naked(self):
         class Foo( object ):
             def __init__(self, *args):
+                super(Foo,self).__init__()
                 assert len( args ) == 1
                 assert args[0] == "foobar"
             def foo(self):
                 return "bar"
         name = dramatis.Actor( Foo( "foobar" ) )
-        logging.warning( type( name ) )
+        # logging.warning( type( name ) )
         assert isinstance( name, dramatis.Actor.Name )
         assert name.foo() == "bar"
 

@@ -6,7 +6,7 @@ class Proxy(object):
         self.name = name
 
     def __call__(self,*args,**kwds):
-        logging.warning([args,kwds])
+        # logging.warning([args,kwds])
         return self.actor.behavior.__getattribute__(self.name).__call__(*args,**kwds)
 
 class Name(object):
@@ -15,6 +15,6 @@ class Name(object):
         super(Name,self).__setattr__("actor",actor)
 
     def __getattribute__(self,name):
-        logging.warning(Proxy)
+        # logging.warning(Proxy)
         return Proxy(super(Name,self).__getattribute__("actor"),name)
 
