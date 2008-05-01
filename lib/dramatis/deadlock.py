@@ -1,0 +1,1 @@
+class Deadlock(Exception):pass
