@@ -5,9 +5,13 @@ import logging
 from dramatis.actor.name import Name as _Name
 from dramatis import Runtime
 import dramatis.runtime as runtime
+from dramatis.actor.interface import Interface as _Interface
 
-class Metaclass(type):
+class _Methods(type):
+    pass
 
+class Metaclass(_Methods):
+    
     def __init__(cls,name,bases,dict):
         # logging.warning( ["__init__", cls] )
         super(Metaclass,cls).__init__(cls,name,bases, dict)
@@ -22,6 +26,11 @@ class Metaclass(type):
 
 class Actor(object):
 
-    Name = _Name
-
     __metaclass__ = Metaclass
+
+    Name = _Name
+    Interface = _Interface
+
+    class Methods(object):
+        __metaclass__ = _Methods
+

@@ -96,18 +96,14 @@ class Dramatis::Runtime::Actor #:nodoc: all
   end
 
   def object_send args, opts
+    t = nil
     if opts[:continuation_send]
-      type = :continuation 
-      begin
-        raise "holly hell" if args[0] != :result and args[0] != :exception
-      rescue Exception => exception
-        pp exception.backtrace
-      end
+      t = :continuation 
       args.unshift opts[:continuation_send]
     else
-      type = :object
+      t = :object
     end
-    common_send type, args, opts
+    common_send t, args, opts
   end
 
   def common_send dest, args, opts

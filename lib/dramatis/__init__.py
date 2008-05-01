@@ -5,3 +5,6 @@ Runtime = dramatis.runtime.Runtime
 
 import dramatis.actor
 Actor = dramatis.actor.Actor
+
+import dramatis.deadlock
+Deadlock = dramatis.deadlock.Deadlock

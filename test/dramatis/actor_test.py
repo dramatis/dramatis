@@ -9,6 +9,7 @@ import logging
 sys.path[0:0] = [ os.path.join( os.path.dirname( inspect.getabsfile( inspect.currentframe() ) ), '..', '..', 'lib' ) ]
 
 import dramatis
+Actor = dramatis.Actor
 
 class Actor_Test:
 
@@ -56,31 +57,33 @@ class Actor_Test:
         assert isinstance( name, dramatis.Actor.Name )
         assert name.foo() == "bar"
 
+    def test_no_actor_name(self):
+        class Foo( dramatis.Actor ):
+            class __metaclass__( dramatis.Actor.__metaclass__ ):
+                def __call__(cls,*args,**kwds):
+                    return type(object).__call__(cls,*args,**kwds)
+        name = Foo()
+        assert isinstance( name, Foo )
+
+    def test_no_actor_name_simple(self):
+        class Foo( dramatis.Actor.Methods ): pass
+        name = Foo()
+        assert isinstance( name, Foo )
+
+    def test_naked_again(self):
+        "should create a new name when invoked with new"
+        name = Actor( object() )
+        assert isinstance( name, dramatis.Actor.Name )
+
+    def test_rpc_unbound(self):
+        "should deadlock if an rpc is made to an unbound name"
+        try:
+            Actor().foo()
+            raise Exception("should not be reached")
+        except dramatis.Deadlock: pass
+
+
 '''
-
-  it "should be possible to not get an actor name" do
-
-    f = Class.new do
-      include Dramatis::Actor
-      class << self
-        remove_method :new
-      end
-    end
-
-    name = f.new
-    name.should be_a_kind_of( f )
-
-  end
-
-  it "should create a new name when invoked with new" do
-    name = Actor.new Object.new
-    name.should be_a_kind_of( Actor::Name )
-  end
-
-  it "should deadlock if an rpc is made to an unbound name" do
-    lambda { Dramatis::Actor.new.foo }.should raise_error( Dramatis::Deadlock )
-  end
-
   it "should return NoMethodError even when not a direct call" do
     cls = Class.new do
       include Dramatis::Actor
