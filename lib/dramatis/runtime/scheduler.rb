@@ -111,6 +111,7 @@ class Dramatis::Runtime::Scheduler #:nodoc: all
       raise "hell #{@main_state.to_s}" if @main_state != :running and @main_state != :may_finish
       checkio and warn "#{Thread.current} main signaled #{@running_threads} #{@state} #{@main_state} #{quiescing}"
 
+      @main_mutex.synchronize do
       if @main_state == :running
         if @state != :idle
           @main_state = :waiting
@@ -134,6 +135,7 @@ class Dramatis::Runtime::Scheduler #:nodoc: all
         end
       end
       @main_state = :running if @quiescing
+      end
       @quiescing = false
     end
     raise "hell #{@main_state.to_s}" if @main_state != :may_finish and @main_state != :running

@@ -31,11 +31,7 @@ class Scheduler(object):
         @property
         def actor(self):
             actor = None
-            try:
-                warning( "looking " + str(threading.currentThread() ) )
-                actor = _local.dramatis_actor
-            except AttributeError, ae:
-                warning( "no local: " + str(ae) )
+            actor = _local.dramatis_actor
             isMain = threading.currentThread().getName() == "MainThread"
             if( not actor ):
                 if( isMain ):
@@ -192,11 +188,18 @@ class Scheduler(object):
                 self._wait.notify()
             self._suspended_continuations[str(continuation)] = continuation
 
+    def wakeup_notification( self, continuation):
+        with self._mutex:
+            del self._suspended_continuations[ str(continuation) ]
+            self._running_threads += 1
+            _checkio and warning( "#{Thread.current} checkout #{@running_threads}" )
+
     def quiesce(self):
         dramatis.runtime.actor.Main.current.quiesce()
         self._main_at_exit( True )
 
     def _main_at_exit( self,  quiescing = False ):
+        warning("main at exit " + str(quiescing))
         with self._mutex:
             self._quiescing = "quiescing"
             _checkio and warning( "#{Thread.current} main maybe checkin 1 #{@running_threads} #{@state} #{@main_state} #{quiescing}" )
@@ -207,19 +210,20 @@ class Scheduler(object):
 
             _checkio and warning( "#{Thread.current} main signaled #{self._running_threads} #{self._state} #{self._main_state} #{quiescing}" )
 
-            if self._main_state == "running":
-                if self._state != "idle":
-                    self._main_state = "waiting"
-                    self._main_wait.wait()
-                    self._main_join.join()
-                    self._main_join = None
-                else:
-                    self._maybe_deadlock()
-                    self._main_state = "may_finish"
+            with self._main_mutex:
+                if self._main_state == "running":
+                    if self._state != "idle":
+                        self._main_state = "waiting"
+                        self._main_wait.wait()
+                        self._main_join.join()
+                        self._main_join = None
+                    else:
+                        self._maybe_deadlock()
+                        self._main_state = "may_finish"
 
-            if self._quiescing:
-                self._main_state = "running"
-            self._quiescing = False
+                if self._quiescing:
+                    self._main_state = "running"
+                self._quiescing = False
 
         dramatis.Runtime.current._maybe_raise_exceptions( quiescing )
 
@@ -239,14 +243,11 @@ class Scheduler(object):
 
     def deliver( self, task ):
         _local.dramatis_actor = task.actor.name
-        warning( "set " + str(task.actor.name) + " " + str(threading.currentThread())  )
-        warning( "look " + str(_local.dramatis_actor) + " " + str(threading.currentThread())  )
         try:
             task.deliver()
         except Exception, exception:
             warning( "2 exception " + str(exception) )
             dramatis.Runtime.current.exception( exception )
         finally:
-            warning( "unset " + str(task.actor.name) )
             _local.dramatis_actor = None
 

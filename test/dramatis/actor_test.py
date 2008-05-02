@@ -44,7 +44,7 @@ class Actor_Test:
 
     # it should be creatable naked
 
-    def test_naked(self):
+    def xest_naked(self):
         class Foo( object ):
             def __init__(self, *args):
                 super(Foo,self).__init__()
@@ -57,7 +57,7 @@ class Actor_Test:
         assert isinstance( name, dramatis.Actor.Name )
         assert name.foo() == "bar"
 
-    def test_no_actor_name(self):
+    def xest_no_actor_name(self):
         class Foo( dramatis.Actor ):
             class __metaclass__( dramatis.Actor.__metaclass__ ):
                 def __call__(cls,*args,**kwds):
@@ -65,17 +65,17 @@ class Actor_Test:
         name = Foo()
         assert isinstance( name, Foo )
 
-    def test_no_actor_name_simple(self):
+    def xest_no_actor_name_simple(self):
         class Foo( dramatis.Actor.Methods ): pass
         name = Foo()
         assert isinstance( name, Foo )
 
-    def test_naked_again(self):
+    def xest_naked_again(self):
         "should create a new name when invoked with new"
         name = Actor( object() )
         assert isinstance( name, dramatis.Actor.Name )
 
-    def test_rpc_unbound(self):
+    def xest_rpc_unbound(self):
         "should deadlock if an rpc is made to an unbound name"
         try:
             Actor().foo()

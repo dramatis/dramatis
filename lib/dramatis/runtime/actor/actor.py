@@ -61,13 +61,14 @@ class Actor(object):
 
     def object_send(self,name,args,kwds,opts):
         t = None
+        args = (name,)+args
         o = opts.get("continuation_send")
         if o:
             t = "continuation"
             args = (o,)+args
         else:
             t = "object"
-        return self.common_send( t, (name,)+args, opts )
+        return self.common_send( t, args, opts )
 
     def common_send(self,dest,args,opts):
 
@@ -112,7 +113,7 @@ class Actor(object):
                     method = "continuation_exception"
                 else: raise "hell *"
                 c.__getattribute__(method).__call__(*args)
-                self._continuations.delete( continuation_name )
+                del self._continuations[ continuation_name ]
             else: raise "hell 1: " + str(self._dest)
             warning("after y" + repr(continuation))
             continuation.result( result )
@@ -129,6 +130,19 @@ class Actor(object):
         finally:
             self._call_thread = old_call_thread
             self.schedule
+
+    def bind( self, behavior ):
+        if self._behavior: raise dramatis.error.Bind()
+        self._behavior = behavior
+        self._gate.accept( "object" )
+        return name
+
+    def exception( self, exception ):
+        try:
+            self._behavior.dramatis_exception( exception )
+        except AttributeError:
+            dramatis.Runtime.current.exception( exception )
+        return self
 
     def deadlock( self, exception ):
         tasks = []

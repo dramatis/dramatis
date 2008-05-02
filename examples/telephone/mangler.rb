@@ -27,9 +27,9 @@ class Mangler
     end
     patterns = "^((" + patterns.join( ")|(" ) + "))$"
     # pp patterns
-    matches = words.grep Regexp.new patterns, Regexp::IGNORECASE
+    matches = words.grep Regexp.new( patterns, Regexp::IGNORECASE )
     # pp matches
-    matches[rand matches.length]
+    matches[rand( matches.length )]
   end
 
   def self.mangle words

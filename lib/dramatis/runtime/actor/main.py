@@ -2,6 +2,7 @@ from __future__ import with_statement
 
 import atexit
 
+import dramatis.runtime
 from dramatis.runtime.actor import Actor
 
 class Main ( Actor ):
@@ -23,7 +24,7 @@ class Main ( Actor ):
       if( not self._at_exit_run ):
           self._at_exit_run = True
       self.schedule()
-      Scheduler.current.main_at_exit()
+      dramatis.runtime.Scheduler.current._main_at_exit()
 
   def __init__(self):
       super(Main,self).__init__( Main.DefaultBehavior() )

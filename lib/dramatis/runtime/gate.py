@@ -85,6 +85,7 @@ class Gate(object):
                 list.insert( 0, [ args, value, tag ] )
 
         def accepts( self, *args ):
+            warning( "accepts?? " + str(args) )
             accepted = False
             l = self._always + self._list
             for entry in l:

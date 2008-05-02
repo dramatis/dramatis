@@ -36,7 +36,6 @@ class Task(object):
         self._call_thread = None
 
         name = Scheduler.actor
-        warning( "here " + repr(name) )
         actor = super(dramatis.Actor.Name,name).__getattribute__("_actor")
 
         behavior = actor.behavior

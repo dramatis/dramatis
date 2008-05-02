@@ -21,9 +21,7 @@ class Nil(object):
 
     def exception( self, exception ):
         try:
-            warning(  "before" )
             dramatis.interface( dramatis.release( self._name ) ).exception( exception )
-            warning(  "after" )
         except Exception, e:
             print_exc()
             raise e
@@ -40,7 +38,6 @@ class RPC(object):
         self._actor = \
             dramatis.interface( Scheduler.actor ).\
               _continuation( self, { call_thread: call_thread } )
-        warning( "??" + str(self._actor) )
 
     '''
       def actor
@@ -81,8 +78,7 @@ class RPC(object):
             raise self._value
 
     def result( self, result ):
-        warning( "result " + str(result) )
-        warning( "result " + str(self._actor) )
+        warning( "result " + str(result) + " " + str(self._actor) )
         self._actor.result( result )
 
     def exception( self, exception ):
