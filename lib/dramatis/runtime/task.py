@@ -1,61 +1,80 @@
+from __future__ import with_statement
+
+from logging import warning
+from threading import Lock
+
+import dramatis
+import dramatis.runtime.continuation
+from dramatis.runtime import Scheduler
+
 class Task(object):
 
     @property
-    def type(self):
-        return self.dest
+    def dest(self):
+        return self._dest
 
     @property
     def method(self):
-        return self.args[0]
+        return self._args[0]
 
     @property
     def arguments(self):
-        return self.args[1:]
+        return self._args[1:]
+
+    @property
+    def call_thread(self):
+        return self._call_thread
+
+    actor = property( lambda(self): self._actor )
 
     def __init__(self, actor, dest, args, options ):
-        self.actor = actor
-        self.dest = dest
-        self.args = tuple(args)
+        self._actor = actor
+        self._dest = dest
+        self._args = tuple(args)
+        self._options = options
 
-        self.call_thread = None
+        self._call_thread = None
 
-        '''
-        name = Dramatis::Runtime::Scheduler.actor
-        actor = name.instance_eval { self.actor }
+        name = Scheduler.actor
+        warning( "here " + repr(name) )
+        actor = super(dramatis.Actor.Name,name).__getattribute__("_actor")
 
-        object_id = actor.object.object_id
+        behavior = actor.behavior
+        args = self._args
+        for i in xrange(len(args)):
+            if( args[i] is behavior ):
+                args[i] = name
 
-        self.args.each_with_index do |arg,i|
-        if arg.object_id == object_id
-        self.args[i] = name
-        end
-        end
+        if( actor.call_threading_enabled ):
+            if( self._options[:call_thread] and
+                actor._call_thread and
+                self._options[:call_thread] != actor._call_thread ):
+                raise "hell"
+            self._call_thread = actor._call_thread
+            if( self._call_thread == None ):
+                self._call_thread = self.to_s
 
-        if actor.call_threading?:
-            # warn "oct #{options[:call_thread]} act #{actor.call_thread}"
-            if options[:call_thread] and \
-                             actor.call_thread and \
-                             options[:call_thread] != actor.call_thread:
-              raise "hell"
-            self.call_thread = actor.call_thread
-        if self.call_thread == nil
-        self.call_thread = self.to_s
+        # warn "task #{self} #{_args[0]} call thread [ #{self._call_thread} ] #{options.to_a.join(' ')}"
 
-        # warn "task #{self} #{args[0]} call thread [ #{self.call_thread} ] #{options.to_a.join(' ')}"
-
-        case options[:continuation]
-        when :none
-        self.continuation = Continuation::None.new name, self.call_thread
-        when :rpc
-        self.continuation = Continuation::RPC.new name, self.call_thread
-        when :future
-        self.continuation = Continuation::Future.new name, self.call_thread
-        when Proc
-        self.continuation = Continuation::Proc.new name,  self.call_thread, options[:continuation], \
-                                                                             options[:exception]
-        else
-        raise Dramatis::Internal.new( "invalid contiunation type" )
-        '''
+        if ( self._options["continuation"] == "none" ):
+            self._continuation = dramatis.runtime.continuation.Nil( name, self._call_thread )
+        elif( self._options["continuation"] == "rpc" ):
+            self._continuation = dramatis.runtime.continuation.RPC( name, self._call_thread )
+        elif( self._options["continuation"] == "future" ):
+            self._continuation = dramatis.runtime.continuation.Future( name, self._call_thread )
+#        when Proc
+#        self._continuation = dramatis.runtime.continuation.Proc( name,  self._call_thread, options[:continuation], \
+#                                                                             options[:exception] )
+        else:
+            raise dramatis.Internal( "invalid contiunation type" )
 
     def queued(self):
-        self.continuation.queued()
+        self._continuation.queued()
+
+    def deliver(self):
+        self._actor.deliver( self._dest,
+                             self._args,
+                             self._continuation,
+                             self._call_thread )
+
+

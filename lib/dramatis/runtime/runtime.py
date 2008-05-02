@@ -1,19 +1,35 @@
+from __future__ import absolute_import
+from __future__ import with_statement
+
+from logging import warning
+
+from threading import Lock
+
 class Runtime:
 
-    _current = None
+    class __metaclass__(type):
+        @property
+        def current(self):
+            if not hasattr(self,"_current"):
+                self._current = self()
+            return self._current
 
     @classmethod
-    def current(cls):
-        global _current
-        cls._current = cls._current if cls._current else cls()
-        return cls._current
-
-    def quiesce(self):
+    def _reset(self):
         pass
 
-    def exceptions(self):
+    def __init__(self):
+        self._warnings = True
+        self._mutex = Lock()
+        self._exceptions = []
+
+    def _quiesce(self):
+        pass
+
+    def _exceptions(self):
         return ()
 
-    @classmethod
-    def reset(self):
-        pass
+    def exception( self, exception ):
+        with self._mutex:
+            self._exceptions.append( exception )
+

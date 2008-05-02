@@ -285,6 +285,7 @@ class Dramatis::Runtime::Scheduler #:nodoc: all
     checkio and warn "scheduler giving up after final deadlock check #{@queue.length} #{Thread.current}"
 
     # FIX need to check all the mutex nesting between main_mutex and mutex
+    # I think this should be the main mutex ...
     @mutex.synchronize do
       raise "hell #{@main_state.to_s}" if @main_state != :running and @main_state != :waiting
       state = @main_state

@@ -1,31 +1,124 @@
+from __future__ import absolute_import
+
+from logging import warning
+
+def _matches( a, b ):
+    return a == b or \
+        isinstance(a,type) and \
+        isinstance(b,a)
+
 class Gate(object):
 
-    def refuse(self,*args):
-        pass
+    def __new__(cls):
+        gate = Gate.Case()
+        gate.accept( object )
+        gate.accept( "actor" )
+        gate.accept( "continuation" )
+        gate.accept( "object" )
+        return gate
 
-    def always(self,args,value,options={}):
-        pass
+    class Case(object):
 
-    def accepts(self,*args):
-        '''
-        accepted = nil
-      ( @always + @list ).each do |entry|
-        vector, result = entry
-        matches = true
-        vector.each_with_index do |v, i|
-          # warn "#{v} #{args[i]} => #{v === args[i]} so #{result}"
-          if not( v === args[i] )
-            matches = false
-            break
-          end
-        end
-        if matches
-          accepted = result
-          break
-        end
-      end
-      # warn "last '#{accepted}'"
-      # p "accepts? #{args.join(" ")} => '#{accepted}'"
-      accepted == true
-      '''
-        return False
+        def __init__(self):
+            self._always=[]
+            self._list=[]
+
+        def accept( self, *args ):
+            return self.change( args, True, False )
+
+        def change( self, args, value, inplace ):
+            prepend = True
+            
+            for list_index in xrange(len(self._list)):
+                entry = self._list[list_index]
+                vector, result, tag = entry
+                matches = True
+                for arg_index in xrange(len(args)):
+                    arg = args[arg_index]
+                    if( vector[arg_index] != arg ):
+                        matches = False
+                        break
+                if( matches ):
+                    if( inplace ):
+                        self._list[list_index][1] = value
+                        prepend = False
+                    else:
+                        self._list[list_index,1] = []
+                    break
+            if( prepend ):
+                self._list.insert( 0, [ args, value, None ] )
+
+        def always( self, args, value, options = {} ):
+            return self._change( self._always, list( args ), value, options )
+
+        def _change( self, list, args, value, options = {} ):
+            inplace = options.get( "inplace" )
+            tag = options.get( "tag" )
+            prepend = True
+            tbd = []
+            for list_index in xrange(len(list)):
+                entry = list[list_index]
+                vector, result, entry_tag = entry
+                matches = True
+                if( tag and entry_tag != tag ):
+                    continue
+                if( args ):
+                    for arg_index in xrange(len(args)):
+                        arg = args[arg_index]
+                        if( arg_index >= len(vector) or
+                            vector[arg_index] != arg ):
+                            matches = False
+                            break
+                if( matches ):
+                    if( inplace and value != None ):
+                        list[list_index][1] = value
+                        prepend = False
+                    else:
+                        tbd.append( list_index )
+                        
+            tbd.reverse()
+            for index in tbd:
+                list[index:index+1] = []
+            if( prepend and value != None ):
+                list.insert( 0, [ args, value, tag ] )
+
+        def accepts( self, *args ):
+            accepted = False
+            l = self._always + self._list
+            for entry in l:
+                vector, result, tag = entry
+                matches = True
+                for i in xrange(len(vector)):
+                    v = vector[i]
+                    if( not _matches( v, args[i] ) ):
+                        matches = False
+                        break
+                if( matches ):
+                    accepted = result
+                    break
+            return accepted
+
+        def default_by_tag(self, tag):
+            self._change( self._list, None, None, { "tag": tag } )
+
+        def only( self, args, options = {} ):
+            self._change( self._list, [ "object" ], False, options )
+            self._change( self._list, [ "continuation" ], False, options )
+            self._change( self._list, [ "continuation", object, "exception" ], True, options )
+            self._change( self._list, list( args ), True, options )
+
+'''
+    def default args, options = {}
+      _change @list, args, nil, options
+    end
+    def refuse *args
+      change args, False, False
+    end
+    def update value, *args
+    end
+    def list
+      @list
+    end
+  end
+
+'''

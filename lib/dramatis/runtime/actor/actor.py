@@ -1,33 +1,51 @@
 from __future__ import with_statement
 
+from logging import warning
 from threading import Lock
 
+from traceback import print_exc
+
 import dramatis
-from dramatis.runtime import Task
-from dramatis.runtime import Gate
-from dramatis.runtime import Scheduler
+import dramatis.runtime
 
 class Actor(object):
 
-    def __init__(self,object = None):
-        self.mutex = Lock()
-        self.call_threading = False
-        self.call_thread = None
-        self.object = object
-        self.gate = Gate()
-        if not object:
-            self.gate.refuse("object")
-        self.gate.always( ( [ "object", "dramatis_exception" ] ), True )
+    def __init__(self,behavior = None):
+        self._call_threading_enabled = False
+        self._call_thread = None
+        self._behavior = behavior
+        self._gate = dramatis.runtime.Gate()
+        if not behavior:
+            self._gate.refuse("object")
+        self._gate.always( ( [ "object", "dramatis_exception" ] ), True )
         self.block()
-        self.queue = []
-        self.mutex = Lock()
-        self.continuations = {}
-        self.object_interface = dramatis.Actor.Interface(self)
-        Scheduler.current.append( self )
+        self._queue = []
+        self._mutex = Lock()
+        self._continuations = {}
+        self._object_interface = dramatis.Actor.Interface(self)
+        dramatis.runtime.Scheduler.current.append( self )
+
+    @property
+    def name(self):
+        if( not hasattr(self,"_name") ):
+            self._name = dramatis.Actor.Name( self )
+        return self._name
 
     @property
     def runnable(self):
         return self.state == "runnable"
+
+    behavior = property( lambda(self): self._behavior )
+
+    def _set_call_threading_enabled( self, v ):
+        self._call_threading_enabled = v
+
+    call_threading_enabled = property(
+        lambda(self): self._call_threading_enabled,
+        lambda(self,v): self._set_call_threading_enabled(v) )
+
+    def make_runnable(self):
+        self.state = "runnable"
 
     def is_blocked(self):
         return self.state == "blocked"
@@ -36,28 +54,95 @@ class Actor(object):
         self.state = "blocked"
 
     def current_call_thread(self,that):
-        return self.call_thread and self.call_thread == that
+        return self._call_thread and self._call_thread == that
 
     def object_send(self,name,args,kwds,opts):
         t = None
         o = opts.get("continuation_send")
         if o:
             t = "continuation"
-            args.unshift(o)
+            args = (o,)+args
         else:
             t = "object"
         return self.common_send( t, (name,)+args, opts )
 
     def common_send(self,dest,args,opts):
 
-        task = Task( self, dest, args, opts  )
+        task = dramatis.runtime.Task( self, dest, args, opts  )
 
-        with self.mutex:
+        with self._mutex:
             if ( not self.runnable and \
-                 ( self.gate.accepts(  *( ( task.type, task.method ) + task.arguments ) ) or self.current_call_thread( task.call_thread ) ) ):
-                self.runnable = true
-                Scheduler.current.schedule( task )
+                 ( self._gate.accepts(  *( ( task.dest, task.method ) + task.arguments ) ) or self.current_call_thread( task.call_thread ) ) ):
+                self.make_runnable
+                dramatis.runtime.Scheduler.current.schedule( task )
             else:
-                self.queue.append(task)
+                self._queue.append(task)
 
         return task.queued()
+
+
+    def deliver( self, dest, args, continuation, call_thread ):
+        old_call_thread = self._call_thread
+        try:
+            self._call_thread = call_thread
+            method = args.pop(0)
+            result = None
+            if ( dest == "actor" ):
+                result = self.__getattribute__(method).__call__( *args )
+            elif ( dest == "object" ):
+                v = self._object.__getattribute__(method).__call__( *args )
+                if v is self._object:
+                    v = name
+                result = v
+            elif ( dest == "continuation" ):
+                continuation_name = method
+                c = self._continuations[continuation_name]
+                if not c: raise "hell 0 #{Thread.current}"
+                method = args.pop(0)
+                if( method == "result" ):
+                    method = "continuation_result"
+                elif( method == "exception" ):
+                    method = "continuation_exception"
+                else: raise "hell *"
+                c.__getattribute__(method).__call__(*args)
+                self._continuations.delete( continuation_name )
+            else: raise "hell 1: " + str(self._dest)
+            continuation.result( result )
+        except Exception, exception:
+            try:
+                continuation.exception( exception )
+            except Exception, e:
+                warning( "double exception fault: " + repr(e) )
+                print_exc()
+                raise e
+        finally:
+            self._call_thread = old_call_thread
+            self.schedule
+
+    def deadlock( self, exception ):
+        tasks = []
+        with self._mutex:
+            tasks = list(self._queue)
+            self._queue[:] = []
+        for task in tasks:
+            task.exception( exeception )
+
+    def register_continuation( self, c ):
+        self._continuations[str(c)] = c
+
+    def schedule( self, continuation = None ):
+        with self._mutex:
+            task = None
+            index = 0
+            while task == None and index < len(self._queue):
+                candidate = self._queue[index]
+                if( self._gate.accepts( *( [ candidate.type, candidate.method ] + candidate.arguments ) ) or 
+                    self.current_call_thread( candidate.call_thread ) ):
+                    task = candidate
+                    self._queue.pop(index)
+                index += 1
+            if( task ):
+                dramatis.runtime.Scheduler.current.schedule( task )
+            else:
+                self.block()
+
