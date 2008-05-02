@@ -1,14 +1,33 @@
 from __future__ import with_statement
 
 from logging import warning
+
 from threading import Lock
 from threading import Condition
+
+from traceback import print_exc
 
 import dramatis
 from dramatis.runtime import Scheduler
 
-class Nil(object): pass
+class Nil(object):
 
+    def __init__(self,name,call_thread):
+        self._name = name
+
+    def queued(self): pass
+
+    def result(self, result): pass
+
+    def exception( self, exception ):
+        try:
+            warning(  "before" )
+            dramatis.interface( dramatis.release( self._name ) ).exception( exception )
+            warning(  "after" )
+        except Exception, e:
+            print_exc()
+            raise e
+    
 class Future(object): pass
 
 class RPC(object):
@@ -21,6 +40,7 @@ class RPC(object):
         self._actor = \
             dramatis.interface( Scheduler.actor ).\
               _continuation( self, { call_thread: call_thread } )
+        warning( "??" + str(self._actor) )
 
     '''
       def actor
@@ -61,12 +81,15 @@ class RPC(object):
             raise self._value
 
     def result( self, result ):
+        warning( "result " + str(result) )
+        warning( "result " + str(self._actor) )
         self._actor.result( result )
 
     def exception( self, exception ):
         self._actor.exception( exception )
 
     def continuation_result( self, result ):
+        warning( "c result " + str(result) )
         with self._mutex:
             self._type = "return"
             self._value = result

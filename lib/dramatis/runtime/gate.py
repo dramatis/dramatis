@@ -3,9 +3,11 @@ from __future__ import absolute_import
 from logging import warning
 
 def _matches( a, b ):
-    return a == b or \
+    matched = a == b or \
         isinstance(a,type) and \
         isinstance(b,a)
+    warning( "matches " + str(matched) + " " + str(a) + " : " + str(b) )
+    return matched
 
 class Gate(object):
 
@@ -43,7 +45,7 @@ class Gate(object):
                         self._list[list_index][1] = value
                         prepend = False
                     else:
-                        self._list[list_index,1] = []
+                        self._list.pop(list_index)
                     break
             if( prepend ):
                 self._list.insert( 0, [ args, value, None ] )
@@ -94,8 +96,11 @@ class Gate(object):
                         matches = False
                         break
                 if( matches ):
+                    warning( "does match " + str(entry) + " : " + str(args) )
                     accepted = result
                     break
+                warning( "does not match " + str(entry) + " : " + str(args) )
+            warning( "accepts? " + str(accepted) + " " + str(args) )
             return accepted
 
         def default_by_tag(self, tag):
@@ -107,17 +112,17 @@ class Gate(object):
             self._change( self._list, [ "continuation", object, "exception" ], True, options )
             self._change( self._list, list( args ), True, options )
 
+        def list(self):
+            return self._list
+
+        def refuse(self, *args):
+            return self.change( args, False, False )
+
 '''
     def default args, options = {}
       _change @list, args, nil, options
     end
-    def refuse *args
-      change args, False, False
-    end
     def update value, *args
-    end
-    def list
-      @list
     end
   end
 

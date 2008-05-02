@@ -5,6 +5,9 @@ from logging import warning
 
 from threading import Lock
 
+import dramatis.runtime
+import dramatis.runtime.actor
+
 class Runtime:
 
     class __metaclass__(type):
@@ -14,20 +17,41 @@ class Runtime:
                 self._current = self()
             return self._current
 
-    @classmethod
-    def _reset(self):
-        pass
+        def reset(self):
+            try:
+                Runtime.current.quiesce()
+            except Exception, e: pass
+            dramatis.runtime.Scheduler.reset    
+            dramatis.runtime.actor.Main.reset    
+            del self._current
 
     def __init__(self):
         self._warnings = True
         self._mutex = Lock()
         self._exceptions = []
 
-    def _quiesce(self):
-        pass
+    def quiesce(self):
+        dramatis.runtime.Scheduler.current.quiesce()    
+        self._maybe_raise_exceptions( True )
 
-    def _exceptions(self):
-        return ()
+    def _maybe_raise_exceptions( self, quiescing):
+        with self._mutex:
+            if len(self._exceptions) > 0:
+                if not quiescing and self._warnings:
+                    warning( "the following #{@exceptions.length} exception(s) were raised and not caught" )
+                    for exception in self._exceptions:
+                        warning( "#{exception}" )
+                        # pp exception.backtrace
+
+                raise dramatis.error.Uncaught( self._exceptions )
+
+            self._exceptions[:] = []
+
+    def exceptions(self):
+        result = []
+        with self._mutex:
+            result = list(self._exceptions)
+        return result
 
     def exception( self, exception ):
         with self._mutex:

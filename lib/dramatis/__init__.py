@@ -21,3 +21,8 @@ def interface( object, *args, **kwds ):
         raise dramatis.error.Interface(  "object is not a dramatis interfacable object" )
     return interface( object, *args, **kwds )
 
+def release( name ):
+    return interface( name ).continuation( None )
+
+def future( name ):
+    return interface( name ).future()

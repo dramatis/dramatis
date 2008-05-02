@@ -14,7 +14,7 @@ class Main ( Actor ):
           return self._current
 
       def reset(self):
-          self._current = None
+          del self._current
 
   def quiesce(self):
       self.schedule()

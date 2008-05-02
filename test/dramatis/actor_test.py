@@ -17,8 +17,8 @@ class Actor_Test:
 
     def teardown(self):
         try:
-            dramatis.Runtime.current().quiesce()
-            assert len( dramatis.Runtime.current().exceptions() ) == 0
+            dramatis.Runtime.current.quiesce()
+            assert len( dramatis.Runtime.current.exceptions() ) == 0
             assert threading.activeCount() == 1
         finally:
             dramatis.Runtime.reset()

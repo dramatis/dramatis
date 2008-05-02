@@ -12,12 +12,20 @@ class Interface(object):
         o = super(dramatis.Actor.Name,self._name).__getattribute__("_options")
         name = self._name = dramatis.Actor.Name(a)
         new_options = o.copy()
-        new_options["continuation"] = "none" if args[0] == None else "continuation"
+        new_options["continuation"] = "none" if options == None else "continuation"
         if( options ):
             new_options["exception"] = options["exception"]
         super(dramatis.Actor.Name,name).__setattr__("_options",new_options)
         return name
 
+
+    def exception( self, exception ):
+        return self._actor_send( "exception", exception )
+
+    def _actor_send( self, *args ):
+        a = super(dramatis.Actor.Name,self._name).__getattribute__("_actor")
+        o = super(dramatis.Actor.Name,self._name).__getattribute__("_options")
+        return a.actor_send( args, o )
 
     def _continuation(self, c, options):
         a = super(dramatis.Actor.Name,self._name).__getattribute__("_actor")
@@ -38,42 +46,7 @@ class Interface(object):
 
         return name
 
-
     '''
-  # call-seq:
-  #  continue nil -> a_name
-  #  continue { |retval| ... } -> a_name
-  #  continue( :exception => lambda { |exception| ... } ) { |retval| ... } -> a_name
-  #
-  # In call cases, returns a new name with the specified continuation semantics.
-  #
-  # When passed a nil argument, returns a new actor name with a nil
-  # continuation such that when used in an actor method call, the call
-  # will return nil immediately. The return value from such a call is
-  # lost. Equivalent to and usually called as Dramatis.release.
-  #
-  # The second form sets up the block passed to the function as the
-  # continuation of the call. When the continuation task is received from the
-  # target actor, the block will be executed. From senders point of
-  # view, the block is an unnamed method: it will only be
-  # scheduled when the actor is not executing any other task.
-  #
-  # Currently it is not possible to gate off block continuations.
-  #
-  # The third example is a variant on the second and is used to
-  # provide a second block to receive an exception object if the actor
-  # method call results in an exception being thrown. Otherwise, the
-  # runtime will try to deliver exceptions to a dramatis_exception
-  # actor method if defined. Otherwise it will be recored by the
-  # runtime.
-  #
-  #--
-  # this stuff is either tricky or evil; i need to lookup
-  # variable look ordering for instance_eval
-  # i'm assuming lexical scope over object scope
-  #++
-
-  
   # call-seq:
   #   future -> a_name
   # 
@@ -105,10 +78,6 @@ class Interface(object):
     "http://something"
   end
 
-  def exception exception #:nodoc: this should be private/protected
-    actor_send :exception, exception
-  end
-
   private
 
   def continuation c, options
@@ -125,24 +94,6 @@ class Interface(object):
     self._name
   end
 
-  def actor_send *args, &block
-    self._name.instance_eval do
-      options = self._options
-      if block
-        options = options.dup
-        options[:block] = block
-      end
-      self._actor.actor_send args, options
-    end
-  end
-
-  def initialize name #:nodoc:
-    raise "hell: " + name.inspect \
-      if !name or !name.kind_of? Dramatis::Actor::Name
-    self._name = name
-  end
-
-end
 '''
 
 
