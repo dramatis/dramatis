@@ -4,7 +4,8 @@ import inspect
 import sys
 import os.path
 import threading
-import logging
+
+from logging import warning
 
 sys.path[0:0] = [ os.path.join( os.path.dirname( inspect.getabsfile( inspect.currentframe() ) ), '..', '..', 'lib' ) ]
 
@@ -23,12 +24,12 @@ class Actor_Test:
         finally:
             dramatis.Runtime.reset()
 
-    def test(self):
+    def xest(self):
         assert True
 
     # it should be creatable as a derived type and return the right type
 
-    def test_included(self):
+    def xest_included(self):
         class Foo( dramatis.Actor ):
             def __init__(self, *args):
                 # logging.warning(type(self))
@@ -75,12 +76,13 @@ class Actor_Test:
         name = Actor( object() )
         assert isinstance( name, dramatis.Actor.Name )
 
-    def xest_rpc_unbound(self):
+    def test_rpc_unbound(self):
         "should deadlock if an rpc is made to an unbound name"
         try:
             Actor().foo()
             raise Exception("should not be reached")
         except dramatis.Deadlock: pass
+        warning('here?')
 
 
 '''
@@ -441,7 +443,7 @@ class Actor_Test:
   it "should map self in actor method calls to name" do
     a = Class.new do
       include Dramatis::Actor
-      def test
+      def xest
         actor.always :f, true
         actor.name.f self
       end

@@ -68,15 +68,15 @@ class Task(object):
             raise dramatis.Internal( "invalid contiunation type" )
 
     def exception(self, e):
-        self._continuation.exception( e )
+        return self._continuation.exception( e )
 
     def queued(self):
-        self._continuation.queued()
+        return self._continuation.queued()
 
     def deliver(self):
-        self._actor.deliver( self._dest,
-                             self._args,
-                             self._continuation,
-                             self._call_thread )
+        return self._actor.deliver( self._dest,
+                                     self._args,
+                                     self._continuation,
+                                     self._call_thread )
 
 

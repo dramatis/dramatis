@@ -6,7 +6,7 @@ def _matches( a, b ):
     matched = a == b or \
         isinstance(a,type) and \
         isinstance(b,a)
-    warning( "matches " + str(matched) + " " + str(a) + " : " + str(b) )
+    # warning( "matches " + str(matched) + " " + str(a) + " : " + str(b) )
     return matched
 
 class Gate(object):
@@ -85,7 +85,7 @@ class Gate(object):
                 list.insert( 0, [ args, value, tag ] )
 
         def accepts( self, *args ):
-            warning( "accepts?? " + str(args) )
+            # warning( "accepts?? " + str(args) )
             accepted = False
             l = self._always + self._list
             for entry in l:
@@ -97,10 +97,10 @@ class Gate(object):
                         matches = False
                         break
                 if( matches ):
-                    warning( "does match " + str(entry) + " : " + str(args) )
+                    # warning( "does match " + str(entry) + " : " + str(args) )
                     accepted = result
                     break
-                warning( "does not match " + str(entry) + " : " + str(args) )
+                # warning( "does not match " + str(entry) + " : " + str(args) )
             warning( "accepts? " + str(accepted) + " " + str(args) )
             return accepted
 

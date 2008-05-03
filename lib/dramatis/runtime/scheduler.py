@@ -15,6 +15,8 @@ _checkio = True
 _local = threading.local()
 _local.dramatis_actor = None
 
+# threading._VERBOSE = True
+
 class Scheduler(object):
 
     class __metaclass__(type):
@@ -75,7 +77,7 @@ class Scheduler(object):
                 elif( self._state == "idle" ):
                     self._state = "running"
                     self._running_threads = 1
-                    _checkio and warning( "%s checkout main %d" % ( threading.currentThread(), self._running_threads ) )
+                    _checkio and warning( str(threading.currentThread()) + " checkout main; running will be " + str(self._running_threads) )
                     try:
                         Thread( target = self._run ).start()
                     except Exception, e:
@@ -85,17 +87,20 @@ class Scheduler(object):
     class _Done(Exception):pass
 
     def _run(self):
-        _checkio and warning( "%s scheduler starting %s" % ( threading.currentThread(), self._state ) )
+        _checkio and warning( str(threading.currentThread()) + " scheduler starting " + str(self._state) )
         try:
             while True:
                 with self._mutex:
                     while len(self._queue) == 0 and self._running_threads != 0:
                         self._state = "waiting"
                         try:
+                            warning( "schd sleeping " + str(threading.currentThread()) + " " + repr(self._wait))
                             self._wait.wait()
+                            warning( "schd awake " + str(threading.currentThread())  )
                         except Exception, exception:
                             warning( "wait exception: #{exception}" )
                         finally:
+                            warning( "schd running " + str(threading.currentThread())  )
                             self._state = "running"
                         
                 try:
@@ -118,17 +123,17 @@ class Scheduler(object):
                     if( len(self._queue) == 0 and self._running_threads == 0 ):
                         raise Scheduler._Done()
 
-                if( len(self._queue) > 0 ):
+                    if( len(self._queue) > 0 ):
                     
-                    task = self._queue.pop(0)
+                        task = self._queue.pop(0)
             
-                    self._running_threads += 1
+                        self._running_threads += 1
 
-                    try:
-                        Thread( target = self._deliver_thread, args = (task,) ).start()
-                    except Exception, e:
-                        warning( "got an ex 1 " + repr(e) )
-                        raise e
+                        try:
+                            Thread( target = self._deliver_thread, args = (task,) ).start()
+                        except Exception, e:
+                            warning( "got an ex 1 " + repr(e) )
+                            raise e
 
         except Scheduler._Done: pass
         except Exception, exception:
@@ -157,7 +162,11 @@ class Scheduler(object):
             self._main_state = "may_finish"
             if( state == "waiting" ):
                 self._main_join = threading.currentThread()
-                self._main_wait.notify()
+                try:
+                    self._main_wait.notify()
+                except Exception, e:
+                    warning( "hell!!")
+                    raise e
 
         if len(self._queue) > 0:
             raise "hell"
@@ -176,13 +185,13 @@ class Scheduler(object):
             if( self._state == "idle" ):
                 self._state = "running"
                 self._running_threads = 1
-                _checkio and warning( "#{Thread.current} checkout -1 #{Thread.main} #{self._running_threads}" )
+                _checkio and warning( "#{Thread.current} checkout--1 #{Thread.main} #{self._running_threads}" )
                 try:
                     Thread( target = self._run ).start()
                 except Exception, e:
                     warning( "got an ex 2 " + repr(e) )
                     raise e
-            _checkio and warning( "%s checkin 0 %d" % ( threading.currentThread(), self._running_threads ) )
+            _checkio and warning( str(threading.currentThread()) + " checkin-0; running will be " + str(self._running_threads-1) )
             self._running_threads -= 1
             if( self._state == "waiting" ):
                 self._wait.notify()
@@ -192,43 +201,55 @@ class Scheduler(object):
         with self._mutex:
             del self._suspended_continuations[ str(continuation) ]
             self._running_threads += 1
-            _checkio and warning( "#{Thread.current} checkout #{@running_threads}" )
+            _checkio and warning( str(threading.currentThread()) + " checkout " + str(self._running_threads) )
 
     def quiesce(self):
         dramatis.runtime.actor.Main.current.quiesce()
         self._main_at_exit( True )
 
     def _main_at_exit( self,  quiescing = False ):
-        warning("main at exit " + str(quiescing))
+        warning("main at exit " + str(quiescing) + " " + str(threading.currentThread()) )
         with self._mutex:
             self._quiescing = "quiescing"
-            _checkio and warning( "#{Thread.current} main maybe checkin 1 #{@running_threads} #{@state} #{@main_state} #{quiescing}" )
+            _checkio and warning( str(threading.currentThread()) + " main maybe checkin-1 " + str(self._running_threads) + " " +str(self._state) +" "+ str(self._main_state) +" " +str(quiescing) )
             if self._state != "idle":
                 self._running_threads -= 1
                 if self._state == "waiting":
-                    self._wait.notify()
+                    try:
+                        warning( "notifying " + repr(self._wait) )
+                        warning( str(threading.enumerate()) )
+                        self._wait.notify()
+                        warning( str(threading.enumerate()) )
+                        warning( "notified" + repr(self._wait)  )
+                    except Exception, e:
+                        warning( "crap " + str(e) )
+                        raise e;
 
-            _checkio and warning( "#{Thread.current} main signaled #{self._running_threads} #{self._state} #{self._main_state} #{quiescing}" )
+            _checkio and warning( str(threading.currentThread() ) + " main signaled " + str(self._running_threads) + " " + str(self._state) + " " + str(self._main_state) + " " + str(quiescing) )
 
-            with self._main_mutex:
-                if self._main_state == "running":
+        with self._main_mutex:
+            if self._main_state == "running":
+                with self._mutex:
                     if self._state != "idle":
                         self._main_state = "waiting"
-                        self._main_wait.wait()
-                        self._main_join.join()
-                        self._main_join = None
-                    else:
-                        self._maybe_deadlock()
-                        self._main_state = "may_finish"
+                if self._main_state == "waiting":
+                    warning( "main waiting " + str(threading.currentThread()) )
+                    self._main_wait.wait()
+                    warning( "main finished waiting " + str(threading.currentThread()) )
+                    self._main_join.join()
+                    self._main_join = None
+            else:
+                self._maybe_deadlock()
+                self._main_state = "may_finish"
 
-                if self._quiescing:
-                    self._main_state = "running"
-                self._quiescing = False
+            if self._quiescing:
+                self._main_state = "running"
+            self._quiescing = False
 
         dramatis.Runtime.current._maybe_raise_exceptions( quiescing )
 
     def _deliver_thread(self,*args):
-        _checkio and warning( "#{Thread.current} spining up #{self._running_threads}" )
+        _checkio and warning( str(threading.currentThread()) + " spining up; running will be " + str(self._running_threads) )
         try:
             self.deliver( args[0] )
         except Exception, e:
@@ -236,8 +257,8 @@ class Scheduler(object):
             raise e
         finally:
             with self._mutex:
-                _checkio and warning( "#{Thread.current} checkin 2 #{self._running_threads} #{self._state}" )
                 self._running_threads -= 1
+                _checkio and warning( str(threading.currentThread()) + " checkin-2 / retiring; now running " + str(self._running_threads) + " " + str(self._state) )
                 if( self._state == "waiting" ):
                     self._wait.notify()
 

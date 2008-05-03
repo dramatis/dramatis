@@ -84,7 +84,9 @@ class Actor(object):
             else:
                 self._queue.append(task)
 
-        return task.queued()
+        v = task.queued()
+        warning( "returning " + str(v) )
+        return v
 
     def deliver( self, dest, args, continuation, call_thread ):
         old_call_thread = self._call_thread
@@ -115,9 +117,7 @@ class Actor(object):
                 c.__getattribute__(method).__call__(*args)
                 del self._continuations[ continuation_name ]
             else: raise "hell 1: " + str(self._dest)
-            warning("after y" + repr(continuation))
             continuation.result( result )
-            warning("after z")
         except Exception, exception:
             try:
                 warning( "trying to except " + repr(exception) )
