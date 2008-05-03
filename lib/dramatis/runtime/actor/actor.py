@@ -51,6 +51,7 @@ class Actor(object):
         return self.state == "blocked"
 
     def block(self):
+        warning('block')
         self.state = "blocked"
 
     def current_call_thread(self,that):
@@ -150,7 +151,10 @@ class Actor(object):
             tasks = list(self._queue)
             self._queue[:] = []
         for task in tasks:
-            task.exception( exception )
+            try:
+                task.exception( exception )
+            except Exception, e:
+                raise e
 
     def register_continuation( self, c ):
         self._continuations[str(c)] = c

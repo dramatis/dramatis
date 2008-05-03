@@ -73,7 +73,7 @@ class RPC(object):
         if( self._type == "return" ):
             return self._value
         elif( self._type == "exception" ):
-            if isinstance( dramatis.Deadlock, self._value ):
+            if isinstance( self._value, dramatis.Deadlock ):
                 self._value = dramatis.Deadlock( None, next = self._value )
             raise self._value
 
@@ -96,7 +96,7 @@ class RPC(object):
                 dramatis.runtime.Scheduler.current.wakeup_notification( self )
                 self._wait.notify()
 
-    def continuation_exception( exception ):
+    def continuation_exception( self, exception ):
         with self._mutex:
             self._type = "exception"
             self._value = exception
@@ -105,4 +105,4 @@ class RPC(object):
             else:
                 self._state = "done"
                 dramatis.runtime.Scheduler.current.wakeup_notification( self )
-                self._wait.notfy()
+                self._wait.notify()

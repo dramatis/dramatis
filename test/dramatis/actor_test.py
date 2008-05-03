@@ -24,12 +24,12 @@ class Actor_Test:
         finally:
             dramatis.Runtime.reset()
 
-    def xest(self):
+    def test(self):
         assert True
 
     # it should be creatable as a derived type and return the right type
 
-    def xest_included(self):
+    def test_included(self):
         class Foo( dramatis.Actor ):
             def __init__(self, *args):
                 # logging.warning(type(self))
@@ -45,7 +45,7 @@ class Actor_Test:
 
     # it should be creatable naked
 
-    def xest_naked(self):
+    def test_naked(self):
         class Foo( object ):
             def __init__(self, *args):
                 super(Foo,self).__init__()
@@ -58,7 +58,7 @@ class Actor_Test:
         assert isinstance( name, dramatis.Actor.Name )
         assert name.foo() == "bar"
 
-    def xest_no_actor_name(self):
+    def test_no_actor_name(self):
         class Foo( dramatis.Actor ):
             class __metaclass__( dramatis.Actor.__metaclass__ ):
                 def __call__(cls,*args,**kwds):
@@ -66,12 +66,12 @@ class Actor_Test:
         name = Foo()
         assert isinstance( name, Foo )
 
-    def xest_no_actor_name_simple(self):
+    def test_no_actor_name_simple(self):
         class Foo( dramatis.Actor.Methods ): pass
         name = Foo()
         assert isinstance( name, Foo )
 
-    def xest_naked_again(self):
+    def test_naked_again(self):
         "should create a new name when invoked with new"
         name = Actor( object() )
         assert isinstance( name, dramatis.Actor.Name )
@@ -443,7 +443,7 @@ class Actor_Test:
   it "should map self in actor method calls to name" do
     a = Class.new do
       include Dramatis::Actor
-      def xest
+      def test
         actor.always :f, true
         actor.name.f self
       end

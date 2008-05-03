@@ -74,6 +74,7 @@ class Task(object):
         return self._continuation.queued()
 
     def deliver(self):
+        warning('deliver')
         return self._actor.deliver( self._dest,
                                      self._args,
                                      self._continuation,

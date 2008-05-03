@@ -8,9 +8,11 @@ from threading import Lock
 from threading import Condition
 from threading import Thread
 
+from traceback import print_exc
+
 import dramatis.runtime.actor
 
-_checkio = True
+_checkio = False
 
 _local = threading.local()
 _local.dramatis_actor = None
@@ -69,6 +71,7 @@ class Scheduler(object):
 
 
     def schedule( self, task ):
+        warning('schedule ' + str(self._state) )
         with self._mutex:
             self._queue.append( task )
             if( len(self._queue) == 1 ):
@@ -110,10 +113,10 @@ class Scheduler(object):
                     actors = None
                     with self._mutex:
                         actors = list(self._actors)
-                        for actor in actors:
-                            _local.dramatis_actor = actor.name
-                            actor.deadlock( deadlock )
-                        _local.dramatis_actor = None
+                    for actor in actors:
+                        _local.dramatis_actor = actor.name
+                        actor.deadlock( deadlock )
+                    _local.dramatis_actor = None
 
                 with self._mutex:
                     self._maybe_deadlock()
