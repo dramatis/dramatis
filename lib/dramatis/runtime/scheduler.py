@@ -7,7 +7,6 @@ import threading
 from threading import Lock
 from threading import Condition
 from threading import Thread
-
 from traceback import print_exc
 
 import dramatis.runtime.actor
@@ -71,7 +70,7 @@ class Scheduler(object):
 
 
     def schedule( self, task ):
-        warning('schedule ' + str(self._state) )
+        # warning('schedule ' + str(self._state) )
         with self._mutex:
             self._queue.append( task )
             if( len(self._queue) == 1 ):
@@ -97,13 +96,14 @@ class Scheduler(object):
                     while len(self._queue) == 0 and self._running_threads != 0:
                         self._state = "waiting"
                         try:
-                            warning( "schd sleeping " + str(threading.currentThread()) + " " + repr(self._wait))
+                            # warning( "schd sleeping " + str(threading.currentThread()) + " " + repr(self._wait))
                             self._wait.wait()
-                            warning( "schd awake " + str(threading.currentThread())  )
+                            # warning( "schd awake " + str(threading.currentThread())  )
                         except Exception, exception:
-                            warning( "wait exception: #{exception}" )
+                            # warning( "wait exception: #{exception}" )
+                            pass
                         finally:
-                            warning( "schd running " + str(threading.currentThread())  )
+                            # warning( "schd running " + str(threading.currentThread())  )
                             self._state = "running"
                         
                 try:
@@ -179,8 +179,10 @@ class Scheduler(object):
         _checkio and warning( "#{Thread.current} scheduler ending" )
 
     def _maybe_deadlock(self):
+        # warning ( "maybe_deadlock " + str(threading.currentThread()) + " threads " + str(self._running_threads) + " q " + str(len(self._queue )) + " c " + str(len(self._suspended_continuations)) + " qi " + str(self._quiescing) )
         if( self._running_threads == 0 and len(self._queue) == 0 and
             len(self._suspended_continuations) > 0 and not self._quiescing ):
+            # warning ( "DEADLOCK" )
             raise dramatis.Deadlock()
 
     def suspend_notification( self, continuation ):
@@ -211,19 +213,19 @@ class Scheduler(object):
         self._main_at_exit( True )
 
     def _main_at_exit( self,  quiescing = False ):
-        warning("main at exit " + str(quiescing) + " " + str(threading.currentThread()) )
+        # warning("main at exit " + str(quiescing) + " " + str(threading.currentThread()) )
         with self._mutex:
-            self._quiescing = "quiescing"
+            self._quiescing = quiescing
             _checkio and warning( str(threading.currentThread()) + " main maybe checkin-1 " + str(self._running_threads) + " " +str(self._state) +" "+ str(self._main_state) +" " +str(quiescing) )
             if self._state != "idle":
                 self._running_threads -= 1
                 if self._state == "waiting":
                     try:
-                        warning( "notifying " + repr(self._wait) )
-                        warning( str(threading.enumerate()) )
+                        # warning( "notifying " + repr(self._wait) )
+                        # warning( str(threading.enumerate()) )
                         self._wait.notify()
-                        warning( str(threading.enumerate()) )
-                        warning( "notified" + repr(self._wait)  )
+                        # warning( str(threading.enumerate()) )
+                        # warning( "notified" + repr(self._wait)  )
                     except Exception, e:
                         warning( "crap " + str(e) )
                         raise e;
@@ -236,9 +238,9 @@ class Scheduler(object):
                     if self._state != "idle":
                         self._main_state = "waiting"
                 if self._main_state == "waiting":
-                    warning( "main waiting " + str(threading.currentThread()) )
+                    # warning( "main waiting " + str(threading.currentThread()) )
                     self._main_wait.wait()
-                    warning( "main finished waiting " + str(threading.currentThread()) )
+                    # warning( "main finished waiting " + str(threading.currentThread()) )
                     self._main_join.join()
                     self._main_join = None
             else:

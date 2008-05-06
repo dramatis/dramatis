@@ -94,7 +94,16 @@ describe "Dramatis::Actor" do
 
     Dramatis::Runtime.current.warnings = false
 
-    lambda { Dramatis::Runtime.current.at_exit }.should raise_error( Dramatis::Error::Uncaught )
+    lambda {
+      begin
+        puts "before"
+        Dramatis::Runtime.current.at_exit
+      rescue Dramatis::Error::Uncaught => uc
+        puts "ex here #{uc}"
+        raise uc
+      end
+}.should raise_error( Dramatis::Error::Uncaught )
+    puts "after"
 
     Dramatis::Runtime.current.warnings = true
 

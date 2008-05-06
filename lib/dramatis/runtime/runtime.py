@@ -26,7 +26,7 @@ class Runtime:
             del self._current
 
     def __init__(self):
-        self._warnings = True
+        self.warnings = True
         self._mutex = Lock()
         self._exceptions = []
 
@@ -37,7 +37,7 @@ class Runtime:
     def _maybe_raise_exceptions( self, quiescing):
         with self._mutex:
             if len(self._exceptions) > 0:
-                if not quiescing and self._warnings:
+                if not quiescing and self.warnings:
                     warning( "the following #{@exceptions.length} exception(s) were raised and not caught" )
                     for exception in self._exceptions:
                         warning( "#{exception}" )
@@ -56,4 +56,8 @@ class Runtime:
     def exception( self, exception ):
         with self._mutex:
             self._exceptions.append( exception )
+
+
+    def at_exit( self ):
+        dramatis.runtime.actor.Main.current.finalize()
 

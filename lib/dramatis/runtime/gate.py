@@ -29,17 +29,23 @@ class Gate(object):
             return self.change( args, True, False )
 
         def change( self, args, value, inplace ):
+
+            # warning( "change args: " + str( args ) + "/" + str(value) + " list: " + str(self._list) )
+
             prepend = True
             
             for list_index in xrange(len(self._list)):
                 entry = self._list[list_index]
                 vector, result, tag = entry
                 matches = True
-                for arg_index in xrange(len(args)):
-                    arg = args[arg_index]
-                    if( vector[arg_index] != arg ):
-                        matches = False
-                        break
+                if len(args) != len(vector):
+                    matches = False
+                else:
+                    for arg_index in xrange(len(args)):
+                        arg = args[arg_index]
+                        if( vector[arg_index] != arg ):
+                            matches = False
+                            break
                 if( matches ):
                     if( inplace ):
                         self._list[list_index][1] = value
@@ -49,6 +55,8 @@ class Gate(object):
                     break
             if( prepend ):
                 self._list.insert( 0, [ args, value, None ] )
+
+            # warning( "changed: " + str(self._list) )
 
         def always( self, args, value, options = {} ):
             return self._change( self._always, list( args ), value, options )
@@ -101,7 +109,7 @@ class Gate(object):
                     accepted = result
                     break
                 # warning( "does not match " + str(entry) + " : " + str(args) )
-            warning( "accepts? " + str(accepted) + " " + str(args) )
+            # warning( "accepts? " + str(accepted) + " " + str(args) )
             return accepted
 
         def default_by_tag(self, tag):

@@ -78,14 +78,14 @@ class RPC(object):
             raise self._value
 
     def result( self, result ):
-        warning( "result " + str(result) + " " + str(self._actor) )
+        # warning( "result " + str(result) + " " + str(self._actor) )
         self._actor.result( result )
 
     def exception( self, exception ):
         self._actor.exception( exception )
 
     def continuation_result( self, result ):
-        warning( "c result " + str(result) )
+        # warning( "c result " + str(result) )
         with self._mutex:
             self._type = "return"
             self._value = result

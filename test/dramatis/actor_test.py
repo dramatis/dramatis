@@ -10,6 +10,8 @@ from logging import warning
 sys.path[0:0] = [ os.path.join( os.path.dirname( inspect.getabsfile( inspect.currentframe() ) ), '..', '..', 'lib' ) ]
 
 import dramatis
+import dramatis.error
+from dramatis import interface
 Actor = dramatis.Actor
 
 class Actor_Test:
@@ -32,6 +34,8 @@ class Actor_Test:
     def test_included(self):
         class Foo( dramatis.Actor ):
             def __init__(self, *args):
+                # warning("! " + str(self))
+                # warning("!! " + str(args))
                 # logging.warning(type(self))
                 super(Foo,self).__init__()
                 assert len( args ) == 1
@@ -82,55 +86,57 @@ class Actor_Test:
             Actor().foo()
             raise Exception("should not be reached")
         except dramatis.Deadlock: pass
-        warning('here?')
+        # warning('here?')
 
 
-'''
-  it "should return NoMethodError even when not a direct call" do
-    cls = Class.new do
-      include Dramatis::Actor
-      def rpc other
-        other.foo
-      end
-    end
-    a = cls.new
-    b = cls.new
-    lambda { a.rpc b }.should raise_error( NoMethodError )
-  end
+    def test_no_method(self):
+        "should return NoMethodError even when not a direct call"
+        class cls(dramatis.Actor):
+            def rpc( self, other ):
+                other.foo()
 
-  it "should obey refuse" do
-    a = Class.new do
-      include Dramatis::Actor
-      def initialize
-        actor.refuse :fromB
-      end
-    end
+        a = cls()
+        b = cls()
 
-    b = Class.new do
-      include Dramatis::Actor
-      def initialize anA
-        @anA = anA
-      end
-      def startB
-        @anA.fromB
-      end
-    end
+        try:
+            a.rpc(b)
+            raise "should not be reached"
+        except AttributeError, ae: pass
+        
+    def test_refuse(self):
+        "should obey refuse"
+        
+        class a ( dramatis.Actor ):
+            def __init__(self):
+                # warning("REFUSE")
+                self.actor.refuse( "fromB" )
+                
+        class b ( dramatis.Actor ):
+            def __init__( self, anA ):
+                self._anA = anA
 
-    anA = a.new
-    aB = b.new anA
+            def startB( self ):
+                self._anA.fromB()
 
-    ( interface( aB ).continue nil ).startB
+        anA = a()
+        aB = b( anA )
 
-    Dramatis::Runtime.current.warnings = false
+        ( interface( aB ).continuation( None ) ).startB()
 
-    lambda { Dramatis::Runtime.current.at_exit }.should raise_error( Dramatis::Error::Uncaught )
+        dramatis.Runtime.current.warnings = False
 
-    Dramatis::Runtime.current.warnings = true
+        try:
+            # warning("before at_exti")
+            dramatis.Runtime.current.at_exit()
+            # warning("after at_exti")
+            raise "should not be reached"
+        except dramatis.error.Uncaught, u: pass
 
-    Dramatis::Runtime.reset
+        dramatis.Runtime.current.warnings = True
 
-  end
+        dramatis.Runtime.reset()
 
+    '''
   it "should obey refuse and then recover with default" do
 
     a = Class.new do
@@ -150,21 +156,21 @@ class Actor_Test:
       include Dramatis::Actor
       include Dramatis::Actor
       def initialize anA
-        @anA = anA
-        @count = 0
-        actor.always :count, true
+        self._anA = anA
+        self._count = 0
+        actor.always :count, True
       end
 
       def startB
-        @anA.fromB
+        self._anA.fromB
       end
 
       def count
-        @count
+        self._count
       end
 
       def increment
-        @count += 1
+        self._count += 1
       end
     end
 
@@ -230,21 +236,21 @@ class Actor_Test:
       include Dramatis::Actor
 
       def initialize anA
-        @anA = anA
-        @count = 0
-        actor.always :count, true
+        self._anA = anA
+        self._count = 0
+        actor.always :count, True
       end
 
       def startB
-        @anA.fromB
+        self._anA.fromB
       end
 
       def count
-        @count
+        self._count
       end
 
       def increment
-        @count += 1
+        self._count += 1
       end
 
       def shouldDeadlock; end
@@ -277,13 +283,13 @@ class Actor_Test:
 
     Dramatis::Runtime.current.exceptions.length.should equal( 0 )
 
-    Dramatis::Runtime.current.warnings = false
+    Dramatis::Runtime.current.warnings = False
 
     lambda { aB.shouldDeadlock }.should raise_error( Dramatis::Deadlock )
 
     lambda { Dramatis::Runtime.current.quiesce }.should raise_error( Dramatis::Error::Uncaught )
 
-    Dramatis::Runtime.current.warnings = true
+    Dramatis::Runtime.current.warnings = True
 
     Dramatis::Runtime.current.exceptions.length.should equal( 2 )
 
@@ -321,12 +327,12 @@ class Actor_Test:
       include Dramatis::Actor
       attr_reader :block_called
       def initialize
-        @block_called = false
+        self._block_called = False
         actor.refuse :c
-        actor.always :block_called, true
+        actor.always :block_called, True
       end
       def a other
-        block = lambda { |c| @block_called = true }
+        block = lambda { |c| self._block_called = True }
         ( interface( other ).continue( &block ) ).b
         other.c
       end
@@ -343,13 +349,13 @@ class Actor_Test:
 
     Dramatis::Runtime.current.quiesce
 
-    a1.block_called.should be_false
+    a1.block_called.should be_False
 
     a2.enable
 
     Dramatis::Runtime.current.quiesce
 
-    a1.block_called.should be_true
+    a1.block_called.should be_True
   end
 
   it "should call exception blocks on exceptions" do
@@ -358,12 +364,12 @@ class Actor_Test:
       attr_reader :block_called, :exception_raised
       def initialize
         actor.refuse :c
-        actor.always :block_called, true
-        actor.always :exception_raised, true
-        @block_called = @exception_raised = false
+        actor.always :block_called, True
+        actor.always :exception_raised, True
+        self._block_called = self._exception_raised = False
       end
       def a other
-        result = lambda { |r| @block_called = true }
+        result = lambda { |r| self._block_called = True }
         except = lambda do |exception|
 
           # FIX: lambda is overridden, I think, so get it back to
@@ -374,7 +380,7 @@ class Actor_Test:
           # (though it does cascacde, which isn't great, but not worth
           # tracking down).
           raise exception if exception.to_s != "hell"
-          @exception_raised = true
+          self._exception_raised = True
         end
         ( interface( other ).continue :exception => except, &result ).bb
         ( interface( other ).continue :exception => except, &result ).b
@@ -396,14 +402,14 @@ class Actor_Test:
 
     Dramatis::Runtime.current.quiesce
 
-    a1.block_called.should be_false
-    a1.exception_raised.should be_true
+    a1.block_called.should be_False
+    a1.exception_raised.should be_True
 
     a2.enable
 
     Dramatis::Runtime.current.quiesce
 
-    a1.block_called.should be_true
+    a1.block_called.should be_True
   end
 
   it "should allow recursion and corecursion when call threading enabled" do
@@ -444,7 +450,7 @@ class Actor_Test:
     a = Class.new do
       include Dramatis::Actor
       def test
-        actor.always :f, true
+        actor.always :f, True
         actor.name.f self
       end
       def f ref
@@ -452,7 +458,7 @@ class Actor_Test:
       end
     end
     anA = a.new
-    anA.test.should be_true
+    anA.test.should be_True
   end
 
   it "should raise deadlocks with pretty backtraces" do
@@ -460,11 +466,11 @@ class Actor_Test:
     a = Class.new do
       include Dramatis::Actor
       def deadlock
-        @@first_line = __LINE__.to_i + 1
+        self._self._first_line = __LINE__.to_i + 1
         actor.name.deadlock
       end
       def self.first_line
-        @@first_line
+        self._self._first_line
       end
     end
 

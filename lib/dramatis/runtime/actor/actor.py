@@ -51,7 +51,7 @@ class Actor(object):
         return self.state == "blocked"
 
     def block(self):
-        warning('block')
+        # warning('block')
         self.state = "blocked"
 
     def current_call_thread(self,that):
@@ -73,7 +73,7 @@ class Actor(object):
 
     def common_send(self,dest,args,opts):
 
-        warning( "common send " + dest + " " + str(args) + " " + str(opts) )
+        # warning( "common send " + dest + " " + str(args) + " " + str(opts) )
 
         task = dramatis.runtime.Task( self, dest, args, opts  )
 
@@ -86,7 +86,7 @@ class Actor(object):
                 self._queue.append(task)
 
         v = task.queued()
-        warning( "returning " + str(v) )
+        # warning( "returning " + str(v) )
         return v
 
     def deliver( self, dest, args, continuation, call_thread ):
@@ -96,7 +96,7 @@ class Actor(object):
             method = args[0]
             args = args[1:]
             result = None
-            warning( "deliver " + dest + " " + method + " " + str(args) )
+            # warning( "deliver " + dest + " " + method + " " + str(args) )
             if ( dest == "actor" ):
                 result = self.__getattribute__(method).__call__( *args )
             elif ( dest == "object" ):
@@ -121,22 +121,26 @@ class Actor(object):
             continuation.result( result )
         except Exception, exception:
             try:
-                warning( "trying to except " + repr(exception) )
-                print_exc()
+                # warning( "trying to except " + repr(exception) )
+                # print_exc()
                 continuation.exception( exception )
             except Exception, e:
-                warning( "double exception fault: " + repr(e) )
-                print_exc()
+                # warning( "double exception fault: " + repr(e) )
+                # print_exc()
                 raise e
         finally:
             self._call_thread = old_call_thread
             self.schedule
 
+    def object_initialize( self, *args ):
+        self._gate.accept( "object" )
+        self._behavior.__init__( *args )
+
     def bind( self, behavior ):
         if self._behavior: raise dramatis.error.Bind()
         self._behavior = behavior
         self._gate.accept( "object" )
-        return name
+        return self.name
 
     def exception( self, exception ):
         try:
