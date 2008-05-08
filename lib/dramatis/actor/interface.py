@@ -13,6 +13,8 @@ class Interface(object):
         self._actor._gate.default( ( "object", ) + args )
 
     def always( self, args, value ):
+        if not isinstance( args, tuple ):
+            args = ( args, )
         self._actor._gate.always( ( ( "object", ) + args ), value )
 
     def enable_call_threading( self ):

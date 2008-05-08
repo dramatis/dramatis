@@ -94,6 +94,8 @@ class Gate(object):
 
         def accepts( self, *args ):
             # warning( "accepts?? " + str(args) )
+            if len(args) >= 3 and args[1] == "__getattribute__":
+                args = args[0:1] + args[2:]
             accepted = False
             l = self._always + self._list
             for entry in l:
@@ -127,10 +129,10 @@ class Gate(object):
         def refuse(self, *args):
             return self.change( args, False, False )
 
+        def default(self, args, options = {} ):
+            return self._change( self._list, args, None, options )
+
 '''
-    def default args, options = {}
-      _change @list, args, nil, options
-    end
     def update value, *args
     end
   end

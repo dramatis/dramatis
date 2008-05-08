@@ -2,6 +2,7 @@ from __future__ import with_statement
 
 from logging import warning
 from threading import Lock
+from threading import currentThread
 
 from traceback import print_exc
 
@@ -33,6 +34,7 @@ class Actor(object):
 
     @property
     def runnable(self):
+        # warning( "runnable? " + str(self) + " " + self.state )
         return self.state == "runnable"
 
     behavior = property( lambda(self): self._behavior )
@@ -45,13 +47,15 @@ class Actor(object):
         lambda(self,v): self._set_call_threading_enabled(v) )
 
     def make_runnable(self):
+        # warning( "make_runnable "  + str(self) + " " )
         self.state = "runnable"
 
     def is_blocked(self):
+        # warning( "blocked? "   + str(self) + " " + self.state )
         return self.state == "blocked"
 
     def block(self):
-        # warning('block')
+        # warning('block ' + str(self) + " ")
         self.state = "blocked"
 
     def current_call_thread(self,that):
@@ -73,14 +77,14 @@ class Actor(object):
 
     def common_send(self,dest,args,opts):
 
-        # warning( "common send " + dest + " " + str(args) + " " + str(opts) )
+        # warning( "common send " + str(currentThread()) + " " + dest + " " + str(args) + " " + str(opts) )
 
         task = dramatis.runtime.Task( self, dest, args, opts  )
 
         with self._mutex:
             if ( not self.runnable and
                  ( self._gate.accepts(  *( ( task.dest, task.method ) + task.arguments ) ) or self.current_call_thread( task.call_thread ) ) ):
-                self.make_runnable
+                self.make_runnable()
                 dramatis.runtime.Scheduler.current.schedule( task )
             else:
                 self._queue.append(task)
@@ -96,14 +100,16 @@ class Actor(object):
             method = args[0]
             args = args[1:]
             result = None
-            # warning( "deliver " + dest + " " + method + " " + str(args) )
+            # warning( "deliver " + dest + " " + method + " " + str(args) + " " + str(self._behavior) )
             if ( dest == "actor" ):
                 result = self.__getattribute__(method).__call__( *args )
             elif ( dest == "object" ):
+                # warning( "before call " + str(self._behavior) + " " + str( self._behavior.__getattribute__(method) ) )
                 v = self._behavior.__getattribute__(method).__call__( *args )
                 if v is self._behavior:
                     v = self.name()
                 result = v
+                # warning( "after call " + str(self._behavior) )
             elif ( dest == "continuation" ):
                 continuation_name = method
                 c = self._continuations[continuation_name]
@@ -130,7 +136,9 @@ class Actor(object):
                 raise e
         finally:
             self._call_thread = old_call_thread
-            self.schedule
+            # warning( "final schedule " + str( self._behavior ) )
+            self.schedule()
+            # warning( "after final schedule " + str( self._behavior ) )
 
     def object_initialize( self, *args ):
         self._gate.accept( "object" )
@@ -169,13 +177,16 @@ class Actor(object):
             index = 0
             while task == None and index < len(self._queue):
                 candidate = self._queue[index]
-                if( self._gate.accepts( *( [ candidate.type, candidate.method ] + candidate.arguments ) ) or 
+                if( self._gate.accepts( *( ( candidate.dest, candidate.method ) + candidate.arguments ) ) or 
                     self.current_call_thread( candidate.call_thread ) ):
                     task = candidate
                     self._queue.pop(index)
                 index += 1
             if( task ):
+                # warning( "schedule next " + str(  task ) )
                 dramatis.runtime.Scheduler.current.schedule( task )
             else:
+                # warning( "schedule block " + str(self) )
                 self.block()
+                # warning( "schedule blocked " + str(self) )
 
