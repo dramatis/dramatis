@@ -96,14 +96,11 @@ describe "Dramatis::Actor" do
 
     lambda {
       begin
-        puts "before"
         Dramatis::Runtime.current.at_exit
       rescue Dramatis::Error::Uncaught => uc
-        puts "ex here #{uc}"
         raise uc
       end
-}.should raise_error( Dramatis::Error::Uncaught )
-    puts "after"
+    }.should raise_error( Dramatis::Error::Uncaught )
 
     Dramatis::Runtime.current.warnings = true
 
