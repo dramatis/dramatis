@@ -207,112 +207,97 @@ class Actor_Test:
 
         assert aB.count == 3
 
-    '''
-  it "should block calls when in an rpc is inflight and there is no call threading" do
+    def test_block_if_non_threading(self):
+        '''should block calls when in an rpc is inflight and
+        there is no call threading'''
 
-    a = Class.new do
+        class a ( dramatis.Actor ):
+            def __init__( self ):
+                self.actor.refuse( "fromB" )
 
-      include Dramatis.Actor
+            def _fromB( self ): pass
 
-      def initialize
-        actor.refuse :fromB
-      end
+            def allow(self):
+                self.actor.default( "fromB" )
+                self.fromB = self._fromB
 
-      def allow
-        actor.default :fromB
+        class b ( dramatis.Actor ):
+            def __init__(self, anA):
+                self._anA = anA
+                self._count = 0
+                self.actor.always( "count", True )
 
-        # just for the hell of it,
-        # def fromB here; if called earlier
-        # should fail making timing errors
-        # more obvious
+            def startB( self ):
+                self._anA.fromB()
 
-        class << self
-          def fromB; end
-        end
-        
-      end
+            @property
+            def count( self ):
+                return self._count
 
-    end
+            def increment(self):
+                self._count += 1
+                
+            def shouldDeadlock(self): pass
 
-    b = Class.new do
+        anA = a()
+        aB = b(anA)
 
-      include Dramatis.Actor
+        aB_cast = interface( aB ).continuation( None )
 
-      def initialize anA
-        self._anA = anA
-        self._count = 0
-        actor.always :count, True
-      end
+        assert aB.count == 0
 
-      def startB
-        self._anA.fromB
-      end
+        aB.increment()
 
-      def count
-        self._count
-      end
+        assert aB.count == 1
 
-      def increment
-        self._count += 1
-      end
+        aB_cast.increment()
 
-      def shouldDeadlock; end
+        dramatis.Runtime.current.quiesce()
 
-    end
+        assert aB.count == 2
 
-    anA = a.new
-    aB = b.new anA
+        aB_cast.startB()
+        aB_cast.increment()
+            
+        dramatis.Runtime.current.quiesce()
 
-    aB_cast = interface( aB ).continue nil
+        assert aB.count == 2
 
-    aB.count.should equal( 0 )
+        assert len( dramatis.Runtime.current.exceptions() ) == 0
 
-    aB.increment
+        dramatis.Runtime.current.warnings = False
+            
+        try:
+            aB.shouldDeadlock()
+            raise "should not be reached"
+        except dramatis.Deadlock: pass
 
-    aB.count.should equal( 1 )
+        try:
+            dramatis.Runtime.current.quiesce()
+            raise "should not be reached"
+        except dramatis.error.Uncaught: pass
 
-    aB_cast.increment
+        dramatis.Runtime.current.warnings = True
 
-    Dramatis.Runtime.current.quiesce
+        assert len( dramatis.Runtime.current.exceptions() ) == 2
 
-    aB.count.should equal( 2 )
+        dramatis.Runtime.current.clear_exceptions()
 
-    aB_cast.startB
-    aB_cast.increment
+        assert len( dramatis.Runtime.current.exceptions() ) == 0
 
-    Dramatis.Runtime.current.quiesce
-
-    aB.count.should equal( 2 )
-
-    Dramatis.Runtime.current.exceptions.length.should equal( 0 )
-
-    Dramatis.Runtime.current.warnings = False
-
-    lambda { aB.shouldDeadlock }.should raise_error( Dramatis.Deadlock )
-
-    lambda { Dramatis.Runtime.current.quiesce }.should raise_error( Dramatis.Error.Uncaught )
-
-    Dramatis.Runtime.current.warnings = True
-
-    Dramatis.Runtime.current.exceptions.length.should equal( 2 )
-
-    Dramatis.Runtime.current.clear_exceptions
-
-    Dramatis.Runtime.current.exceptions.length.should equal( 0 )
-
-    aB.count.should equal( 2 )
+        assert aB.count == 2
     
-    anA.allow
+        anA.allow()
 
-    aB_cast.startB
-    aB_cast.increment
+        aB_cast.startB()
+        aB_cast.increment()
+        
+        dramatis.Runtime.current.quiesce()
 
-    Dramatis.Runtime.current.quiesce
+        assert aB.count == 3
 
-    aB.count.should equal( 3 )
 
-  end
-
+    '''
   it "should block on recursion in the non-call threaded case" do
     a = Class.new do
       include Dramatis.Actor

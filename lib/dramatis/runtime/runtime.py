@@ -53,6 +53,11 @@ class Runtime:
             result = list(self._exceptions)
         return result
 
+    def clear_exceptions(self):
+        with self._mutex:
+            # warn "runtime clearing exceptions"
+            self._exceptions[:] = []
+
     def exception( self, exception ):
         with self._mutex:
             self._exceptions.append( exception )

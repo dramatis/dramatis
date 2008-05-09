@@ -37,6 +37,8 @@ class FunctionProxy(object):
         options = super(FunctionProxy,self).__getattribute__("_options")
         return actor.object_send( attr, args, kwds, options )
 
+_instmeth = type( FunctionProxy.__call__ )
+
 def _func(): pass
 _func = type(_func)
 
@@ -55,18 +57,22 @@ class Name(object):
             return FunctionProxy(attr,a,o)
         if a._behavior == None:
             return FunctionProxy(attr,a,o)
+
         # warning( "a: " + str(a) )
         # warning( "list: " + str( ( a._behavior, ) + a._behavior.__class__.__mro__ ) )
         for out in ( a._behavior, ) + a._behavior.__class__.__mro__:
+            # print
+            # print repr(out), out.__dict__
             desc = out.__dict__.get( attr )
             if ( desc ):
-                print repr(self), "x", repr(attr), type(desc)
+                # print repr(self), "x", repr(attr), type(desc)
                 if ( type(desc) == property ):
                     return PropertyProxy(attr,a,o).__get__(o,type(o))
-                elif ( type(desc) == _func ):
+                elif ( type(desc) == _func ) or \
+                      ( type(desc) == _instmeth ):
                     return FunctionProxy(attr,a,o)
                 else:
-                    raise"hell"
+                    raise "hell: type? " + str( type(desc) )
         # The attribute is not defined (at this time)
         # The only choice seems to be to assume it's a function
         return FunctionProxy(attr,a,o)
