@@ -415,34 +415,28 @@ class Actor_Test:
         a().a() # recursion
         a().c() # co-recursion
  
+    def test_actor_name_mapping(self):
+        "should map self returns into an actor name"
+        class a ( dramatis.Actor ):
+            @property
+            def me(self):
+                return self
+        anA = a()
+        assert isinstance( anA, dramatis.Actor.Name )
+        assert isinstance( anA.me, dramatis.Actor.Name )
+
+    def test_self_to_name_as_arg(self):
+        "should map self in actor method calls to name"
+        class a ( dramatis.Actor ):
+            def test(self):
+                self.actor.always( "f", True )
+                return self.actor.name.f( self )
+            def f(self, ref):
+                return not ref is self
+        anA = a()
+        assert anA.test()
+
     '''
-  it "should map self returns into an actor name" do
-    a = Class.new do
-      include Dramatis.Actor
-      def me
-        self
-      end
-    end
-    anA = a.new
-    anA.should be_kind_of( Dramatis.Actor.Name )
-    anA.me.should be_kind_of( Dramatis.Actor.Name )
-  end
-
-  it "should map self in actor method calls to name" do
-    a = Class.new do
-      include Dramatis.Actor
-      def test
-        actor.always :f, True
-        self.actor.name.f self
-      end
-      def f ref
-        ref.object_id != self.object_id
-      end
-    end
-    anA = a.new
-    anA.test.should be_True
-  end
-
   it "should raise deadlocks with pretty backtraces" do
 
     a = Class.new do

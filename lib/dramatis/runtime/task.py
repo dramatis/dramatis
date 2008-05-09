@@ -33,7 +33,6 @@ class Task(object):
     def __init__(self, actor, dest, args, options ):
         self._actor = actor
         self._dest = dest
-        self._args = tuple(args)
         self._options = options
 
         self._call_thread = None
@@ -42,10 +41,11 @@ class Task(object):
         actor = super(dramatis.Actor.Name,name).__getattribute__("_actor")
 
         behavior = actor.behavior
-        args = self._args
+        args = list(args)
         for i in xrange(len(args)):
             if( args[i] is behavior ):
                 args[i] = name
+        self._args = tuple(args)
 
         if( actor.call_threading_enabled ):
             if( self._options.get("call_thread") and
