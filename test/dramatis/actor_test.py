@@ -173,10 +173,6 @@ class Actor_Test:
 
         aB_cast = interface( aB ).continuation( None )
 
-        # warning("z")
-        print aB.count
-        # warning("y")
-
         assert aB.count == 0
 
         aB.increment()
@@ -371,10 +367,8 @@ class Actor_Test:
                     if str(e) != "hell": raise e
                     self._exception_raised = True
 
-                print "here"
                 ( interface( other ).continuation( { "exception": exception,
                                                      "result": result } ) ).bb()
-                print "there"
                 ( interface( other ).continuation( { "exception": exception,
                                                      "result": result } ) ).b()
 
@@ -405,29 +399,23 @@ class Actor_Test:
 
         assert a1.block_called
 
+    def test_allow_rec_corec_with_threading(self):
+        "should allow recursion and corecursion when call threading enabled"
+        class a  ( dramatis.Actor ):
+            def __init__(self):
+                self.actor.enable_call_threading()
+            def a(self):
+                self.actor.name.b()
+            def b(self): pass
+            def c(self):
+                other = self.__class__()
+                other.d( self.actor.name )
+            def d(self,first):
+                first.a()
+        a().a() # recursion
+        a().c() # co-recursion
+ 
     '''
-  it "should allow recursion and corecursion when call threading enabled" do
-    a = Class.new do
-      include Dramatis.Actor
-      def initialize
-        actor.enable_call_threading
-      end
-      def a
-        actor.name.b
-      end
-      def b; end
-      def c
-        other = self.class.new
-        other.d actor.name
-      end
-      def d first
-        first.a
-      end
-    end
-    a.new.a # recursion
-    a.new.c # co-recursion
-  end
-  
   it "should map self returns into an actor name" do
     a = Class.new do
       include Dramatis.Actor
@@ -445,7 +433,7 @@ class Actor_Test:
       include Dramatis.Actor
       def test
         actor.always :f, True
-        actor.name.f self
+        self.actor.name.f self
       end
       def f ref
         ref.object_id != self.object_id
@@ -461,7 +449,7 @@ class Actor_Test:
       include Dramatis.Actor
       def deadlock
         self._self._first_line = __LINE__.to_i + 1
-        actor.name.deadlock
+        self.actor.name.deadlock
       end
       def self.first_line
         self._self._first_line

@@ -48,13 +48,13 @@ class Task(object):
                 args[i] = name
 
         if( actor.call_threading_enabled ):
-            if( self._options[:call_thread] and
+            if( self._options.get("call_thread") and
                 actor._call_thread and
-                self._options[:call_thread] != actor._call_thread ):
+                self._options["call_thread"] != actor._call_thread ):
                 raise "hell"
             self._call_thread = actor._call_thread
             if( self._call_thread == None ):
-                self._call_thread = self.to_s
+                self._call_thread = str(self)
 
         # warn "task #{self} #{_args[0]} call thread [ #{self._call_thread} ] #{options.to_a.join(' ')}"
 

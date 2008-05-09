@@ -18,7 +18,7 @@ class Interface(object):
         self._actor._gate.always( ( ( "object", ) + args ), value )
 
     def enable_call_threading( self ):
-        self._actor.enable_call_threading()
+        self._actor._set_call_threading_enabled(True)
 
     @property
     def name( self ):

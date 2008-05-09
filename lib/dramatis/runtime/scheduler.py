@@ -156,6 +156,7 @@ class Scheduler(object):
                 actor.deadlock( deadlock )
         except Exception, exception:
             warning( "2 exception " + str(exception) )
+            print_exc()
             dramatis.Runtime.current.exception( exception )
     
         _checkio and warning( "scheduler giving up after final deadlock check #{self._queue.length} #{Thread.current}" )
@@ -272,7 +273,8 @@ class Scheduler(object):
         try:
             task.deliver()
         except Exception, exception:
-            warning( "2 exception " + str(exception) )
+            warning( "3 exception " + str(exception) )
+            print_exc()
             dramatis.Runtime.current.exception( exception )
         finally:
             _local.dramatis_actor = None
