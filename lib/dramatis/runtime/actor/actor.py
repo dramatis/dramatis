@@ -127,8 +127,8 @@ class Actor(object):
             continuation.result( result )
         except Exception, exception:
             try:
-                warning( "trying to except " + repr(exception) )
-                print_exc()
+                # warning( "trying to except " + repr(exception) )
+                # print_exc()
                 continuation.exception( exception )
             except Exception, e:
                 # warning( "double exception fault: " + repr(e) )

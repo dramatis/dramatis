@@ -21,7 +21,12 @@ class Interface(object):
             if type(options) == _func:
                 new_options["continuation"] = options
             else:
-                new_options["exception"] = options["exception"]
+                if options.has_key( "result" ):
+                    new_options["continuation"] = options["result"]
+                if options.has_key( "exception" ):
+                    new_options["exception"] = options["exception"]
+        if new_options["continuation"] == None:
+            new_options["continuation"] = "none"
         super(dramatis.Actor.Name,name).__setattr__("_options",new_options)
         return name
 

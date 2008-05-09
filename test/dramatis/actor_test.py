@@ -100,7 +100,7 @@ class Actor_Test:
 
         try:
             a.rpc(b)
-            raise "should not be reached"
+            raise Exception("should not be reached")
         except AttributeError, ae: pass
         
     def test_refuse(self):
@@ -129,7 +129,7 @@ class Actor_Test:
             # warning("before at_exti")
             dramatis.Runtime.current.at_exit()
             # warning("after at_exti")
-            raise "should not be reached"
+            raise Exception("should not be reached")
         except dramatis.error.Uncaught, u: pass
 
         dramatis.Runtime.current.warnings = True
@@ -269,12 +269,12 @@ class Actor_Test:
             
         try:
             aB.shouldDeadlock()
-            raise "should not be reached"
+            raise Exception("should not be reached")
         except dramatis.Deadlock: pass
 
         try:
             dramatis.Runtime.current.quiesce()
-            raise "should not be reached"
+            raise Exception("should not be reached")
         except dramatis.error.Uncaught: pass
 
         dramatis.Runtime.current.warnings = True
@@ -306,7 +306,7 @@ class Actor_Test:
 
         try:
             a().a()
-            raise "should have raised deadlock"
+            raise Exception("should have raised deadlock")
         except dramatis.Deadlock: pass
 
     def test_block_block_conts_rpc_no_threading( self ):
@@ -350,61 +350,62 @@ class Actor_Test:
 
         assert a1.block_called
 
+    def test_call_except_blocks(self):
+        "should call exception blocks on exceptions"
+        class a ( dramatis.Actor ):
+            @property
+            def block_called(self): return self._block_called
+
+            @property
+            def exception_raised(self): return self._exception_raised
+
+            def __init__(self):
+                self.actor.refuse("c")
+                self.actor.always( "block_called", True )
+                self.actor.always( "exception_raised", True )
+                self._block_called = self._exception_raised = False
+
+            def a(self, other):
+                def result(r): self._block_called = True
+                def exception(e):
+                    if str(e) != "hell": raise e
+                    self._exception_raised = True
+
+                print "here"
+                ( interface( other ).continuation( { "exception": exception,
+                                                     "result": result } ) ).bb()
+                print "there"
+                ( interface( other ).continuation( { "exception": exception,
+                                                     "result": result } ) ).b()
+
+                other.c()
+
+            def enable(self):
+                self.actor.default("c")
+
+            def bb(self): pass
+
+            def b(self): raise Exception("hell")
+
+            def c(self): pass
+
+        a1 = a()
+        a2 = a()
+
+        ( interface( a1 ).continuation( None ) ).a( a2 )
+
+        dramatis.Runtime.current.quiesce()
+
+        assert not a1.block_called
+        assert a1.exception_raised
+
+        a2.enable()
+
+        dramatis.Runtime.current.quiesce()
+
+        assert a1.block_called
+
     '''
-  it "should call exception blocks on exceptions" do
-    a = Class.new do
-      include Dramatis.Actor
-      attr_reader :block_called, :exception_raised
-      def initialize
-        actor.refuse :c
-        actor.always :block_called, True
-        actor.always :exception_raised, True
-        self._block_called = self._exception_raised = False
-      end
-      def a other
-        result = lambda { |r| self._block_called = True }
-        except = lambda do |exception|
-
-          # FIX: lambda is overridden, I think, so get it back to
-          # the spec class and normal processing should work
-
-          # rspec seems to have problems with normal "should" stuff
-          # in this block ... this causes a failure, which is good
-          # (though it does cascacde, which isn't great, but not worth
-          # tracking down).
-          raise exception if exception.to_s != "hell"
-          self._exception_raised = True
-        end
-        ( interface( other ).continue :exception => except, &result ).bb
-        ( interface( other ).continue :exception => except, &result ).b
-        other.c
-      end
-      def enable
-        actor.default :c
-      end
-      def bb; end
-      def b
-        raise "hell"
-      end
-      def c; end
-    end
-
-    a1 = a.new
-    a2 = a.new
-    ( interface( a1 ).continue nil ).a a2
-
-    Dramatis.Runtime.current.quiesce
-
-    a1.block_called.should be_False
-    a1.exception_raised.should be_True
-
-    a2.enable
-
-    Dramatis.Runtime.current.quiesce
-
-    a1.block_called.should be_True
-  end
-
   it "should allow recursion and corecursion when call threading enabled" do
     a = Class.new do
       include Dramatis.Actor
@@ -474,7 +475,7 @@ class Actor_Test:
     begin 
       second_line = __LINE__.to_i + 1
       anA.deadlock
-      raise "fail: should not get here"
+      raise Exception("fail: should not get here")
     rescue Dramatis.Deadlock => deadlock
       bt = deadlock.backtrace
 
