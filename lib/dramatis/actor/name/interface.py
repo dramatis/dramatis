@@ -2,19 +2,26 @@ from __future__ import absolute_import
 
 import dramatis
 
+def _func(): pass
+_func = type(_func)
+
 class Interface(object):
 
     def __init__(self,name):
         self._name = name
+
 
     def continuation( self, options = {} ):
         a = super(dramatis.Actor.Name,self._name).__getattribute__("_actor")
         o = super(dramatis.Actor.Name,self._name).__getattribute__("_options")
         name = self._name = dramatis.Actor.Name(a)
         new_options = o.copy()
-        new_options["continuation"] = "none" if options == None else "continuation"
-        if( options ):
-            new_options["exception"] = options["exception"]
+        new_options["continuation"] = "none"
+        if ( options ):
+            if type(options) == _func:
+                new_options["continuation"] = options
+            else:
+                new_options["exception"] = options["exception"]
         super(dramatis.Actor.Name,name).__setattr__("_options",new_options)
         return name
 

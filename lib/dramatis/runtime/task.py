@@ -7,6 +7,9 @@ import dramatis
 import dramatis.runtime.continuation
 from dramatis.runtime import Scheduler
 
+def _func(): pass
+_func = type(_func)
+
 class Task(object):
 
     @property
@@ -61,11 +64,14 @@ class Task(object):
             self._continuation = dramatis.runtime.continuation.RPC( name, self._call_thread )
         elif( self._options["continuation"] == "future" ):
             self._continuation = dramatis.runtime.continuation.Future( name, self._call_thread )
-#        when Proc
-#        self._continuation = dramatis.runtime.continuation.Proc( name,  self._call_thread, options[:continuation], \
-#                                                                             options[:exception] )
+        elif( isinstance( self._options["continuation"], _func) ):
+            self._continuation = \
+                dramatis.runtime.continuation.Block( name,
+                                                     self._call_thread,
+                                                     options.get("continuation"),
+                                                     options.get("exception") )
         else:
-            raise dramatis.Internal( "invalid contiunation type" )
+            raise dramatis.error.Internal( "invalid contiunation type: ", type(self._options["continuation"]) )
 
     def exception(self, e):
         return self._continuation.exception( e )

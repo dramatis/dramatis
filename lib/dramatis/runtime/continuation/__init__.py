@@ -106,3 +106,31 @@ class RPC(object):
                 self._state = "done"
                 dramatis.runtime.Scheduler.current.wakeup_notification( self )
                 self._wait.notify()
+
+class Block( object ):
+
+    def __init__(self, name, call_thread, result, exception):
+        # p "p.n #{call_thread} #{result} #{except}"
+        self._result_block = result
+        self._exception_block = exception
+        self._name = name
+        self._continuation = \
+            dramatis.interface( dramatis.runtime.Scheduler.actor ) \
+              ._continuation( self, { call_thread: call_thread } )
+
+    def queued(self): pass
+    
+    def result(self, result):
+        self._continuation.result( result )
+    
+    def exception(self, exception):
+        self._continuation.exception( exception )
+
+    def continuation_result(self, result):
+        self._result_block( result )
+
+    def continuation_exception(self, exception):
+        if self._exception_block:
+            self._exception_block( exception )
+        else:
+            dramatis.release( self._name ).dramatis_exception( exception )

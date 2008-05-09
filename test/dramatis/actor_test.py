@@ -309,43 +309,48 @@ class Actor_Test:
             raise "should have raised deadlock"
         except dramatis.Deadlock: pass
 
+    def test_block_block_conts_rpc_no_threading( self ):
+        "should block block continuations during an rpc w/o call threading"
+        class a ( dramatis.Actor ):
+            @property
+            def block_called(self): return self._block_called
+
+            def __init__(self):
+                self._block_called = False
+                self.actor.refuse("c")
+                self.actor.always( "block_called", True )
+
+            def a(self, other):
+
+                def block ( c ):
+                    self._block_called = True
+
+                ( interface( other ).continuation( block ) ).b()
+
+                other.c()
+
+            def enable(self):
+                self.actor.default("c")
+
+            def b(self): pass
+            def c(self): pass
+
+        a1 = a()
+        a2 = a()
+
+        ( interface( a1 ).continuation( None ) ).a( a2 )
+
+        dramatis.Runtime.current.quiesce()
+
+        assert not a1.block_called
+
+        a2.enable()
+
+        dramatis.Runtime.current.quiesce()
+
+        assert a1.block_called
+
     '''
-  it "should block block continuations during an rpc w/o call threading " do
-    a = Class.new do
-      include Dramatis.Actor
-      attr_reader :block_called
-      def initialize
-        self._block_called = False
-        actor.refuse :c
-        actor.always :block_called, True
-      end
-      def a other
-        block = lambda { |c| self._block_called = True }
-        ( interface( other ).continue( &block ) ).b
-        other.c
-      end
-      def enable
-        actor.default :c
-      end
-      def b; end
-      def c; end
-    end
-
-    a1 = a.new
-    a2 = a.new
-    ( interface( a1 ).continue nil ).a a2
-
-    Dramatis.Runtime.current.quiesce
-
-    a1.block_called.should be_False
-
-    a2.enable
-
-    Dramatis.Runtime.current.quiesce
-
-    a1.block_called.should be_True
-  end
-
   it "should call exception blocks on exceptions" do
     a = Class.new do
       include Dramatis.Actor
