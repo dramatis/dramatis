@@ -297,19 +297,19 @@ class Actor_Test:
         assert aB.count == 3
 
 
+    def test_block_rec_non_thread(self):
+        "should block on recursion in the non-call threaded case"
+        class a ( dramatis.Actor ):
+            def a(self):
+                return self.actor.name.b()
+            def b(self): pass
+
+        try:
+            a().a()
+            raise "should have raised deadlock"
+        except dramatis.Deadlock: pass
+
     '''
-  it "should block on recursion in the non-call threaded case" do
-    a = Class.new do
-      include Dramatis.Actor
-      def a
-        actor.name.b
-      end
-      def b; end
-    end
-
-    lambda { a.new.a }.should raise_error( Dramatis.Deadlock )
-  end
-
   it "should block block continuations during an rpc w/o call threading " do
     a = Class.new do
       include Dramatis.Actor

@@ -20,8 +20,9 @@ class Interface(object):
     def enable_call_threading( self ):
         self._actor.enable_call_threading()
 
+    @property
     def name( self ):
-        self._actor.name
+        return self._actor.name
 
     def _gate( self ):
-        self._actor._gate
+        return self._actor._gate

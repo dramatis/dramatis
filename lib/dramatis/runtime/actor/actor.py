@@ -107,7 +107,7 @@ class Actor(object):
                 # warning( "before call " + str(self._behavior) + " " + str( self._behavior.__getattribute__(method) ) )
                 v = self._behavior.__getattribute__(method).__call__( *args )
                 if v is self._behavior:
-                    v = self.name()
+                    v = self.name
                 result = v
                 # warning( "after call " + str(self._behavior) )
             elif ( dest == "continuation" ):
