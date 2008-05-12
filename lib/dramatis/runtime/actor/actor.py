@@ -63,7 +63,7 @@ class Actor(object):
         return self._call_thread and self._call_thread == that
 
     def actor_send( self, args, opts ):
-        self.common_send( "actor", args, opts )
+        return self.common_send( "actor", args, opts )
 
     def object_send(self,name,args,kwds,opts):
         t = None

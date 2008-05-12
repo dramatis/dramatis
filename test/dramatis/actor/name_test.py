@@ -138,53 +138,58 @@ class Name_Test:
         actor = O()
         name = dramatis.Actor(actor)
 
-        result = None
+        result = []
 
-        def block(self,value):
-            result = value
+        def block(value):
+            result[:] = [value]
             
         retval = dramatis.interface( name ).continuation(block).foo( "bar" )
         assert retval == None
-        assert result == None
-        assert result == None
+        assert result == []
+        assert result == []
 
         dramatis.Runtime.current.quiesce()
     
-        assert result == "foobar"
+        assert result == ["foobar"]
+
+    def test_exec_tasks_after_binding(self):
+        "should execute messages to unbound names once bound"
+
+        name = dramatis.Actor()
+
+        class O(object):
+            def foo(self,arg):
+                assert arg == "bar"
+                return "foobar"
+
+        result = []
+
+        def block(value):
+            result[:] = [ value ]
+
+        retval = dramatis.interface( name ).continuation(block).foo("bar")
+
+        assert retval == None
+        assert result == []
+
+        dramatis.Runtime.current.quiesce()
+
+        assert result == []
+
+        dramatis.interface( name ).bind( O() )
+
+        dramatis.Runtime.current.quiesce()
+        
+        assert result == [ "foobar" ]
+
+
+    def test_rpc_binds_return_name(self):
+        "rpc binds should return an actor name"
+        name = dramatis.Actor()
+        retval = dramatis.interface( name ).bind( dict() )
+        assert isinstance(retval,dramatis.Actor.Name)
 
 ''' 
-  it "should execute messages to unbound names once bound" do
-
-    name = Dramatis::Actor.new
-
-    object = mock(Object.new)
-    object.should_receive(:foo).with(:bar).and_return(:foobar)
-
-    result = nil
-
-    retval = ( interface( name ).continue { |value| result = value } ).foo :bar
-
-    retval.should be_nil
-    result.should be_nil
-
-    Dramatis::Runtime.current.quiesce
-
-    result.should be_nil
-
-    interface( name ).bind object
-
-    Dramatis::Runtime.current.quiesce
-
-    result.should equal( :foobar )
-
-  end
-
-  it "rpc binds should return an actor name" do
-    name = Dramatis::Actor.new
-    retval = Dramatis.interface( name ).bind Hash.new
-    retval.should be_kind_of( Dramatis::Actor::Name )
-  end
-
   it "should be possible to bind with a non-rpc continuation" do
     name = Dramatis::Actor.new
     result = nil
