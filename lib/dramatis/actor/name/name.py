@@ -66,9 +66,11 @@ class Name(object):
             d = None
             try:
                 d = out.__dict__
-            except AttributeError:
-                raise AttributeError( "'" + str(out.__class__.__name__) + "' object has no attribute '" + attr + "'" )
-            desc = d.get( attr )
+            except AttributeError: pass
+            # raise AttributeError( "'" + str(out.__class__.__name__) + "' object has no attribute '" + attr + "'" )
+            desc = None
+            if ( d ):
+                desc = d.get( attr )
             if ( desc ):
                 # print repr(self), "x", repr(attr), type(desc)
                 if ( type(desc) == property ):
