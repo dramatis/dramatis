@@ -128,26 +128,31 @@ class Name_Test:
         except dramatis.error.Bind: okay = True
         assert okay
 
-''' 
 
-  it "should allow and execute block continuations" do
+    def test_allow_exec_blocks(self):
+        "should allow and execute block continuations"
+        class O (object):
+            def foo(self,arg):
+                assert arg == "bar"
+                return "foobar"
+        actor = O()
+        name = dramatis.Actor(actor)
 
-    actor = Object.new
-    name = Dramatis::Actor.new actor
-    actor.should_receive(:foo).with(:bar).and_return(:foobar)
+        result = None
 
-    result = nil
-    retval = ( interface( name ).continue { |value| result = value } ).foo :bar
-    retval.should be_nil
-    result.should be_nil
-    result.should be_nil # to perhaps highlight a threading problem
+        def block(self,value):
+            result = value
+            
+        retval = dramatis.interface( name ).continuation(block).foo( "bar" )
+        assert retval == None
+        assert result == None
+        assert result == None
 
-    Dramatis::Runtime.current.quiesce
+        dramatis.Runtime.current.quiesce()
     
-    result.should equal( :foobar )
+        assert result == "foobar"
 
-  end
-
+''' 
   it "should execute messages to unbound names once bound" do
 
     name = Dramatis::Actor.new
