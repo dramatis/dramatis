@@ -9,6 +9,15 @@ from logging import warning
 
 sys.path[0:0] = [ os.path.join( os.path.dirname( inspect.getabsfile( inspect.currentframe() ) ), '..', '..', 'lib' ) ]
 
+from inspect import currentframe
+from inspect import getframeinfo
+
+from traceback import format_list
+from traceback import extract_tb
+from traceback import print_exc
+
+from sys import exc_info
+
 import dramatis
 import dramatis.error
 from dramatis import interface
@@ -436,44 +445,36 @@ class Actor_Test:
         anA = a()
         assert anA.test()
 
-    '''
-  it "should raise deadlocks with pretty backtraces" do
+    def test_pretty_tracebacks(self):
+        "should raise deadlocks with pretty tracebacks"
 
-    a = Class.new do
-      include Dramatis.Actor
-      def deadlock
-        self._self._first_line = __LINE__.to_i + 1
-        self.actor.name.deadlock
-      end
-      def self.first_line
-        self._self._first_line
-      end
-    end
+        class a ( dramatis.Actor ):
+            @property
+            def first_line(self): return self._first_line
+            def deadlock(self):
+                # print getframeinfo( currentframe() )
+                self._first_line = getframeinfo( currentframe() )[1]+1
+                self.actor.name.deadlock()
 
-    anA = a.new
+        anA = a()
+        
+        second_line = None
+        
+        try:
+            second_line = getframeinfo( currentframe() )[1]+1
+            anA.deadlock()
+            raise Exception("fail: should not get here")
+        except dramatis.Deadlock, deadlock:
+            bt = deadlock.traceback
 
-    second_line = nil
+            # print ( "".join( format_list( deadlock.traceback ) ) )
+            
+            f, l = bt[-1][0:2]
+            # print f, l, anA.first_line
+            assert f == getframeinfo( currentframe() )[0]
+            assert l == anA.first_line
 
-    begin 
-      second_line = __LINE__.to_i + 1
-      anA.deadlock
-      raise Exception("fail: should not get here")
-    rescue Dramatis.Deadlock => deadlock
-      bt = deadlock.backtrace
-
-      # pp bt
-
-      f, l = bt[0].split ':'
-      f.should == __FILE__
-      l.to_i.should == a.first_line
-
-      f, l = bt[1].split ':'
-      f.should == __FILE__
-      l.to_i.should == second_line
-
-    end
-    
-  end
-
-
-'''
+            f, l = bt[-2][0:2]
+            # print f, l, second_line
+            assert f == getframeinfo( currentframe() )[0]
+            assert l == second_line

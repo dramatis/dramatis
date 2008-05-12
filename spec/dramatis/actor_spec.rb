@@ -456,7 +456,7 @@ describe "Dramatis::Actor" do
     rescue Dramatis::Deadlock => deadlock
       bt = deadlock.backtrace
 
-      # pp bt
+      pp bt
 
       f, l = bt[0].split ':'
       f.should == __FILE__

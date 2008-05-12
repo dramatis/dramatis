@@ -3,6 +3,7 @@ from __future__ import absolute_import
 from logging import warning
 
 import dramatis.error
+Error = dramatis.error.Error
 
 import dramatis.runtime
 Runtime = dramatis.runtime.Runtime

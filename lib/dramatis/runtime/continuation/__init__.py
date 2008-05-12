@@ -75,6 +75,7 @@ class RPC(object):
         elif( self._type == "exception" ):
             if isinstance( self._value, dramatis.Deadlock ):
                 self._value = dramatis.Deadlock( None, next = self._value )
+                # self._value.set_traceback()
             raise self._value
 
     def result( self, result ):

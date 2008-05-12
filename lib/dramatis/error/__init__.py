@@ -1,7 +1,9 @@
 from __future__ import absolute_import
 
-class Interface(Exception): pass
+class Error(Exception): pass
 
-class Uncaught(Exception): pass
+class Interface(Error): pass
 
-class Internal(Exception): pass
+class Uncaught(Error): pass
+
+class Internal(Error): pass

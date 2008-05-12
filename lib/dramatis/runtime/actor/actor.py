@@ -4,6 +4,7 @@ from logging import warning
 from threading import Lock
 from threading import currentThread
 
+from sys import exc_info
 from traceback import print_exc
 
 import dramatis
@@ -129,6 +130,11 @@ class Actor(object):
             try:
                 # warning( "trying to except " + repr(exception) )
                 # print_exc()
+                try:
+                    exception.set_traceback( exc_info()[2] )
+                except AttributeError: pass
+                except Exception, e:
+                    print "oops", e
                 continuation.exception( exception )
             except Exception, e:
                 # warning( "double exception fault: " + repr(e) )
