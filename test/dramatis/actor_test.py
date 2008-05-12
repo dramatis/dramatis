@@ -91,12 +91,12 @@ class Actor_Test:
 
     def test_rpc_unbound(self):
         "should deadlock if an rpc is made to an unbound name"
+        okay = False
         try:
             Actor().foo()
             raise Exception("should not be reached")
-        except dramatis.Deadlock: pass
-        # warning('here?')
-
+        except dramatis.Deadlock: okay = True
+        assert okay
 
     def test_no_method(self):
         "should return NoMethodError even when not a direct call"
@@ -107,10 +107,13 @@ class Actor_Test:
         a = cls()
         b = cls()
 
+        okay = False
+
         try:
             a.rpc(b)
             raise Exception("should not be reached")
-        except AttributeError, ae: pass
+        except AttributeError, ae: okay = True
+        assert okay
         
     def test_refuse(self):
         "should obey refuse"
@@ -134,12 +137,16 @@ class Actor_Test:
 
         dramatis.Runtime.current.warnings = False
 
+        okay = False
+
         try:
             # warning("before at_exti")
             dramatis.Runtime.current.at_exit()
             # warning("after at_exti")
             raise Exception("should not be reached")
-        except dramatis.error.Uncaught, u: pass
+        except dramatis.error.Uncaught, u: okay = True
+
+        assert okay
 
         dramatis.Runtime.current.warnings = True
 
@@ -272,15 +279,23 @@ class Actor_Test:
 
         dramatis.Runtime.current.warnings = False
             
+        okay = False
+
         try:
             aB.shouldDeadlock()
             raise Exception("should not be reached")
-        except dramatis.Deadlock: pass
+        except dramatis.Deadlock: okay = True
+
+        assert okay
+
+        okay = False
 
         try:
             dramatis.Runtime.current.quiesce()
             raise Exception("should not be reached")
-        except dramatis.error.Uncaught: pass
+        except dramatis.error.Uncaught: okay = True
+
+        assert okay
 
         dramatis.Runtime.current.warnings = True
 
@@ -309,10 +324,14 @@ class Actor_Test:
                 return self.actor.name.b()
             def b(self): pass
 
+        okay = False
+
         try:
             a().a()
             raise Exception("should have raised deadlock")
-        except dramatis.Deadlock: pass
+        except dramatis.Deadlock: okay = True
+
+        assert okay
 
     def test_block_block_conts_rpc_no_threading( self ):
         "should block block continuations during an rpc w/o call threading"
@@ -460,11 +479,15 @@ class Actor_Test:
         
         second_line = None
         
+        okay = False
+
         try:
             second_line = getframeinfo( currentframe() )[1]+1
             anA.deadlock()
             raise Exception("fail: should not get here")
         except dramatis.Deadlock, deadlock:
+            okay = True
+
             bt = deadlock.traceback
 
             # print ( "".join( format_list( deadlock.traceback ) ) )
@@ -478,3 +501,5 @@ class Actor_Test:
             # print f, l, second_line
             assert f == getframeinfo( currentframe() )[0]
             assert l == second_line
+
+        assert okay

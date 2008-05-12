@@ -39,6 +39,7 @@ class Name_Test:
         assert True
 
     def test_attribute_error_no_atts(self):
+        "should return AttributeError as appropriate"
         actor = dramatis.Actor( object() )
         okay = False
         try:
@@ -50,6 +51,7 @@ class Name_Test:
         assert okay
 
     def test_attribute_error(self):
+        "should return AttributeError as appropriate"
         o = object()
         actor = dramatis.Actor( o )
         okay = False
@@ -61,25 +63,26 @@ class Name_Test:
             okay = True
         assert okay
 
-'''
-  it "should return NoMethodError as appropriate" do
-    actor = Dramatis::Actor.new Object.new
-    lambda { actor.foo }.should raise_error( NoMethodError )
-  end
+    def test_recreate_errors(self):
+        "should recreate errors rather just forward them(?)"
 
-  it "should recreate errors rather just forward them(?)"
+    def test_block_methods_during_cont(self):
+        "should block other methods during a continuation"
 
-  it "should block other methods during a continuation"
+    def test_unbound(self):
+        "should be creatable unbound" 
+        dramatis.Actor()
 
-  it "should be creatable unbound" do
-    Dramatis::Actor.new
-  end
+    def test_msg_unbound(self):
+        "should allow messages to unbound"
+        okay = False
+        try:
+            dramatis.Actor().foo()
+            raise Exception("should not be reached")
+        except dramatis.Deadlock: okay = True
+        assert okay
 
-  it "should allow messages to unbound" do
-    lambda { Dramatis::Actor.new.foo }.
-      should raise_error( Dramatis::Deadlock )
-  end
-
+''' 
   it "should be creatable bound" do
     name = Dramatis::Actor.new Object.new
     name.should be_kind_of( Dramatis::Actor::Name )
