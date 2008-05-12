@@ -189,29 +189,27 @@ class Name_Test:
         retval = dramatis.interface( name ).bind( dict() )
         assert isinstance(retval,dramatis.Actor.Name)
 
-''' 
-  it "should be possible to bind with a non-rpc continuation" do
-    name = Dramatis::Actor.new
-    result = nil
-    name = interface( name ).continue { |v| result = v }
-    retval = interface( name ).bind Object.new
-    retval.should equal( nil )
-    result.should equal( nil )
-    Dramatis::Runtime.current.quiesce
-    result.should_not be_nil
-  end
+    def test_bind_with_release(self):
+        "should be possible to bind with a non-rpc continuation"
+        name = dramatis.Actor()
+        result = []
+        def block(v):
+            result[:] = [ v ]
+        name = dramatis.interface( name ).continuation(block)
+        retval = dramatis.interface( name ).bind( object() )
+        assert retval == None
+        assert result == []
+        dramatis.Runtime.current.quiesce()
+        assert result != []
 
-  it "should provide a url, if asked" do
-    actor = Dramatis::Actor.new Object.new
-    url = interface( actor ).url
-    url.should match( %r[http://] )
-  end
+    def test_url(self):
+        "should provide a url, if asked"
 
-  it "unbound names should queue messages and deliver them in order"
+    def test_unboudn_queue_ordered(self):
+        "unbound names should queue messages and deliver them in order"
 
-  it "messages should be delivered out of order sometimes"
+    def test_sometimes_out_of_order(self):
+        "messages should be delivered out of order sometimes"
 
-  it "flushing should guarantee message order"
-
-end
-'''
+    def test_flush_quarantees_order(self):
+        "flushing should guarantee message order"
