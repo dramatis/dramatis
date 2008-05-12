@@ -82,12 +82,13 @@ class Name_Test:
         except dramatis.Deadlock: okay = True
         assert okay
 
-''' 
-  it "should be creatable bound" do
-    name = Dramatis::Actor.new Object.new
-    name.should be_kind_of( Dramatis::Actor::Name )
-  end
+    def test_creatable_bound(self):
+        "should be creatable bound"
+        name = dramatis.Actor( object() )
+        assert isinstance(name,dramatis.Actor.Name)
 
+
+''' 
   it "should allow and execute messages to bound names" do
     object = mock Object.new
     object.should_receive(:foo).with(:bar).and_return(:foobar)
