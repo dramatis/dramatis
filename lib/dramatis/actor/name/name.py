@@ -63,7 +63,12 @@ class Name(object):
         for out in ( a._behavior, ) + a._behavior.__class__.__mro__:
             # print
             # print repr(out), out.__dict__
-            desc = out.__dict__.get( attr )
+            d = None
+            try:
+                d = out.__dict__
+            except AttributeError:
+                raise AttributeError( "'" + str(out.__class__.__name__) + "' object has no attribute '" + attr + "'" )
+            desc = d.get( attr )
             if ( desc ):
                 # print repr(self), "x", repr(attr), type(desc)
                 if ( type(desc) == property ):
