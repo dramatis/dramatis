@@ -34,6 +34,9 @@ class Interface(object):
     def exception( self, exception ):
         return self._actor_send( "exception", exception )
 
+    def bind(self, behavior):
+        return self._actor_send( "bind", behavior )
+
     def _actor_send( self, *args ):
         a = super(dramatis.Actor.Name,self._name).__getattribute__("_actor")
         o = super(dramatis.Actor.Name,self._name).__getattribute__("_options")

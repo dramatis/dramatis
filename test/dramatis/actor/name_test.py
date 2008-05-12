@@ -88,36 +88,47 @@ class Name_Test:
         assert isinstance(name,dramatis.Actor.Name)
 
 
+    def test_allow_and_exec_msgs(self):
+        "should allow and execute messages to bound names"
+        class o ( object ):
+            def foo(self,arg):
+                assert arg == "bar"
+                return "foobar"
+        name = dramatis.Actor( o() )
+        result = name.foo("bar")
+        assert result == "foobar"
+
+
+    def test_delv_releases(self):
+        class O (object):
+            def foo(self,arg):
+                assert arg == "bar"
+        name = dramatis.Actor( O() )
+        dramatis.interface( name ).continuation(None).foo("bar")
+
+    def test_short_release(self):
+        "should have a nice short method for casts"
+        class O (object):
+            def foo(self,arg):
+                assert arg == "bar"
+        name = dramatis.Actor( O() )
+        dramatis.release( name ).foo( "bar" )
+        
+    def test_release_from_interface(self):
+        "should suport cast from the object interface"
+
+    def test_no_double_binding(self):
+        "shouldn't be possible to bind twice"
+        name = dramatis.Actor()
+        dramatis.interface( name ).bind( object() )
+        okay = False
+        try:
+            dramatis.interface( name ).bind( object() )
+            raise Exception("should not be reached")
+        except dramatis.error.Bind: okay = True
+        assert okay
+
 ''' 
-  it "should allow and execute messages to bound names" do
-    object = mock Object.new
-    object.should_receive(:foo).with(:bar).and_return(:foobar)
-    name = Dramatis::Actor.new object
-    result = name.foo :bar
-    result.should equal( :foobar )
-  end
-
-  it "should deliver messages with nil continuations" do
-    object = mock(Object.new)
-    object.should_receive(:foo).with(:bar)
-    name = Dramatis::Actor.new object
-    interface( name ).continue(nil).foo( :bar )
-  end
-
-  it "should have a nice short method for casts" do
-    object = mock(Object.new)
-    object.should_receive(:foo).with(:bar)
-    name = Dramatis::Actor.new object
-    release( name ).foo( :bar )
-  end
-
-  it "should suport cast from the object interface"
-
-  it "shouldn't be possible to bind twice" do
-    name = Dramatis::Actor.new
-    interface( name ).bind Object.new
-    lambda { interface( name ).bind Object.new }.should raise_error( Dramatis::Error::Bind )
-  end
 
   it "should allow and execute block continuations" do
 
