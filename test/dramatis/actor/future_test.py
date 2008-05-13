@@ -87,7 +87,6 @@ class Future_Test:
             def allow(self):
                 self.actor.default("callee")
             def callee(self):
-                warning( "callee" )
                 return "foobar"
 
         a = aClass()
@@ -105,104 +104,81 @@ class Future_Test:
 
         assert a.value == "foobar"
 
-'''
-  it "should evalute to the right value when used" do
+    def test_future_eval(self):
+        "should evalute to the right value when used"
 
-    object = mock Object.new
-    object.should_receive(:foo).with(:bar).and_return(:foobar)
-    actor = Dramatis.Actor.new object
+        class O ( object):
+            def foo(self,arg):
+                assert arg == "bar"
+                return "foobar"
 
-    future_name = future( actor )
+        actor = dramatis.Actor(O())
 
-    x = future_name.foo :bar
+        future_name = dramatis.future( actor )
 
-    x.should be_kind_of( Dramatis.Future )
-    x.to_sym.should equal( :foobar )
+        x = future_name.foo("bar")
 
-  end
+        assert isinstance(x,dramatis.Future)
+        assert str(x) == "foobar"
 
-  it "should raise as appropriate" do
+    def test_raise(self):
+        "should raise as appropriate"
 
-    object = Object.new
-    actor = Dramatis.Actor.new object
+        actor = dramatis.Actor( object() )
 
-    future_name = future( actor )
+        future_name = dramatis.future( actor )
 
-    x = future_name.bar :bar
+        x = future_name.bar( "bar" )
 
-    x.should be_kind_of( Dramatis.Future )
+        assert isinstance(x,dramatis.Future)
 
-    lambda { x.to_sym }.should raise_error( NoMethodError )
+        okay = False
+        try:
+            str(x)
+        except AttributeError: okay = True
+        assert okay
 
-  end
+    def test_value_if(self):
+        "should have a value interface"
 
-  it "should act like an object ... to the extent possible" do
+        class O (object):
+            def foo(self,bar):
+                assert bar == "bar"
+                return 12345
 
-    object = mock Object.new
-    object.should_receive(:foo).with(:bar).and_return(12345)
-    actor = Dramatis.Actor.new object
+        actor = dramatis.Actor(O())
 
-    future_name = future( actor )
+        future_name = dramatis.future( actor )
 
-    x = future_name.foo :bar
+        x = future_name.foo("bar")
     
-    x.should be_kind_of( Dramatis.Future )
-    ( x + 0 ).should == 12345
-    ( 0 + x ).should == 12345
+        assert isinstance(x,dramatis.Future)
 
-  end
+        x = dramatis.interface( x ).value
 
-  it "should have a value interface" do
-    object = mock Object.new
-    object.should_receive(:foo).with(:bar).and_return(12345)
-    actor = Dramatis.Actor.new object
+        assert isinstance(x,int)
 
-    future_name = future( actor )
+        assert x == 12345
 
-    x = future_name.foo :bar
+    def test_act_like_object(self):
+        "should act like an object ... to the extent possible"
+
+        class O (object):
+            def foo(self,bar):
+                assert bar == "bar"
+                return 12345
+
+        actor = dramatis.Actor(O())
+
+        future_name = dramatis.future( actor )
+
+        x = future_name.foo("bar")
     
-    x.should be_kind_of( Dramatis.Future )
+        assert isinstance(x,dramatis.Future)
 
-    x = interface( x ).value
+        # This isn't general; ad hoc implemented
+        # Perhaps not considered pythonic?
 
-    x.should be_kind_of( Fixnum )
+        assert ( x + 0 ) == 12345
+        assert ( 0 + x ) == 12345
 
-    x.should == 12345
-
-  end
-
-  it "should evalute to the right value when used with a delay" do
-
-    aClass = Class.new do
-      include Dramatis.Actor
-      def inititialize
-        actor.always :state
-        self->_state = None
-        self->_future = None
-      end
-      def caller callee
-        self->_future = future( callee ).callee
-      end
-    end
-
-    bClass = Class.new do
-      include Dramatis.Actor
-      attr_reader :state
-      def initialize
-        actor.refuse :callee
-      end
-      def allow
-        actor.default :callee
-      end
-      def callee
-        :foobar
-      end
-    end
-
-    a = aClass.new
-    b = bClass.new
-
-  end
-
-end
-'''

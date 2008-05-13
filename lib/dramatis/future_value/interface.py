@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 from logging import warning
 
-import dramatis.future.future
+import dramatis
 
 class Interface(object):
     def __init__(self,future):
