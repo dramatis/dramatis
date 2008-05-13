@@ -61,41 +61,51 @@ class Task_Test:
             caller.exception()
         except AttributeError: okay = True
 
-'''
-  it "should do something reasonable when the caller is main" do
-    callee = Dramatis::Actor.new Object.new
-    lambda { callee.callee }.should raise_error( NoMethodError )
-    release( callee ).callee
-    Dramatis::Runtime.current.warnings = false
-    lambda { Dramatis::Runtime.current.quiesce }.should raise_error( Dramatis::Error::Uncaught )
-    Dramatis::Runtime.current.warnings = true
-    Dramatis::Runtime.current.exceptions.length.should equal( 1 )
-    Dramatis::Runtime.current.clear_exceptions
-  end
+    def test_main_caller(self):
+        "should do something reasonable when the caller is main"
+        callee =dramatis.Actor( object() )
+        okay = False
+        try:
+            callee.callee()
+            raise Exception("should not be reached")
+        except AttributeError: okay = True
+        assert okay
+        dramatis.release( callee ).callee()
+        dramatis.Runtime.current.warnings = False
+        okay = False
+        try:
+            dramatis.Runtime.current.quiesce()
+        except dramatis.error.Uncaught: okay = True
+        assert okay
+        dramatis.Runtime.current.warnings = True
+        assert len(dramatis.Runtime.current.exceptions() ) == 1
+        dramatis.Runtime.current.clear_exceptions()
 
-  it "should default to global when no dramatis_exception defined" do
-    callerClass = Class.new do
-      include Dramatis::Actor
-      def caller callee
-        release( callee ).callee
-      end
-    end
 
-    caller = callerClass.new
-    callee = Dramatis::Actor.new Object.new
+    def test_global_exc(self):
+        "should default to global when no dramatis_exception defined" 
+        class callerClass (dramatis.Actor):
+            def caller(self, callee):
+                dramatis.release( callee ).callee()
 
-    Dramatis::Runtime.current.warnings = false
-    caller.caller callee
-    lambda { Dramatis::Runtime.current.quiesce }.should raise_error( Dramatis::Error::Uncaught )
-    Dramatis::Runtime.current.warnings = true
+        caller = callerClass()
+        callee = dramatis.Actor( object() )
 
-    lambda { raise Dramatis::Runtime.current.exceptions[0] }.should raise_error( NoMethodError )
-    Dramatis::Runtime.current.clear_exceptions
+        dramatis.Runtime.current.warnings = False
+        caller.caller( callee )
+
+        okay = False
+        try:
+            dramatis.Runtime.current.quiesce()
+        except dramatis.error.Uncaught: okay = True
+        assert okay
+        dramatis.Runtime.current.warnings = True
+
+        okay = False
+        try:
+            raise dramatis.Runtime.current.exceptions()[0]
+        except AttributeError: okay = True
+        dramatis.Runtime.current.clear_exceptions()
       
-  end
-
-  it "should call dramatis_exception on main if that works(?)"
-
-end
-
-'''
+    def test_call_d_e_on_main(self):
+        "should call dramatis_exception on main if that works(?)"
