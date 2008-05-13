@@ -39,9 +39,12 @@ class Traceback(object):
     def __str__(self):
         return "".join(format_list( self._traceback ))
 
+    def excepthook(self,e):
+        return "Traceback (most recent call last):\n" + str(self) + \
+                "%s: %s" % ( type(e).__name__, e )
+
     def __getitem__(self, index):
         return self._traceback[index]
-
 
     def set(self,traceback = None):
         if traceback:
@@ -151,3 +154,11 @@ def exception(e):
     tb = traceback(e)
     tb.set(exc_info()[2])
     return tb
+
+def excepthook(e):
+    tb = exception(e)
+    return tb.excepthook(e)
+
+def tracehook(e):
+    tb = traceback(e)
+    return tb.excepthook(e)

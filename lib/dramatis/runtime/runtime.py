@@ -59,6 +59,7 @@ class Runtime:
             self._exceptions[:] = []
 
     def exception( self, exception ):
+        print dramatis.error.tracehook( exception )
         with self._mutex:
             self._exceptions.append( exception )
 

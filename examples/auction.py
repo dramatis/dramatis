@@ -68,7 +68,7 @@ class Client ( dramatis.Actor ):
     def beaten_offer(self, max_bid):
         self.log("beaten offer: " + str(max_bid))
         self._max = max_bid
-        release( self.actor.name ).bid()
+        dramatis.release( self.actor.name ).bid()
 
     def log(self,string):
         print "client", self._id, ": ", string
