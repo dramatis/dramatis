@@ -30,6 +30,14 @@ class Interface(object):
         super(dramatis.Actor.Name,name).__setattr__("_options",new_options)
         return name
 
+    def future(self):
+        a = super(dramatis.Actor.Name,self._name).__getattribute__("_actor")
+        o = super(dramatis.Actor.Name,self._name).__getattribute__("_options")
+        self._name = dramatis.Actor.Name(a)
+        new_options = o.copy()
+        new_options["continuation"] = "future"
+        super(dramatis.Actor.Name,self._name).__setattr__("_options",new_options)
+        return self._name
 
     def exception( self, exception ):
         return self._actor_send( "exception", exception )
@@ -67,16 +75,6 @@ class Interface(object):
   # 
   # Returns a new actor name that when used in an actor method call will return a Dramatis::Future. Usually
   # called via Dramatis.future rather than directly.
-
-  def future
-    a, o = self._name.instance_eval { [ self._actor, self._options ] }
-    self._name = Dramatis::Actor::Name.new a
-    self._name.instance_eval do
-      self._options = o.dup
-      self._options[:continuation] = :future
-    end
-    self._name
-  end
 
   # Binds the actor identified by this name to supplied behavior,
   # which should be a native ruby object.  Can only be called on

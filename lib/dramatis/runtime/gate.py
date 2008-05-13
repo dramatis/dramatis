@@ -31,7 +31,7 @@ class Gate(object):
         def change( self, args, value, inplace ):
 
             # warning( "change args: " + str( args ) + "/" + str(value) + " list: " + str(self._list) )
-
+            
             prepend = True
             
             for list_index in xrange(len(self._list)):
@@ -57,7 +57,7 @@ class Gate(object):
                 self._list.insert( 0, [ args, value, None ] )
 
             # warning( "changed: " + str(self._list) )
-
+            
         def always( self, args, value, options = {} ):
             return self._change( self._always, list( args ), value, options )
 

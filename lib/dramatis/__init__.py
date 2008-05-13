@@ -14,8 +14,12 @@ Actor = dramatis.actor.Actor
 import dramatis.deadlock
 Deadlock = dramatis.deadlock.Deadlock
 
+import dramatis.future
+Future = dramatis.future.Future
+
 def interface( object, *args, **kwds ):
     interface = None
+    print object, type(object)
     try:
         interface = type(object).Interface
     except AttributeError, error:
