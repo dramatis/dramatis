@@ -112,8 +112,8 @@ describe "Dramatis::Actor" do
   it "should have a ready? interface" do
     aClass = Class.new do
       include Dramatis::Actor
-      def inititialize
-        actor.always :ready?
+      def initialize
+        actor.always :ready?, true
         @state = nil
         @future = nil
       end
