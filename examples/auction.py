@@ -29,10 +29,10 @@ class Auction ( dramatis.Actor ):
     def offer(self, bid, bidder):
         if bid >= self._max_bid + self._bid_increment:
             if self._max_bid >= self._min_bid:
-                release( self._max_bidder ).beaten_offer( bid )
+                dramatis.release( self._max_bidder ).beaten_offer( bid )
             self._max_bid = bid
             self._max_bidder = bidder
-            return "best_offer"
+            return [ "best_offer", None ]
         else:
             return [ "beaten_offer", self._max_bid ]
 
@@ -62,7 +62,7 @@ class Client ( dramatis.Actor ):
             time.sleep( ( 1 + random.randint( 0, 1000 ) )/1000.0 )
             answer, max_bid = self._auction.offer( self._current,
                                                    self.actor.name )
-            if answer == "best_offer": self.log("best offer: #{self._current}")
+            if answer == "best_offer": self.log("best offer: " + str(self._current))
             elif answer == "beaten_offer": self.beaten_offer( max_bid )
 
     def beaten_offer(self, max_bid):
