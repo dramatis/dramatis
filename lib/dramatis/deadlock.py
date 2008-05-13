@@ -1,5 +1,7 @@
 from __future__ import absolute_import
 
+class Deadlock(Exception): pass
+
 import re
 
 from logging import warning
@@ -16,7 +18,7 @@ from inspect import currentframe
 
 import dramatis
 
-class Traceback(object):
+class _Traceback(object):
     def __init__(self,list):
         self._list = list
     def __str__(self):
@@ -24,7 +26,7 @@ class Traceback(object):
     def __getitem__(self, index):
         return self._list[index]
 
-class Deadlock(Exception):
+class _Deadlock(Exception):
 
     def __init__( self, message = None, next = None ):
         # warning( "RAISING DEADLOCK" )

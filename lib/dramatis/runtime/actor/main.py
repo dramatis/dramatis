@@ -1,9 +1,19 @@
 from __future__ import with_statement
 
 import atexit
+import sys
 
 import dramatis.runtime
 from dramatis.runtime.actor import Actor
+
+def _excepthook( type, value, traceback ):
+  print "hi!"
+  tb = dramatis.error.traceback( value )
+  print "Traceback (most recent call last):"
+  print tb,
+  print "%s: %s" % ( type.__name__, value )
+  # return sys.__excepthook__( type, value, tb.traceback )
+  # return sys.__excepthook__( type, value, traceback )
 
 class Main ( Actor ):
 
@@ -25,11 +35,15 @@ class Main ( Actor ):
           self._at_exit_run = True
       self.schedule()
       dramatis.runtime.Scheduler.current._main_at_exit()
+      sys.excepthook = sys.__excepthook__
 
   def __init__(self):
       super(Main,self).__init__( Main.DefaultBehavior() )
       self._at_exit_run = False
       atexit.register( self.finalize )
+
+      sys.excepthook = _excepthook
+
       self.make_runnable()
 
   class DefaultBehavior(object): pass

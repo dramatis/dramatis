@@ -488,10 +488,10 @@ class Actor_Test:
         except dramatis.Deadlock, deadlock:
             okay = True
 
-            bt = deadlock.traceback
+            bt = dramatis.error.exception( deadlock )
 
-            # print ( "".join( format_list( deadlock.traceback ) ) )
-            
+            # print "".join( format_list(bt._raw_traceback) )
+
             f, l = bt[-1][0:2]
             # print f, l, anA.first_line
             assert f == getframeinfo( currentframe() )[0]
