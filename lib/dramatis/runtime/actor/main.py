@@ -10,8 +10,9 @@ from dramatis.runtime.actor import Actor
 
 def _excepthook( type, value, traceback ):
   tb = dramatis.error.traceback( value )
+  tb.set(traceback)
   print "Traceback (most recent call last):"
-  print tb,
+  print str(tb),
   print "%s: %s" % ( type.__name__, value )
   # return sys.__excepthook__( type, value, tb.traceback )
   # return sys.__excepthook__( type, value, traceback )

@@ -31,12 +31,16 @@ class Traceback(object):
 
     def __init__( self, next  ):
         self._next = next
+        self._traceback = None
         if next:
             self._raw_traceback = next._raw_traceback
         else:
             self._raw_traceback = []
 
     def __str__(self):
+        if not self._traceback:
+            print "hi" + str(exc_info()[2])
+            self.set(exc_info()[2])
         return "".join(format_list( self._traceback ))
 
     def excepthook(self,e):
