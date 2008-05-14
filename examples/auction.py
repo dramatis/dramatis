@@ -10,6 +10,8 @@ import os.path
 
 sys.path[0:0] = [ os.path.join( os.path.dirname( inspect.getabsfile( inspect.currentframe() ) ), '..', 'lib' ) ]
 
+from logging import warning
+
 import dramatis
 
 class Auction ( dramatis.Actor ):

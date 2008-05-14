@@ -81,7 +81,9 @@ class Scheduler(object):
                     self._running_threads = 1
                     _checkio and warning( str(threading.currentThread()) + " checkout main; running will be " + str(self._running_threads) )
                     try:
-                        Thread( target = self._run ).start()
+                        t = Thread( target = self._run )
+                        t.setDaemon(True)
+                        t.start()
                     except Exception, e:
                         warning( "got an ex 0 " + repr(e) )
                         raise e
@@ -133,7 +135,9 @@ class Scheduler(object):
                         self._running_threads += 1
 
                         try:
-                            Thread( target = self._deliver_thread, args = (task,) ).start()
+                            t = Thread( target = self._deliver_thread, args = (task,) )
+                            t.setDaemon(True)
+                            t.start()
                         except Exception, e:
                             warning( "got an ex 1 " + repr(e) )
                             raise e
@@ -193,7 +197,9 @@ class Scheduler(object):
                 self._running_threads = 1
                 _checkio and warning( "#{Thread.current} checkout--1 #{Thread.main} #{self._running_threads}" )
                 try:
-                    Thread( target = self._run ).start()
+                    t = Thread( target = self._run )
+                    t.setDaemon(True)
+                    t.start()
                 except Exception, e:
                     warning( "got an ex 2 " + repr(e) )
                     raise e
@@ -265,6 +271,7 @@ class Scheduler(object):
             with self._mutex:
                 self._running_threads -= 1
                 _checkio and warning( str(threading.currentThread()) + " checkin-2 / retiring; now running " + str(self._running_threads) + " " + str(self._state) )
+                # warning( threading.enumerate() )
                 if( self._state == "waiting" ):
                     self._wait.notify()
 
