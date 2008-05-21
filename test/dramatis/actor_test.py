@@ -31,7 +31,8 @@ class Actor_Test:
         try:
             dramatis.Runtime.current.quiesce()
             assert len( dramatis.Runtime.current.exceptions() ) == 0
-            assert threading.activeCount() == 1
+            assert threading.activeCount() == \
+                    1 + len(dramatis.runtime.Scheduler.ThreadPool)
         finally:
             dramatis.Runtime.reset()
 

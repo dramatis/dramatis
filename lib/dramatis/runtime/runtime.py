@@ -21,8 +21,8 @@ class Runtime:
             try:
                 Runtime.current.quiesce()
             except Exception, e: pass
-            dramatis.runtime.Scheduler.reset    
-            dramatis.runtime.actor.Main.reset    
+            dramatis.runtime.Scheduler.reset()
+            dramatis.runtime.actor.Main.reset()
             del self._current
 
     def __init__(self):
