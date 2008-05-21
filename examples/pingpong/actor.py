@@ -2,8 +2,6 @@
 
 # cf. Scala by Example, Chapter 3
 
-import time
-import random
 import inspect
 import sys
 import os.path
