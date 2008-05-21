@@ -3,20 +3,23 @@ require 'pp'
 class Mangler
   
   def self.mangle_word what
-    patterns = []
+    patterns = [ what, what+"." ]
     index = 0
-    patterns << what
     (what.length).times do
+
+      # delete a character
       if what.length > 3
         mod = what.clone
         mod[index] = ""
         patterns << mod
       end
 
+      # insert a character
       mod = what.clone
       mod[index,0] = "."
       patterns << mod
 
+      #change a character (biased towards making words longer)
       if what.length > 3
         mod = what.clone
         mod[index] = "."
