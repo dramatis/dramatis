@@ -20,4 +20,7 @@ phrase = "his mom locked her keys in the car, " + \
          "so he should get a ride home with Hector"
 
 print "Teacher:", phrase
-sally.whisper( phrase )
+heard = sally.whisper( phrase )
+print "Teacher heard:", heard
+
+

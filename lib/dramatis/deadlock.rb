@@ -50,7 +50,7 @@ class Dramatis::Deadlock < Dramatis::Error
       array = @next.backtrace + array
     end
 
-    pp "raw", @raw_backtrace
+    # pp "raw", @raw_backtrace
 
     # remove the scheduler
 

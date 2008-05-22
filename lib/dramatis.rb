@@ -50,7 +50,10 @@ module Dramatis #:doc:
     begin
       interface = object.class.const_get( :Interface )
     rescue NameError => name_error
-      raise Dramatis::Error::Interface.new(  "object is not a dramatis interfacable object" )
+      # warn "error here"
+      # p "x", object.inspect
+      # warn name_error.backtrace.join("\n")
+      raise Dramatis::Error::Interface.new(  "object is not a dramatis interfaceable object: " + object.class.to_s )
     end
     interface.new( object, *args, &block )
   end

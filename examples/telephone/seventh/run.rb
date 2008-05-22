@@ -1,5 +1,10 @@
 #!/usr/bin/env ruby
 
+# THIS EXAMPLE ISN'T COMPLETE OR WORKING
+
+# it deadlocks (don't remember)
+# self for main isn't getting mapped into an actor name correctly
+
 $:.push File.join( File.dirname(__FILE__), "..", "..", "..", "lib" )
 $:.push File.join( File.dirname(__FILE__), ".." )
 

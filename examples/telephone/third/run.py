@@ -21,3 +21,7 @@ phrase = "his mom locked her keys in the car, " + \
 
 print "Teacher:", phrase
 sally.whisper( phrase )
+heard = sally.ask()
+print "Teacher heard:", heard
+
+

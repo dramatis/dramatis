@@ -16,8 +16,13 @@ jane = Kid( "Jane", dick )
 harry = Kid( "Harry", jane )
 sally = Kid( "Sally", harry )
 
-phrase = "his mom locked her keys in the car, " + \
-         "so he should get a ride home with Hector"
+phrases = [ "his mom locked her keys in the car, " + \
+            "so he should get a ride home with Hector",
+            "Mac King is a comedy magic genius" ]
 
-print "Teacher:", phrase
-sally.whisper( phrase )
+for phrase in phrases:
+    print "Teacher:", phrase
+    sally.whisper( phrase )
+
+for phrase in phrases:
+    print "Teacher heard:", tom.ask()

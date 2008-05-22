@@ -16,5 +16,5 @@ phrase = "his mom locked her keys in the car, " +
          "so he should get a ride home with Hector"
 
 puts "Teacher: #{phrase}"
-becky.whisper phrase
+sally.whisper phrase
 
