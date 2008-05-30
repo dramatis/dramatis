@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 import dramatis
+import wx
 
 class Screen(object):
 
@@ -10,14 +11,24 @@ class Screen(object):
     class Server( dramatis.Actor ):
 
         def __init__( self ):
-            pass
-            # self.actor.always( "fox", True )
-            # self._fox = Fox::FXApp()
-            # self._fox.create
-            # ( dramatis.interface( Runtime() ).continuation( None ) ).run( self._fox )
+            self.actor.always( "wx", True )
+            self._wx = Screen.Server.App()
+            ( dramatis.release( self._wx ) ).run()
 
         def __call__( self, *args, **kwds ):
             return Screen.Window( self.actor.name, *args, **kwds )
+
+        class App ( dramatis.Actor, wx.App ):
+
+            def run( self ):
+                self.MainLoop()
+
+            def OnInit( self ):
+                print "hi!"
+                hidden = wx.Frame( None, -1, "hello" )
+                hidden.Show()
+                self.SetTopWindow(hidden)
+                return True
 
     class Window ( dramatis.Actor ):
 
@@ -26,31 +37,14 @@ class Screen(object):
             self._client = client
             self._options = options
 
+            self._window = wx.Frame( None, wx.ID_ANY )
+            self._window.Show()
+
+        def __lshift__( self, string ):
+            return self._text.appendText( string )
+
+
 """
-
-    include Dramatis::Actor
-
-    attr_reader :fox
-
-    class Runtime
-      include Dramatis::Actor
-      def run fox
-        fox.run
-      end
-    end
-
-  end
-
-  class Window
-
-    include Dramatis::Actor
-
-    def initialize server, client, options
-      
-      self._server = server
-      self._client = client
-      self._options = options
-
       self._window = Fox::FXMainWindow.new server.fox, self._options[:title]
       self._window.connect Fox::SEL_CLOSE do; close end
 
