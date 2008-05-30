@@ -214,3 +214,13 @@ class Name_Test:
 
     def test_flush_quarantees_order(self):
         "flushing should guarantee message order"
+
+    def test_can_use_call_sytanx(self):
+        class Foo( dramatis.Actor ):
+            def __call__( self, arg, foo, bar ):
+                assert arg == "foobar"
+                assert foo == "foo"
+                assert bar == "bar"
+                return "okay"
+        actor = Foo()
+        assert actor("foobar", "foo", bar = "bar" ) == "okay"

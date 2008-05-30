@@ -48,6 +48,9 @@ class Name(object):
         super(Name,self).__setattr__("_actor",actor)
         super(Name,self).__setattr__("_options",{"continuation":"rpc"})
 
+    def __call__(self,*args,**kwds):
+        return self.__getattribute__("__call__")(*args,**kwds)
+
     def __getattribute__(self,attr):
         # logging.warning(FunctionProxy)
         a = super(Name,self).__getattribute__("_actor")
@@ -77,6 +80,8 @@ class Name(object):
                     return PropertyProxy(attr,a,o).__get__(o,type(o))
                 elif ( type(desc) == _func ) or \
                       ( type(desc) == _instmeth ):
+                    return FunctionProxy(attr,a,o)
+                elif ( str(type(desc)) == "<type 'wrapper_descriptor'>" ):
                     return FunctionProxy(attr,a,o)
                 else:
                     raise "hell: type? " + str( type(desc) )
