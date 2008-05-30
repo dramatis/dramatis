@@ -224,3 +224,11 @@ class Name_Test:
                 return "okay"
         actor = Foo()
         assert actor("foobar", "foo", bar = "bar" ) == "okay"
+
+    def test_can_use_left_shift_sytanx(self):
+        class Foo( dramatis.Actor ):
+            def __lshift__( self, arg ):
+                assert arg == "foobar"
+                return "okay"
+        actor = Foo()
+        assert actor << "foobar" == "okay"

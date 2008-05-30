@@ -51,6 +51,9 @@ class Name(object):
     def __call__(self,*args,**kwds):
         return self.__getattribute__("__call__")(*args,**kwds)
 
+    def __lshift__(self,*args,**kwds):
+        return self.__getattribute__("__lshift__")(*args,**kwds)
+
     def __getattribute__(self,attr):
         # logging.warning(FunctionProxy)
         a = super(Name,self).__getattribute__("_actor")
