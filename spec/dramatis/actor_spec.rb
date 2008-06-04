@@ -23,7 +23,8 @@ describe "Dramatis::Actor" do
 
   Actor = Dramatis::Actor
 
-  it "should be creatable from an include-ed class and return the right type" do
+  it "should be creatable from an include-ed class
+      and return the right type" do
 
     f = Class.new do
       include Dramatis::Actor
@@ -456,7 +457,7 @@ describe "Dramatis::Actor" do
     rescue Dramatis::Deadlock => deadlock
       bt = deadlock.backtrace
 
-      pp bt
+      # pp bt
 
       f, l = bt[0].split ':'
       f.should == __FILE__
@@ -468,6 +469,31 @@ describe "Dramatis::Actor" do
 
     end
     
+  end
+
+  it "should yield when asked to" do
+
+    c = Class.new do
+      include Dramatis::Actor
+      def f
+        @a = 1
+        @a.should == 1
+        release( actor.name ).g
+        sleep 1
+        @a.should == 1
+        actor.yield
+        p @a
+        @a.should == 2
+        return @a
+      end
+      def g
+        @a += 1
+      end
+    end
+
+    aC = c.new
+    aC.f.should == 2
+
   end
 
 end

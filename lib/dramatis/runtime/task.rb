@@ -58,7 +58,7 @@ class Dramatis::Runtime::Task #:nodoc: all
     when :none
       @continuation = Continuation::None.new name, @call_thread
     when :rpc
-      @continuation = Continuation::RPC.new name, @call_thread
+      @continuation = Continuation::RPC.new name, @call_thread, options[:nonblocking]
     when :future
       @continuation = Continuation::Future.new name, @call_thread
     when Proc
@@ -114,7 +114,7 @@ class Dramatis::Runtime::Task #:nodoc: all
         @actor.instance_eval { @actor }
       end
 
-      def initialize name, call_thread
+      def initialize name, call_thread, nonblocking
         # all the synchronizaton here probably gets tossed
         # proof:
         # to create the continuation, you have to have the actor lock
@@ -126,6 +126,7 @@ class Dramatis::Runtime::Task #:nodoc: all
         # of course, it should be harmless
         # fix ... might want to seperate the two parts of a continuation
         # the value part and the thread state part
+        @blocking = !nonblocking
         @state = :start
         @mutex = Mutex.new
         @wait = ConditionVariable.new
@@ -143,12 +144,15 @@ class Dramatis::Runtime::Task #:nodoc: all
             begin
               tag = to_s
               call_thread = @call_thread
+              blocking = @blocking
               @actor.instance_eval do
                 @actor.instance_eval do
                   # warn "#{self} ct [ #{call_thread} ]"
                   @call_thread = call_thread
                 end
-                @actor.gate.only [ :continuation, tag ], :tag => tag
+                if blocking
+                  @actor.gate.only [ :continuation, tag ], :tag => tag
+                end
                 @actor.schedule self
               end
               begin

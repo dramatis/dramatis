@@ -90,6 +90,17 @@ class Dramatis::Actor::Interface
     @actor.name
   end
 
+  # Yields the actor to allow other tasks to be executed.
+  # Currently, messages are handled FIFO so the yield will
+  # return when all the messages received up to the point of the
+  # yield are executed. This could be modified if non-FIFO queue
+  # processing is added
+
+  def yield
+    @actor.actor_send [ :yield ], :continuation => :rpc,
+                                  :nonblocking => true
+  end
+
   def timeout value, *args #:nodoc: not ready
     @actor.timeout value, *args
   end

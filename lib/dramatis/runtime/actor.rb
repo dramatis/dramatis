@@ -56,14 +56,12 @@ class Dramatis::Runtime::Actor #:nodoc: all
     @object.send :initialize, *args
   end
 
+  def yield; end
+
   def bind object
-    # warn "bind #{object} #{@object} #{@gate}"
     raise Dramatis::Error::Bind if @object
     @object = object
-    # warn "okay?"
-    # p @gate
     @gate.accept :object
-    # pp @gate
     name
   end
 
@@ -112,7 +110,7 @@ class Dramatis::Runtime::Actor #:nodoc: all
     # warn "common send #{self} #{dest} #{args.join(' ')} #{opts.to_a.join(' ' )}"
 
     task = Dramatis::Runtime::Task.new( self, dest, args, opts  )
-
+    
     # warn "#{task.type} #{task.method}"
     # warn "#{self} #{Thread.current} common send r? #{runnable?} g? #{@gate.accepts?( *( [ task.type, task.method ] + task.arguments )  ) } q #{@queue.length}"
     @mutex.synchronize do
