@@ -9,15 +9,9 @@ require 'dramatis/runtime'
 
 describe "Dramatis::Actor" do
 
-  after do
-    begin
-      Dramatis::Runtime.current.quiesce
-      Dramatis::Runtime.current.exceptions.length.should equal( 0 )
-      Thread.list.length.should equal( 1 )
-    ensure
-      Dramatis::Runtime.reset
-    end
-  end
+  include DramatisSpecHelper
+
+  after(:each) { runtime_check }
 
   it "should be creatable w/o requiring name" do
 

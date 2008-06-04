@@ -8,15 +8,9 @@ describe Dramatis do
 
   include Dramatis
 
-  after do
-    begin
-      Dramatis::Runtime.current.exceptions.length.should equal( 0 )
-      Dramatis::Runtime.current.quiesce
-      Thread.list.length.should equal( 1 )
-    ensure
-      Dramatis::Runtime.reset
-    end
-  end
+  include DramatisSpecHelper
+
+  after(:each) { runtime_check }
 
   it "should return NoMethodError as appropriate" do
     actor = Dramatis::Actor.new Object.new

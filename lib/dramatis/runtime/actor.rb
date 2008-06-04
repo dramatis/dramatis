@@ -288,7 +288,6 @@ class Dramatis::Runtime::Actor::Main < Dramatis::Runtime::Actor  #:nodoc: all
     super DefaultBehavior.new
     @at_exit_run = false
     at_exit { finalize }
-    # ???
     runnable!
   end
 

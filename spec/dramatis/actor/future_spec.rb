@@ -11,15 +11,9 @@ describe "Dramatis::Actor" do
 
   include Dramatis
 
-  after do
-    begin
-      Dramatis::Runtime.current.quiesce
-      Dramatis::Runtime.current.exceptions.length.should equal( 0 )
-      Thread.list.length.should equal( 1 )
-    ensure
-      Dramatis::Runtime.reset
-    end
-  end
+  include DramatisSpecHelper
+
+  after(:each) { runtime_check }
 
   it "should allow future names to be created" do
 

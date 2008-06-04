@@ -1,17 +1,25 @@
 module Dramatis; end
 class Dramatis::Runtime; end
 
+require 'thread'
+
+require 'dramatis/runtime/thread_pool'
 require 'dramatis/runtime/actor/main'
 require 'dramatis/runtime'
 require 'dramatis'
-require 'thread'
+
 begin require 'pp'; rescue Exception; end
 
 class Dramatis::Runtime::Scheduler #:nodoc: all
 
   def checkio; false; end
 
+  @@thread_pools = []
+
   def self.reset
+    @@thread_pools.each do |thread_pool|
+      thread_pool.reset
+    end
     @@current.reset
     @@current = nil
   end
@@ -141,6 +149,7 @@ class Dramatis::Runtime::Scheduler #:nodoc: all
     raise "hell #{@main_state.to_s}" if @main_state != :may_finish and @main_state != :running
     # warn "?threads? #{Thread.list.join(' ')}"
     # warn "main has exited: done"
+    @thread_pool.reset()
     Dramatis::Runtime.current.maybe_raise_exceptions quiescing
   end
 
@@ -148,9 +157,17 @@ class Dramatis::Runtime::Scheduler #:nodoc: all
     @actors << actor
   end
 
+  def thread_count
+    @mutex.synchronize do
+      @@thread_pools.inject(0) { |a,b| a+b.length }
+    end
+  end
+
   private
 
   def initialize
+    @thread_pool = Dramatis::Runtime::ThreadPool.new
+    @@thread_pools << @thread_pool
     # Thread.abort_on_exception = true
     @mutex = Mutex.new
     @wait = ConditionVariable.new
@@ -233,7 +250,7 @@ class Dramatis::Runtime::Scheduler #:nodoc: all
 
             # p "tasket #{task}"
             
-            Thread.new do
+            @thread_pool.new do
 
               # "tasky", task
 
