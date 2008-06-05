@@ -42,7 +42,7 @@ describe "Dramatis::Actor" do
 
       def bar
         @@second_line = __LINE__.to_i + 1
-        10/0
+        name_error
         return "foobar"
       end
 
@@ -54,18 +54,16 @@ describe "Dramatis::Actor" do
     r = "xyzzy"
     begin
       r = aFoo.foo aBar
-    rescue ZeroDivisionError => zde
-      tb = zde.backtrace
+    rescue NameError => ne
+      tb = ne.backtrace
+
+      # pp tb
 
       f,l = tb[0].split ":"
       f.should == __FILE__
       l.to_i.should == bar.second_line
 
       f,l = tb[1].split ":"
-      f.should == __FILE__
-      l.to_i.should == bar.second_line
-
-      f,l = tb[2].split ":"
       f.should == __FILE__
       l.to_i.should == foo.first_line
 

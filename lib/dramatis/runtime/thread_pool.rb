@@ -37,7 +37,7 @@ class Dramatis::Runtime::ThreadPool #:nodoc: all
         thread.send :shutdown
       end
       @threads.each do |thread|
-        thread.join
+        thread.true_join
       end
       @threads = []
     end
@@ -82,6 +82,17 @@ class Dramatis::Runtime::ThreadPool::PoolThread < Thread
     end
   end
 
+  alias true_join join
+
+  def join
+    # I've thought about this. It would be cool to implement join. It's not
+    # too hard to do it when threads aren't reused ... which is kinda dumb.
+    # It's possible to do it when threads are reused, by coding an allocation
+    # counter in the "thread" object (but not the native thread). It'd be
+    # cool, but I don't need it, so, oh well.
+    raise "not implemented"
+  end
+
   private
 
   def shutdown
@@ -123,9 +134,6 @@ class Dramatis::Runtime::ThreadPool::PoolThread < Thread
         elsif @state == :called
           begin
             @block.call
-          rescue Exception => e
-            print_exc()
-            raise
           ensure
             @state = :running
             @pool.send :checkin, self
