@@ -476,7 +476,6 @@ describe "Dramatis::Actor" do
         sleep 1
         @a.should == 1
         actor.yield
-        p @a
         @a.should == 2
         return @a
       end
