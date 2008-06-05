@@ -180,9 +180,11 @@ class Dramatis::Runtime::Task #:nodoc: all
         when :return
           return @value
         when :exception
-          if Dramatis::Deadlock === @value 
-            @value = Dramatis::Deadlock.new nil, :next => @value
-          end
+          # if Dramatis::Deadlock === @value 
+          # @value = Dramatis::Deadlock.new nil, :next => @value
+          # end
+          # pp "reraise", caller
+          @value._dramatis_reraise
           raise @value
         end
       end

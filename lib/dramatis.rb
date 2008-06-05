@@ -3,22 +3,8 @@
 module Dramatis #:doc:
 end
 
-# The base class of all non-internal dramatis exceptions.
-
-class Dramatis::Error < StandardError; end
-
-# Raised when an attempt is made to create an interface object on an
-# object that does not define an interface class.
-
-class Dramatis::Error::Interface < StandardError; end
-
-# Raised when an attempt is made to bind an already-bound actor.
-
-class Dramatis::Error::Bind < Dramatis::Error; end
-
+require 'dramatis/error'
 require 'dramatis/deadlock'
-require 'dramatis/uncaught'
-
 require 'dramatis/future/interface'
 require 'dramatis/actor/name/interface'
 
@@ -50,9 +36,6 @@ module Dramatis #:doc:
     begin
       interface = object.class.const_get( :Interface )
     rescue NameError => name_error
-      # warn "error here"
-      # p "x", object.inspect
-      # warn name_error.backtrace.join("\n")
       raise Dramatis::Error::Interface.new(  "object is not a dramatis interfaceable object: " + object.class.to_s )
     end
     interface.new( object, *args, &block )

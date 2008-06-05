@@ -217,10 +217,6 @@ class Dramatis::Runtime::Scheduler #:nodoc: all
           thread = Thread.current
           actors.each do |actor|
             thread[:dramatis_actor] = actor.name
-
-
-
-
             actor.deadlock deadlock
           end
           thread[:dramatis_actor] = nil

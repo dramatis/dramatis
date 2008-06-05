@@ -17,7 +17,9 @@ class Dramatis::Error < StandardError; end
 # 1. They remove dramatis runtime internal information
 # See raw_backtrace.
 
-class Dramatis::Deadlock < Dramatis::Error
+class Dramatis::Deadlock < Dramatis::Error; end
+
+class Dramatis::Deadlock_ < Dramatis::Error
 
   # call-seq:
   # raw_backtrace -> array of strings
@@ -37,8 +39,9 @@ class Dramatis::Deadlock < Dramatis::Error
   end
 
   # how things stand:
-  # r18 and r19 call set_backtrace after at the raise
-  # jr never calls it; instead the base class synthesizes it at the first backtrace call
+  # r18 and r19 call set_backtrace at the raise
+  # jr never calls it; instead the base class synthesizes it
+  # at the first backtrace call
   # as far as frames go, it seems lke jr elides sends sometimes
 
   def set_backtrace *args #:nodoc:
