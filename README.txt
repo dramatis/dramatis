@@ -4,15 +4,15 @@
 
 == DESCRIPTION:
 
-An actor library for dynamic languages.
+An actor library for dynamic languages like Ruby and Python.
 
 == FEATURES/PROBLEMS:
 
-This is an early version, effectively a prerelease, a "pre-alpha". Mostly this means that there is no packaging, i.e., it is not yet available as a gem and the mechanisms for creating the gem (probably) don't work.
+dramatis provides a library for writing concurrent programs using the actor programming model.
+
+This is an early version, the first release with packaging (a gem for ruby, setuptools for python).
 
 It's available on github to download and does come with documentation, a tutorial, and several examples, all of which (mostly) work, so it's stable enough to being to play with.
-
-A packaged alpha is expected a few weeks after the prerelease.
 
 repository::
         git://github.com/dramatis/dramatis.git
@@ -26,10 +26,9 @@ Website/Wiki/tracker:: http://dramatis.mischance.net
 == REQUIREMENTS:
 
 All the specs run on Ruby 1.8.6, 1.9, and JRuby 1.1 on Linux and OS X.
+All the tests rus on Python 2.5 on Linux.
 
 At least one small example runs on rubinius but the whole spec suite has not been attempted.
-
-Work on a Python 2.5 port has started.
 
 == INSTALL:
 == LICENSE:

@@ -2,7 +2,7 @@ require 'dramatis/version'
 
 AUTHOR = 'Steven Parkes'  # can also be an array of Authors
 EMAIL = "smparkes@smparkes.net"
-DESCRIPTION = "description of gem"
+DESCRIPTION = "an Actor library for Ruby and Python"
 GEM_NAME = 'dramatis' # what ppl will type to install your gem
 RUBYFORGE_PROJECT = 'dramatis' # The unix name for your project
 HOMEPATH = "http://#{RUBYFORGE_PROJECT}.rubyforge.org"

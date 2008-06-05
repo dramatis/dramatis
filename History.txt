@@ -1,4 +1,7 @@
-== 0.0.1 2008-02-19
+== 0.0.1 2008-06-05
 
-* 1 major enhancement:
-  * newgem
+* first packaged alpha
+
+== 0.0.0 2008-04-22
+
+* first (unpackaged) release
