@@ -1,4 +1,17 @@
+{notes/an early draft}
+
 Exception flow, and pretty ones at that
+
+ It's funny how important I find pretty exceptions, which means
+
+1) exceptions that can trace back through actor calls
+2) that remove all the actor runtime dreck
+
+dramatis does (1) and kinda does (2), with the limitation that it only knows the backtrace to the actor call where it is caught (if it is). Oh, I guess I should add
+
+(0) exceptions flow back along synchronous actor calls
+
+since that's kinda of a given.
 
 One of the things that makes concurrent programming difficult is the difficulty in figuring out what is going wrong when things go wrong, whcih they inevitably do.
 
