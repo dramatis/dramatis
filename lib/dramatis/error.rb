@@ -47,7 +47,7 @@ class Exception
 
   def backtrace
     # p "back #{self}"
-    if @_dramatis_raw_backtrace
+    if instance_variable_defined? :@_dramatis_raw_backtrace
       filter @_dramatis_raw_backtrace
     else
       _dramatis_backtrace
