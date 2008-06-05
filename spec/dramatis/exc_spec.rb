@@ -57,7 +57,7 @@ describe "Dramatis::Actor" do
     rescue NameError => ne
       tb = ne.backtrace
 
-      # pp tb
+      # puts tb.join("\n")
 
       f,l = tb[0].split ":"
       f.should == __FILE__

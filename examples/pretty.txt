@@ -1,0 +1,95 @@
+Exception flow, and pretty ones at that
+
+One of the things that makes concurrent programming difficult is the difficulty in figuring out what is going wrong when things go wrong, whcih they inevitably do.
+
+For example, take the simple little dramatis actor program:
+
+require 'dramatis/actor'
+
+class Foo
+  include Dramatis::Actor
+  def foo that
+    return that.bar :fooobar
+  end
+end
+
+class Bar
+  include Dramatis::Actor
+  def bar method
+    send method
+  end
+  def foobar
+    "foobar"
+  end
+end
+
+Foo.new.foo Bar.new
+
+Since there's a typo in the program, :fooobar isn't defined for bar, and a NameError exception is thrown.
+
+Now, if this was a normal, serial program, you'd get something like:
+
+./exception.rb:17:in `send': undefined method `fooobar' for #<Bar:0x2b928905d498> (NoMethodError)
+        from ./exception.rb:17:in `bar'
+        from ./exception.rb:10:in `foo'
+        from ./exception.rb:24
+
+The problem isn't with bar, exactly, it's that foo passed it a bad value, but that's easy to see from the stack backtrace.
+
+In many concurrent programing systems, this gets broken all over the place, as soon as the caller and the callee run in different stacks. In a threaded program, this happens if the caller and callee execute on different threads (which you'd have to arrange by some how passing the value through shared memory yadda yadda yadda.
+
+It's actually easy to actually do the call in an actor system, like dramatis or erlang. You make the call/send a message and the runtime manages the scheduling (whcih you'd have to do yourself in a thread model.
+
+Only, thing kinda go south at that point. An exception is still raised in bar, but where does it go? And even if it doesn't go anywhere, what does it look like.
+
+The answer to the first question is usullay, "nowhere useful" and to the second, ugh:
+
+./exception.rb:28:in `bar': undefined local variable or method `fooobar' for #<Bar:0x2ad75510df90> (NameError)
+        from ./../lib/dramatis/runtime/actor.rb:146:in `send'
+        from ./../lib/dramatis/runtime/actor.rb:146:in `deliver'
+        from ./../lib/dramatis/runtime/task.rb:81:in `deliver'
+        from ./../lib/dramatis/runtime/scheduler.rb:344:in `deliver'
+        from ./../lib/dramatis/runtime/scheduler.rb:257:in `run'
+        from ./../lib/dramatis/runtime/thread_pool.rb:136:in `call'
+        from ./../lib/dramatis/runtime/thread_pool.rb:136:in `target'
+        from ./../lib/dramatis/runtime/thread_pool.rb:127:in `synchronize'
+         ... 19 levels...
+        from ./../lib/dramatis/runtime/actor.rb:116:in `common_send'
+        from ./../lib/dramatis/runtime/actor.rb:93:in `actor_send'
+        from ./../lib/dramatis/actor.rb:35:in `new'
+        from ./exception.rb:35
+
+We see where the exception occured, but there's nothing else in that long backtrace that is helps us figure out what's going. Even the top of the stackframe isn't helping us because it's not even the beginnging of the call that caused the problem: it's the first actor call. This is because the stracktrace is giving the thread context of the thread running the bar method, which is allocated from a pool of threads (as you see).
+
+In this little example, it's not hard to figure out the control flow that cuased the problem, but in even the simplest real concurrent programs, this rapidly becomes infeasible.
+
+Note that in this case, it's particularly annoying because this isn't a particularly concurrent program: all the actor calls are blocking calls, so why can't we just have normal exception semantics?
+
+Well, actually, we do. If we change our call:
+
+Foo.new.foo Bar.new
+
+to 
+
+begin
+  Foo.new.foo Bar.new
+rescue NameError => ne
+  puts "hey, I got a #{ne}"
+  puts "it happened here: " + ne.backtrace.join("\n")
+end
+
+we see that we actually can trap the error, even though it occured in the context of another actor, on another thread. For "normal" blocking calls, exceptions are routed just like they would be in a non-concurrent world. Other types of continuations have different semantics. In the somehwat pathalogical case, where there is no continuation, the exception is delivered to the running actor or flagged and ignored.
+
+However, what about the stacktrace? Fortunately, dramatis filters the backtraces: it removes its own overhead and it stiches together the pieces along the actro call chain. What do we actually see?
+
+
+hey, I got a undefined local variable or method `fooobar' for #<Bar:0x2ae257f29180>
+it happened here: ./exception.rb:27:in `bar'
+./exception.rb:18:in `foo'
+./exception.rb:36
+
+which is identical to the serial case.
+
+It's not perfect: currently, dramatis only knows the call chain if you let the exception propagate back along it. But that's fixable (prfobably).
+
+Progress, not perfection.

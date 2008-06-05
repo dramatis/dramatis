@@ -55,6 +55,7 @@ class Exception
   end
 
   def _dramatis_reraise
+    # return
     # p "reraise"
     if @_dramatis_raw_backtrace
       @_dramatis_raw_backtrace = backtrace + filter( caller )
