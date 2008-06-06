@@ -1,3 +1,7 @@
+== 0.1.1 2008-06-06
+
+* Patched alpha, sync'd up with python. No material changes to Ruby.
+
 == 0.0.1 2008-06-05
 
 * first packaged alpha

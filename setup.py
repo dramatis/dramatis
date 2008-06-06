@@ -1,6 +1,6 @@
 from distutils.core import setup
 setup( name='dramatis',
-       version='0.1.0',
+       version='0.1.1',
        author='Steven Parkes',
        author_email='smparkes@smparkes.net',
        url='http://dramatis.mischance.net',
