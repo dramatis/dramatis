@@ -69,7 +69,7 @@ class Dramatis::Runtime::ThreadPool #:nodoc: all
   
 end
 
-class Dramatis::Runtime::ThreadPool::PoolThread < Thread
+class Dramatis::Runtime::ThreadPool::PoolThread < Thread #:nodoc: all
 
   def initialize pool
     @pool = pool

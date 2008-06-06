@@ -7,6 +7,9 @@ class Dramatis::Future; end
 
 class Dramatis::Future::Interface
 
+  # call-seq:
+  #   value -> object
+  # 
   # Returns the native value of the future. If the value of the future
   # is not yet available, the method blocks (with rpc gating
   # semantics) until it is.
@@ -23,6 +26,9 @@ class Dramatis::Future::Interface
     end
   end
 
+  # call-seq:
+  #   ready? -> boolean
+  # 
   # Returns true if the future may be evaluated without
   # blocking. Returns false if the value is not yet available.
   #

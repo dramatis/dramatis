@@ -6,6 +6,9 @@ class Dramatis::Error < StandardError; end
 
 class Dramatis::Error::Uncaught < Dramatis::Error
 
+  # call-seq:
+  #   to_s -> string
+  # 
   # combines the name of all uncaught exceptions.
 
   def to_s

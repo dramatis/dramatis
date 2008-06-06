@@ -1,0 +1,3 @@
+Build rdocs:
+
+  rm  -rf doc; rdoc -NS -m README.txt lib README.txt

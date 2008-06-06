@@ -72,6 +72,9 @@ class Dramatis::Actor::Name::Interface
     @name
   end
 
+  # call-seq:
+  #   bind( behavior ) -> actor_name
+  # 
   # Binds the actor identified by this name to supplied behavior,
   # which should be a native ruby object.  Can only be called on
   # unbound actors, typically created with Dramatis::Actor.new().  The

@@ -72,6 +72,9 @@ class Dramatis::Actor::Interface
     @actor.gate.always( ( [ :object ] + Array( args ) ), value )
   end
 
+  # call-seq:
+  # enable_call_threading -> nil
+  #
   # Enables call threading for actor method calls made by this
   # actor. When call threading is enabled, method gating is modified
   # such that recursive and co-recursive calls are allowed. Normally
@@ -82,14 +85,21 @@ class Dramatis::Actor::Interface
 
   def enable_call_threading
     @actor.enable_call_threading
+    nil
   end
 
+  # call-seq:
+  #  name -> actor_name_of_actor
+  #
   # Returns the actor name for the object.
 
   def name
     @actor.name
   end
 
+  # call-seq:
+  #  yield -> nil
+  #
   # Yields the actor to allow other tasks to be executed.
   # Currently, messages are handled FIFO so the yield will
   # return when all the messages received up to the point of the
@@ -99,6 +109,7 @@ class Dramatis::Actor::Interface
   def yield
     @actor.actor_send [ :yield ], :continuation => :rpc,
                                   :nonblocking => true
+    nil
   end
 
   def timeout value, *args #:nodoc: not ready
