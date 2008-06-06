@@ -5,6 +5,7 @@
 import inspect
 import sys
 import os.path
+import time
 
 sys.path[0:0] = [ os.path.join( os.path.dirname( inspect.getabsfile( inspect.currentframe() ) ), '..', '..', 'lib' ) ]
 
@@ -24,7 +25,7 @@ class PingPong ( dramatis.Actor ):
             if count % 500 == 0 or count % 500 == 1:
                 print "%s: pingpong %d" % ( self._name, count )
             dramatis.release( partner ).pingpong( count-1, self )
-            # sleep 0.001
+            time.sleep( 0.001 )
 
 ping = PingPong( "ping" )
 pong = PingPong( "pong" )

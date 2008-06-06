@@ -1,0 +1,314 @@
+h1. PingPong tutorial (Ruby version)
+
+h2. PingPong
+
+This example creates two actors that send messages back and forth between each other, a bit like a ping pong ball. It's adapted from the "Scala Example":http://lamp.epfl.ch/~phaller/doc/ActorsTutorial.html. The code for the final versions is in source:examples/pingpong. There are three versions there: the serial (@source:examples/pingpong/serial.rb@) and the actor (@source:examples/pingpong/actor.rb@) versions which we develop here and, for reference, a version closer to the orignal Scala example (@source:examples/pingpong/scala.rb@).
+
+For our example, we'll have two objects, @ping@ and @pong@ that pass a token back and forth a fixed number of times. We'll make the token, our "ball", be the number of volleys left to perform.
+
+h2. Serial PingPong
+
+We'll start with a simple non-concurrent version. We'll need a class with a @pingpong@ method. This method will take a count representing the number of volleys left to play and a reference to the partner that it is volleying with. With a little extra code so that we can see what is going on, it looks like this:
+
+<pre><code class="ruby">
+  def pingpong count, partner
+    if count == 0
+      puts "#{@name}: done"
+    else
+      if count % 500 == 0 or count % 500 == 1
+        puts "#{@name}: pingpong #{count}"
+      end
+      partner.pingpong count-1, self
+    end
+  end
+</code></pre>
+
+That's really all there is to it. All we need is the class wrapper and few lines to actually create a couple of objects and start the ball rolling (or volleying, as the case may be):
+
+<pre><code class="ruby">
+class PingPong
+
+  def initialize name
+    @name = name
+  end
+
+  def pingpong count, partner
+    if count == 0
+      puts "#{@name}: done"
+    else
+      if count % 500 == 0 || count % 500 == 1
+        puts "#{@name}: pingpong #{count}"
+      end
+      partner.pingpong count-1, self
+    end
+  end
+
+end
+
+ping = PingPong.new "ping"
+pong = PingPong.new "pong"
+
+ping.pingpong ARGV[0].to_i, pong
+</code></pre>
+
+To see what happens, I can run a thousand volleys on my machine:
+<pre><code>
+$ ruby serial.rb 1000
+ping: pingpong 1000
+pong: pingpong 501
+ping: pingpong 500
+pong: pingpong 1
+ping: done
+$ 
+</code></pre>
+Great. If I get a little adventurous and try ten thousand volleys, something bad happens though:
+<pre><code>
+$ ruby serial.rb 10000
+ping: pingpong 10000
+pong: pingpong 9501
+ping: pingpong 9500
+pong: pingpong 9001
+ping: pingpong 9000
+pong: pingpong 8501
+ping: pingpong 8500
+pong: pingpong 8001
+ping: pingpong 8000
+pong: pingpong 7501
+ping: pingpong 7500
+pong: pingpong 7001
+ping: pingpong 7000
+pong: pingpong 6501
+ping: pingpong 6500
+pong: pingpong 6001
+ping: pingpong 6000
+Exception `SystemStackError' at serial.rb:13 - stack level too deep
+serial.rb:13:in `pingpong': stack level too deep (SystemStackError)
+        from serial.rb:16:in `pingpong'
+        from serial.rb:25
+$ 
+</code></pre>
+The trouble is that our little loop that looks like it's just passing data back and forth is actually doing so recursively. Although our @pingpong@ method doesn't return a useful value, we still have to call it recursively: that's the only way we have of calling methods.  Most serial languages have no native way of expressing this volleying kind of communication between objects. It is possible to do this with _continuations_ but most languages/implementations, including ones we care about a lot like python and jruby, do not provide them. It's certainly possible to write a message passing layer, but it's a fair amount of code. 
+
+Lets put that aside for now and look at making @pingpong@ into an actor program using dramatis. To make a normal class into an actor, first we need to mixin a dramatis class:
+<pre><code class="ruby">
+class PingPong
+  include Dramtis::Actor
+  ...
+</code></pre>
+for which we need a require statement to bring in the library:
+<pre><code class="ruby">
+require 'dramatis/actor'
+</code></pre>
+That will get us started. Our objects are now actors.
+
+h2. A little background on Actors.
+
+Before we rush ahead, we need to consider what we've done, what actors are.
+
+Actors are concurrent objects: they are part object, part thread, a kind of chimera. They look in many ways like normal objects: they have state (data members), methods (member functions), and they can have methods called on them.
+
+They also are, abstractly, threads. Rather than have whatever thread is running when a method call is made on an actor execute that method recursively and immediately, each actor has its own thread and only that thread is allowed to execute methods for that actor. This implies that an actor can only be executing one method at a time, so there can be no races or conflicts among methods of a single actor. Note that this thread is abstract and that different actor implementations implement it in different ways (dramatis, for example, does not create a thread per actor).
+
+h2. _rpc_ continuations
+
+In dramatis, when an actor makes a call on another actor (often phrased in actor parlance as _sending a message_ in the same way that Ruby and Smalltalk are send messages between objects), rather than executing the method itself, on its thread, it creates a _task_, a combination of a reference to the called actor (which we call the _actor name_), the method to be called, any arguments to the method, and a _continuation_. The continuation is a representation of where the results of the method call should be sent. In the case of a normal call, like we're familiar with in non-concurrent programs, the continuation indicates a message should be sent back to the caller such that the result is delivered as the result of the method call. We call this style of method call a remote procedure call, or _rpc_, where _remote_ means on another actor.
+
+One other aspect of actors, of their threads and methods, is that once begun, a method cannot be interrupted. If another task is scheduled on an executing actor, it cannot be executed until the current method runs to completion.
+
+However, continuation passing provides a nice syntactic shortcut that does look a little bit like a method not running to completion. When an rpc call is made, a normal method call, on another actor, the calling thread is, in a way, waiting for the called thread. Lets look at an example. If @actor_1@ executes the code
+<pre><code class="ruby">
+def a_method
+   ...
+   x = actor_2.another_method
+   puts x
+   ...
+end
+</code></pre>
+it clearly needs a value for @x@ before it can execute the @puts@ to print the value. We said before that calling a method on another actor runs on that other thread, which holds in this case: @actor_1@'s thread cannot run @another_method@: the method must run on @actor_2@'s thread. It may not be possible to run the method immediately: @actor_2@ may be in the middle of another task and may have other tasks queued to execute.
+
+The semantics of the rpc protocol translates fairly easily into two tasks: @actor_1@ creates a task for the @another_method@ call and includes as the continuation of that task information that runtime can use to get the returned value to the right place in the call stack. When @actor_2@ completes @another_method@, it calls that continuation which results in a new task, targeted on @actor_1@, which, when the runtime executes it, will cause the call on @actor_1@ to complete and the return value from @another_method@ to be assigned to @x@.
+
+h2. Selective reception
+
+In effect, we've taken our @a_method@ and broken it in two, the part before the call to @another_method@ and the part after. When @actor_1@ calls @another_method@, it effectively finishes the first half. The continuation it sends to @actor_2@ effectively says, "run the second half". Since @actor_1@ has finished the first half of the method, it is finished with the current task. It can therefore execute another task, including the task that will be created by @actor_2@ when it finishes @another_method@.
+
+What if there are other calls that have been made on @actor_1@? Can they run? Can they run before the result from @actor_2@ has been returned?
+
+This is an area that different actor systems vary on, the ability to selectively block tasks. Dramatis does provide this ability. As mentioned, actor methods are uninterruptible: that uninterruptibility is key to controlling concurrency conflicts in actor systems. If all other methods could execute when an rpc call was made on another actor, abstractly, the uninterruptible nature of the method execution is lost. Steps that occur before the call and after no longer appear atomic and without this atomicity, rpcs become much less useful. 
+
+Many actor systems, including dramatis, provide selective receives. That is, they allow an actor to indicate that certain calls are acceptable or unacceptable at at any point in time. Dramatis uses this _gating_ behavior to implement consistent rpcs.
+
+When an actor makes an rpc call on another actor, dramatis automatically restricts the set of tasks that the caller will accept. In general, it will only allow the task that will return the desired value to execute. Any other tasks that were queued at the time of the call or that are received before the target actor returns a value are deferred. In this way, dramatis maintains the atomity of methods even when rpcs involving multiple messages are used.
+
+Dramatis also provides gating features so that actors can identity other methods that can be executed even while an rpc is pending.
+
+Not all actor systems use implicit continuations as dramatis does. In many of these, the caller of an actor method must explicitly pass its name in the argument list and the target actor must explicitly send the result back. The effective is similar.
+
+dramatis has other continuation types, as will be shown below. dramatis continuations are similar to native language continuations such as those found in Ruby, but have some extensions (they are concurrent) and limitations (often they cannot be called multiple times.) dramatis does not use native language continuations.
+
+h2. Concurrent PingPong
+
+So, with some background on actors, let return to our example. When we mixed in @Dramatis::Actor@, what changed in our program? First, lets look at the lines that created our actors:
+<pre><code class="ruby">
+ping = PingPong.new "ping"
+pong = PingPong.new "pong"
+</code></pre>actor 
+Since these objects are actors, @new@ no longer returns a reference to the object. Instead, it returns a @Dramatis::Actor::Name@, a proxy for the actor. In most cases this proxy object, which we call the _actor name_, acts like a native object reference with the addition of actor semantics. So when we call
+<pre><code class="ruby">
+ping.pingpong ARGV[0].to_i, pong
+</code></pre>
+we are not making a call on the native object on the caller's thread, but are asking the runtime to create and schedule a task. Note that in the absence of any indication otherwise, these are rpc calls and thus act from the point of view of the caller virtually identically to the non-concurrent case.
+
+The runtime will, at some point in the future, run the @pingpong@ method on @ping@ which will result in @ping@ executing
+<pre><code class="ruby">
+partner.pingpong count-1, self
+</code></pre>
+At this point, @partner@ will be @pong@, so dramatis will create another task, this time targeted at @pong@ and, at some point in the future, execute it.
+
+h2. _pass by value_
+
+Another actor issue comes in to play at this step. Actor systems are generally _pass by value_. That is, they send object values or copies, rather than references to objects. Nothing is shared between the caller and the callee. In pure actor systems, there are only values (which include actor names) and actors so nothing except actor state is mutable and actors are internally serial. 
+
+In this sense, dramatis is not a pure actor system. Since it's only a library on top of a non-actor language and virtual machine, this is pretty much guaranteed: to make a pure actor system would generally require changing either one or both. In addition to immutable values like numbers, dramatis programs have all the mutable objects found in non-concurrent program. dramatis provides mechanisms for for managing concurrency but cannot guarantee that shared objects will not have concurrent conflicts if they are used.
+
+At this time, dramatis does not specify whether  actor method call arguments will be copied or not. Thus some care is required when considering objects passed to actor methods.
+
+One philosophy of dramatis is to balance concurrency issues with divergence from serial programming and at this point, it's unclear whether always copying method arguments is always a good idea.
+
+Back on our example:
+<pre><code class="ruby">
+partner.pingpong count-1, self
+</code></pre>
+In the case of our count, there's really no difference here. But what about @self@? Generally @self@ in an actor method works as it normally does in a serial program. Only when an actor name is used do actor semantics enter the picture. Thus, an actor class can still call all its internal methods as it normally would without invoking actor semantics.
+
+An exception to this occurs when passing @self@ references to actor objects as arguments to an actor method or as its return value. In these cases, the runtime automatically converts the @self@ reference to an actor name. This is a special case of _pass by value_, where the normal way to martial an actor is to convert a reference to an actor to an actor name. This case is handled specially by dramatis because it's a common pattern and simplifies coding.
+
+So, in our example, when @ping@ calls @pong@ with @self@ as a parameter, dramatis substitutes @ping@'s actor name for @self@. An actor can get its own name by calling @actor.name@.
+
+h2. deadlock
+
+Finally, @pong@ will execute @pingpong@ and, if the count hasn't reached zero, will call @pingpong@ back on @ping@.
+
+We can try to run it now but we get an error:
+<pre><code>
+$ ./actor.rb  100
+./actor.rb:22:in `pingpong': Dramatis::Deadlock (Dramatis::Deadlock)
+        from ./actor.rb:22:in `pingpong'
+        from ./actor.rb:31
+$ 
+</code></pre>
+What's the problem? Starting at the top of the stack (the last line in the backtrace), we see where we kick off the volley by sending a @pingpong@ to our actor named @ping@ from our main program. @ping@ dutifully sends a @pingpong@ to @pong@ in the next stack frame. This works fine. Now @pong@ tries to volley back to @ping@ and something, perhaps unexpected, happens. dramatis is telling us that a deadlock has occurred while executing this code. (For those that may have noticed, the backtrace returned by dramatis represents the actor calls across threads; a raw (and much longer and messy) backtrace is also available).
+
+The issue here is that we're trying to send a @pingpong@ back from @pong@ to @ping@, but @ping@ is still waiting to hear back from @pong@. It isn't busy: it doesn't have any messages to process. But as we mentioned above, it called @pong@ with an rpc call which set itself up only to receive the result from @pong@, and @pong@ hasn't returned it. Instead @pong@ is trying to make a new @pingpong@ call. This is corecursion, just as we had in our nonconcurrent case, and by default, dramatis does not allow it.
+
+Before we fix this, we'll mention in passing that dramatis can be made to allow recursion and corecursion, what we call _call threading_, by default. Adding
+<pre><code class="ruby">
+actor.enable_call_threading
+</code></pre>
+in the actor before a recursive or corecursive call results in the entire call chain enabling calls back through any actors that are waiting for rpc returns from this call. This makes dramatis rpc calls effectively the same as the non-concurrent case and was developed to facilitate easing the development of concurrent program from serial programs.
+
+h2. release continuations
+
+The right way to fix this is to notice that we don't really need to recurse here at all. Our actors don't look at the result of the @pingpong@ method (which is just as well, since the method doesn't return anything useful).
+
+What we need is a way to call a method but not wait around for the results (if you're paying close attention, we're being fast and loose with terminology here: actors don't wait, in most senses.) All actor implementations have this. In Erlang OTP it's called @cast@.
+
+In dramatis, we make this non-waiting call by writing
+<pre><code class="ruby">
+release( partner ).pingpong count-1, self
+</code></pre>
+@release@ (or @Dramatis.release@ if you haven't used @include Dramatis@) takes an actor name and returns a new name. This new name acts slightly differently than the original name. It _releases_, if you will, the task created by the call. That is, it doesn't ask the task to return value and the method call returns immediately. Another way of looking at is that rather than providing the current continuation, it provides a nil continuation.
+
+If we make this single change to our program and rerun it, we get:
+<pre><code>
+$ ./actor.rb  1000
+ping: pingpong 1000
+pong: pingpong 501
+ping: pingpong 500
+pong: pingpong 1
+ping: done
+$ 
+</code></pre>
+which is identical to the serial case. Moreover, if we try our big version, it works wonderfully:
+<pre><code>
+$ ./actor.rb  10000
+ping: pingpong 10000
+pong: pingpong 9501
+ping: pingpong 9500
+pong: pingpong 9001
+ping: pingpong 9000
+pong: pingpong 8501
+ping: pingpong 8500
+pong: pingpong 8001
+ping: pingpong 8000
+pong: pingpong 7501
+ping: pingpong 7500
+pong: pingpong 7001
+ping: pingpong 7000
+pong: pingpong 6501
+ping: pingpong 6500
+pong: pingpong 6001
+ping: pingpong 6000
+pong: pingpong 5501
+ping: pingpong 5500
+pong: pingpong 5001
+ping: pingpong 5000
+pong: pingpong 4501
+ping: pingpong 4500
+pong: pingpong 4001
+ping: pingpong 4000
+pong: pingpong 3501
+ping: pingpong 3500
+pong: pingpong 3001
+ping: pingpong 3000
+pong: pingpong 2501
+ping: pingpong 2500
+pong: pingpong 2001
+ping: pingpong 2000
+pong: pingpong 1501
+ping: pingpong 1500
+pong: pingpong 1001
+ping: pingpong 1000
+pong: pingpong 501
+ping: pingpong 500
+pong: pingpong 1
+ping: done
+$ 
+</code></pre>
+The reason it works now is because we are no longer calling @pingpong@ recursively. @ping@ calls @pong@ and then returns, going inactive until it gets a request from @pong@. Similarly, @pong@ calls @ping@ and then returns. This style of data-flow programming is dead-simple in actors and fairly complex in serial languages.
+
+h2. Concurrent I/O
+
+Finally, we could wonder, are we getting any other benefits from using actors here? We have a nice data flow model, but what about concurrency? We know in theory that the actors are running on different threads, but can we demonstrate that in a measurable way?
+
+One useful feature of concurrency in actors is concurrent I/O: for example, fetching a number of web pages concurrently. That's a little complex for our example, but we can simulate it. Lets say that at each volley, our actors wanted to perform some time consuming I/O. To simulate this, we'll put a short sleep in our @pingpong@ method, right after we @pingpong@ our partner:
+<pre><code class="ruby">
+sleep 0.001
+</code></pre>
+(We want it to be short because we execute it a lot). We then execute both versions:
+<pre><code>
+$ time ./serial.rb  1000
+ping: pingpong 1000
+pong: pingpong 501
+ping: pingpong 500
+pong: pingpong 1
+ping: done
+
+real    0m11.291s
+user    0m0.000s
+sys     0m0.000s
+$ time ./actor.rb  1000
+ping: pingpong 1000
+pong: pingpong 501
+ping: pingpong 500
+pong: pingpong 1
+ping: done
+
+real    0m5.060s
+user    0m0.020s
+sys     0m0.000s
+$
+</code></pre>
+The actor version takes half the time of the serial version. This is because @ping@ and @pong@ get to overlap their sleep in the actor version. This can't be done in the serial version. This is analogous to saying, in a serial program, you can't fetch two web pages at the same time without resorting to some form of manual thread management or asynchronous I/O.
+
+That's it. A concurrent actor program and you've seen the most important dramatis objects. Other, more advanced, features to explore are futures, available via @Dramatis.future@ and advanced task gating, available via methods of @Dramatis::Actor::Interface@.

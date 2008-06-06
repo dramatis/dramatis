@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import sys
+import time
 
 # cf. Scala by Example, Chapter 3
 
@@ -16,7 +17,7 @@ class PingPong ( object ):
             if count % 500 == 0 or count % 500 == 1:
                 print "%s: pingpong %d" % ( self._name, count )
             partner.pingpong( count-1, self )
-            # sleep 0.001
+            time.sleep( 0.001 )
 
 ping = PingPong( "ping" )
 pong = PingPong( "pong" )
