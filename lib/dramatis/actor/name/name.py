@@ -43,6 +43,16 @@ def _func(): pass
 _func = type(_func)
 
 class Name(object):
+    """Proxy objects for actors
+
+    dramatis.Actor.Names are proxy objects for actors. When a method
+    is called on an actor name, the dramatis runtime creates and
+    schedules an actor task to be run on the actors (virtual) thread.
+
+    dramatis.Actor.Name has no user-callable methods except for the
+    implicitly forwarded methods). Other actor name operations are available
+    through the dramatis.Actor.Name.Interface object, accessible via
+    dramatis.interface."""
 
     def __init__(self,actor):
         super(Name,self).__setattr__("_actor",actor)

@@ -2,8 +2,8 @@ module Dramatis; end
 module Dramatis::Actor; end
 class Dramatis::Actor::Name; end
 
-# An Dramatis::Actor::Name::Interface object provides the ability to
-# modify the semantics of actor name and preform other actor-level operations on an
+# A Dramatis::Actor::Name::Interface object provides the ability to
+# modify the semantics of actor name and perform other actor-level operations on an
 # actor. It is typically created via Dramatis.interface.
 
 class Dramatis::Actor::Name::Interface
@@ -55,7 +55,6 @@ class Dramatis::Actor::Name::Interface
     @name
   end
 
-  
   # call-seq:
   #   future -> a_name
   # 

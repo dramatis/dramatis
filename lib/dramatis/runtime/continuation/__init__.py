@@ -28,11 +28,12 @@ class Nil(object):
     
 class RPC(object):
 
-    def __init__(self,name,call_thread):
+    def __init__(self,name,call_thread,nonblocking):
         self._state = "start"
         self._mutex = Lock()
         self._wait = Condition( self._mutex )
         self._call_thread = call_thread
+        self._blocking = not nonblocking
         self._actor = \
             dramatis.interface( Scheduler.actor ).\
               _continuation( self, { call_thread: call_thread } )
@@ -54,7 +55,9 @@ class RPC(object):
                     tag = str(self)
                     call_thread = self._call_thread
                     actor._call_thread = call_thread
-                    actor._gate.only( [ "continuation", tag ], { "tag": tag } )
+                    if self._blocking:
+                        actor._gate.only( [ "continuation", tag ],
+                                          { "tag": tag } )
                     actor.schedule( self )
                     Scheduler.current.suspend_notification( self )
                     self._wait.wait()

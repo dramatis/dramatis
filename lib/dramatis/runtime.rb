@@ -23,8 +23,8 @@ class Dramatis::Runtime
   #
   # Resets the current runtime instance. Note that this method hard
   # resets counters and ignores exceptions which is generally a bad
-  # idea. It is typical only used in unit test and spec "after" methods to keep
-  # failing tests from cascading.
+  # idea. It is typical only used in unit test and spec "after"
+  # methods to keep failing tests from cascading.
 
   def self.reset
     # this swallows exceptions: it's assumed to be used to clean up
@@ -44,7 +44,7 @@ class Dramatis::Runtime
   # Causes the runtime to suspend the current thread until there are
   # no more tasks that can be executed. If no tasks remain, returns
   # normally. If tasks remain but are gated off,
-  # Dramtis::Deadlock is raised.
+  # Dramatis::Deadlock is raised.
   #
   # As a side effect, this method releases the current actor to
   # process messages but does not change the task gate.

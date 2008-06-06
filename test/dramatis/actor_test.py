@@ -4,6 +4,7 @@ import inspect
 import sys
 import os.path
 import threading
+import time
 
 from logging import warning
 
@@ -504,3 +505,23 @@ class Actor_Test:
             assert l == second_line
 
         assert okay
+
+    def test_yield(self):
+        "it should yield when asked to"
+
+        class c ( dramatis.Actor ):
+            def f(self):
+                self._a = 1
+                assert self._a == 1
+                dramatis.release( self.actor.name ).g()
+                time.sleep( 1 )
+                assert self._a == 1
+                self.actor.actor_yield()
+                assert self._a == 2
+                return self._a
+
+            def g(self):
+                self._a += 1
+
+        aC = c()
+        assert aC.f() == 2

@@ -58,7 +58,9 @@ class Dramatis::Runtime::Task #:nodoc: all
     when :none
       @continuation = Continuation::None.new name, @call_thread
     when :rpc
-      @continuation = Continuation::RPC.new name, @call_thread, options[:nonblocking]
+      @continuation = Continuation::RPC.new name,
+                                              @call_thread,
+                                              options[:nonblocking]
     when :future
       @continuation = Continuation::Future.new name, @call_thread
     when Proc

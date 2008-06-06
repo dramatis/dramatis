@@ -17,6 +17,26 @@ class Metaclass(_Methods):
         super(Metaclass,cls).__init__(cls,name,bases, dict)
         
     def __call__( cls, *args, **kwds ):
+        """create a new actor
+
+        DerivedClass( *args, &block ) -> an_actor_name
+        Actor( behavior = nil ) -> an_actor_name
+
+        The first case is used when a class has derived from
+        dramatis.Actor. In this case, the arguments are passed to the 
+        initialize of method of the including class like normal.
+
+        The second case is used when creating so called <em>naked
+        actors</em>, e.g.,
+        my_hash = dramatis.Actor( dict() )
+        If no
+        behavior is provided, the actor can be later bound to a behavior
+        by calling dramatis.Actor.Name.Interface.bind
+
+        In all cases, new returns a dramatis.Actor.Name proxy
+        object.
+        """
+
         # warning( ["__call__", cls,args,kwds] )
         if cls == Actor:
             return Actor.Name( runtime.Actor( *args,**kwds ) )
@@ -31,6 +51,12 @@ class Metaclass(_Methods):
             class actor_class ( behavior.__class__ ):
                 @property
                 def actor( cls ):
+                    """provide access to the interface object for this actor
+
+                    self.actor provides classes that have derived from
+                    dramatis.Actor access to a dramatis.Actor.Interface
+                    object by which they can access
+                    their actor name and other actor operations."""
                     return interface
             behavior.__class__ = actor_class
             # warning( "! " + str( behavior.__class__ ) )
@@ -42,6 +68,22 @@ class Metaclass(_Methods):
             return name
         
 class Actor(object):
+    """
+    Class used as the base of actor classes.
+
+    The dramatis.Actor class is used as a base of actor classes and
+    objects. An actor class can be created by deriving from dramatis.Actor, e.g.,
+    class MyClass ( dramatis.Actor ):
+       ...
+
+    or can be used to create so called _naked_ _actors_, e.g.,
+    my_hash_actor = dramatis.Actor( dict() )
+
+    When used as a base class, dramatis.Actor has two effects:
+    1. It causes __new__ to return a dramatis.Actor.Name rather than an object reference
+    1. It defines an actor method which can be used by the class to access its actor name and
+    otherwise affect its actor semantics
+    """
 
     __metaclass__ = Metaclass
 

@@ -61,7 +61,11 @@ class Task(object):
         if ( self._options["continuation"] == "none" ):
             self._continuation = dramatis.runtime.continuation.Nil( name, self._call_thread )
         elif( self._options["continuation"] == "rpc" ):
-            self._continuation = dramatis.runtime.continuation.RPC( name, self._call_thread )
+            self._continuation = \
+              dramatis.runtime. \
+                continuation.RPC( name,
+                                  self._call_thread,
+                                  self._options.get("nonblocking") )
         elif( self._options["continuation"] == "future" ):
             self._continuation = dramatis.runtime.continuation.Future( name, self._call_thread )
         elif( isinstance( self._options["continuation"], _func) ):

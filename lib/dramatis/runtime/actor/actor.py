@@ -146,6 +146,8 @@ class Actor(object):
         self._gate.accept( "object" )
         self._behavior.__init__( *args )
 
+    def actor_yield(self): pass
+
     def bind( self, behavior ):
         if self._behavior: raise dramatis.error.Bind()
         self._behavior = behavior

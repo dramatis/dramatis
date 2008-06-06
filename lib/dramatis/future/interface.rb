@@ -17,7 +17,7 @@ class Dramatis::Future::Interface
   # In many cases, this method is not necessary since the
   # method_missing method on the future will catch most attempts to
   # accesses the value. This method may be necessary in corner cases,
-  # for example when usingconditionals, conversions, and
+  # for example when using conditionals, conversions, and
   # metaprogramming.
 
   def value
