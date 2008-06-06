@@ -53,7 +53,6 @@ class ThreadPool(object):
             self._state = "running"
 
         def exit(self):
-            warning("exiting")
             with self._mutex:
                 self._state = "exiting"
                 for thread in self._threads:

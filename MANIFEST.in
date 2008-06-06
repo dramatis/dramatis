@@ -1,0 +1,4 @@
+include *.txt
+exclude Manifest.txt
+recursive-include examples *.txt *.py
+recursive-include test *.txt *.py

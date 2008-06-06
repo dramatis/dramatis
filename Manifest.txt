@@ -76,7 +76,6 @@ lib/dramatis/runtime/timer.rb
 lib/dramatis/shoes.rb
 lib/dramatis/shoes/runtime.rb
 lib/dramatis/version.rb
-log/debug.log
 script/destroy
 script/generate
 script/txt2html
