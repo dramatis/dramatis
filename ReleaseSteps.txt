@@ -1,3 +1,11 @@
 Build rdocs:
 
   rm  -rf doc; rdoc -NS -m README.txt lib README.txt
+
+Create and push gem:
+
+       rake deploy VERSION=0.1.1
+
+Create and push python dist:
+
+       python setup.py sdist upload

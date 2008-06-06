@@ -1,6 +1,7 @@
 History.txt
 License.txt
 README.txt
+ReleaseSteps.txt
 setup.py
 examples/README.txt
 examples/auction.py
@@ -17,7 +18,8 @@ examples/im/single/chat/screen/__init__.py
 examples/im/single/chat/screen/wx.py
 examples/pingpong/actor.py
 examples/pingpong/actor_rec.py
-examples/pingpong/pingpong.txt
+examples/pingpong/python.txt
+examples/pingpong/ruby.txt
 examples/pingpong/scala.py
 examples/pingpong/serial.py
 examples/telephone/3esl.txt

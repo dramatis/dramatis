@@ -32,7 +32,7 @@ examples/im/single/fox.rb
 examples/im/single/wxchat.rb
 examples/pingpong/actor.rb
 examples/pingpong/actor_rec.rb
-examples/pingpong/pingpong.txt
+examples/pingpong/ruby.txt
 examples/pingpong/scala.rb
 examples/pingpong/serial.rb
 examples/pretty.txt
