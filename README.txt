@@ -10,7 +10,7 @@ An actor library for dynamic languages like Ruby and Python.
 
 dramatis provides a library for writing concurrent programs using the actor programming model.
 
-This is an early version, the first release with packaging (a gem for ruby, setuptools for python).
+This is an early version, the first release with packaging (a gem for ruby, distutils for python).
 
 It's available on github to download and does come with documentation, a tutorial, and several examples, all of which (mostly) work, so it's stable enough to being to play with.
 
