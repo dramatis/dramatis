@@ -4,7 +4,7 @@ Build rdocs:
 
 Create and push gem:
 
-       rake deploy VERSION=0.1.1
+       rake deploy VERSION=X.X.X
 
 Create and push python dist:
 
