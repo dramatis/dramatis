@@ -13,15 +13,15 @@ describe Dramatis::Runtime::ThreadPool do
   # needed for anything but the test, so ...
   it "should allocate threads that do stuff" do
     thread_pool = Dramatis::Runtime::ThreadPool.new
-    @x = 1
+    x = 1
     t = thread_pool.new do
       sleep 0.1
-      @x = 2
+      x = 2
     end
-    @x.should == 1
+    x.should == 1
     thread_pool.length.should == 0
     sleep 0.2
-    @x.should == 2
+    x.should == 2
     thread_pool.length.should == 1
     thread_pool.reset
     thread_pool.length.should == 0

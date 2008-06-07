@@ -20,12 +20,9 @@ module Auction
       @min_bid = min_bid
       @closing = closing
 
-      @time_to_shutdown = 3000
       @bid_increment = 10
       @max_bid = @min_bid - @bid_increment
       @max_bidder = nil
-
-      @bids = 0
 
       actor.refuse :winner
 

@@ -1,3 +1,12 @@
+== 0.2.0 unreleased
+
+* add actor behaviors
+* add actor.become to change behaviors
+* add delay parameter to actor.yield
+* complete the auction tutorial
+* allow thread pools to be hard reset (wait for all members)
+  * fixes a bug that caused spec failures under jruby
+
 == 0.1.1 2008-06-06
 
 * Patched alpha, sync'd up with python. No material changes to Ruby.

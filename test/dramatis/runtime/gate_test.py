@@ -67,3 +67,4 @@ class Gate_Test:
                                        [("continuation",), True, None],
                                        [(object,), True, None ] ]
 
+

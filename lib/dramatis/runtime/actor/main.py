@@ -27,7 +27,8 @@ class Main ( Actor ):
           return self._current
 
       def reset(self):
-          del self._current
+          if hasattr(self,"_current"):
+              del self._current
 
   def quiesce(self):
       self.schedule()
