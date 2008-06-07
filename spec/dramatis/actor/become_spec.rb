@@ -127,7 +127,6 @@ describe "Dramatis::Actor::Behavior" do
   end
 
   it "should expose concurrency via become" do
-
     class B
       def foo; end
     end
@@ -150,33 +149,33 @@ describe "Dramatis::Actor::Behavior" do
     _C = Class.new do
       include Dramatis::Actor
       def initialize
-        actor.yield 0.1
+        actor.yield 0.2
       end
     end
     t = Time::now
     c = _C.new
-    ( Time::now - t ).should < 0.2
-    ( Time::now - t  ).should >= 0.1
+    ( Time::now - t ).should < 0.4
+    ( Time::now - t  ).should >= 0.2
   end
 
   it "should not gate off the caller" do
     _C = Class.new do
       include Dramatis::Actor
       def f
-        actor.yield 0.1
+        actor.yield 0.2
       end
       def g; end
     end
     t = Time::now
     c = _C.new
-    ( Time::now - t ).should < 0.1
+    ( Time::now - t ).should < 0.2
     Dramatis.release( c ).f
-    ( Time::now - t ).should < 0.1
+    ( Time::now - t ).should < 0.2
     c.g
-    ( Time::now - t ).should < 0.1
+    ( Time::now - t ).should < 0.2
     sleep 0.05
     c.g
-    ( Time::now - t  ).should < 0.1
+    ( Time::now - t  ).should < 0.2
   end
 
   it "should defer intialization until bound" do

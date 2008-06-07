@@ -1,4 +1,4 @@
-module Dramatis; end
+module Darmatis; end
 class Dramatis::Runtime; end
 
 require 'thread'
@@ -149,7 +149,7 @@ class Dramatis::Runtime::Scheduler #:nodoc: all
     raise "hell #{@main_state.to_s}" if @main_state != :may_finish and @main_state != :running
     # warn "?threads? #{Thread.list.join(' ')}"
     # warn "main has exited: done"
-    @thread_pool.reset()
+    @thread_pool.reset quiescing
     Dramatis::Runtime.current.maybe_raise_exceptions quiescing
   end
 
@@ -159,7 +159,7 @@ class Dramatis::Runtime::Scheduler #:nodoc: all
 
   def thread_count
     @mutex.synchronize do
-      @@thread_pools.inject(0) { |a,b| a+b.length }
+      @@thread_pools.inject(0) { |a,b| a+b.size }
     end
   end
 

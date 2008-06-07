@@ -6,15 +6,17 @@ class Dramatis::Runtime::ThreadPool::PoolThread < Thread; end
 
 class Dramatis::Runtime::ThreadPool #:nodoc: all
 
-  def reset
-    shutdown
+  def reset soft = false
+    shutdown soft
     @state = :running
   end
 
   def initialize
     super
     @mutex = Mutex.new
+    @wait = ConditionVariable.new
     @threads = []
+    @size = 0
     @state = :running
   end
 
@@ -28,27 +30,43 @@ class Dramatis::Runtime::ThreadPool #:nodoc: all
     end
   end
 
+  def size
+    @mutex.synchronize do
+      @size
+    end
+  end
+
   private
 
-  def shutdown
+  def shutdown soft
     @mutex.synchronize do
       @state = :exiting
-      @threads.each do |thread|
-        thread.send :shutdown
+    end
+    first = true
+    @mutex.synchronize do
+      while first or ( not soft and @size > 0 )
+        first = false
+        @threads.each do |thread|
+          thread.send :shutdown
+        end
+        while thread = @threads.pop
+          thread.true_join
+          @size -= 1
+        end
+        if not soft and @size > 0
+          @state = :exit_waiting
+          @wait.wait @mutex
+          @state = :exiting
+        end
       end
-      @threads.each do |thread|
-        thread.true_join
-      end
-      @threads = []
     end
   end
 
   def checkin thread
     @mutex.synchronize do
-      if @state != :exiting
-        @threads << thread
-      else
-        warn("POST EXIT CHECKIN")
+      @threads << thread
+      if @state == :exit_waiting
+        @wait.signal
       end
     end
   end
@@ -60,6 +78,7 @@ class Dramatis::Runtime::ThreadPool #:nodoc: all
       if @threads.length == 0
         pt = PoolThread.new self
         @threads << pt
+        @size += 1
       end
       t = @threads.pop
     end
