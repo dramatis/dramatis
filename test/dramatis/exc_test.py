@@ -26,21 +26,13 @@ Actor = dramatis.Actor
 _first_line = []
 _second_line = []
 
-class Exc_Test:
+sys.path[0:0] = [ os.path.join( os.path.dirname( inspect.getabsfile( inspect.currentframe() ) ), '..' ) ]
+from test_helper import DramatisTestHelper
 
-    def setup(self): pass
+class Exc_Test ( DramatisTestHelper ):
 
     def teardown(self):
-        try:
-            dramatis.Runtime.current.quiesce()
-            assert len( dramatis.Runtime.current.exceptions() ) == 0
-            assert threading.activeCount() == \
-                    1 + len(dramatis.runtime.Scheduler.ThreadPool)
-        finally:
-            dramatis.Runtime.reset()
-
-    def test(self):
-        assert True
+        self.runtime_check()
 
     def test_pretty_exc(self):
         class Foo ( dramatis.Actor ):

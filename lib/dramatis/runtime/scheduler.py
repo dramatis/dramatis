@@ -149,8 +149,8 @@ class Scheduler(object):
                         self._running_threads += 1
 
                         try:
-                            ThreadPool( target = self._deliver_thread,
-                                        args = (task,) )
+                            self._thread_pool( target = self._deliver_thread,
+                                                args = (task,) )
                         except Exception, e:
                             warning( "got an ex 1 " + repr(e) )
                             print_exc()

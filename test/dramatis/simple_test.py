@@ -7,6 +7,7 @@ import threading
 
 from logging import warning
 
+sys.path[0:0] = [ os.path.join( os.path.dirname( inspect.getabsfile( inspect.currentframe() ) ), '..' ) ]
 sys.path[0:0] = [ os.path.join( os.path.dirname( inspect.getabsfile( inspect.currentframe() ) ), '..', '..', 'lib' ) ]
 
 from inspect import currentframe
@@ -23,22 +24,12 @@ import dramatis.error
 from dramatis import interface
 Actor = dramatis.Actor
 
-class Simple_Test:
+from test_helper import DramatisTestHelper
 
-    def setup(self): pass
+class Simple_Test ( DramatisTestHelper ):
 
     def teardown(self):
-        try:
-            dramatis.Runtime.current.quiesce()
-            assert len( dramatis.Runtime.current.exceptions() ) == 0
-            assert threading.activeCount() == \
-                    1 + len(dramatis.runtime.Scheduler.ThreadPool)
-        finally:
-            dramatis.Runtime.reset()
-            assert threading.activeCount() == 1
-
-    def test(self):
-        assert True
+        self.runtime_check()
 
     def test_creatable_wo_req(self):
         class f ( dramatis.Actor ): pass
