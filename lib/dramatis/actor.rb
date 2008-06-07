@@ -2,6 +2,7 @@ module Dramatis; end
 module Dramatis::Actor; end
 
 require 'dramatis/runtime/actor'
+require 'dramatis/actor/behavior'
 
 # The Dramatis::Actor module is used to create actor classes and
 # objects. An actor class can be created by mixing Dramatis::Actor, e.g.,
@@ -21,9 +22,10 @@ module Dramatis::Actor
 
   def self.included cls #:nodoc:
     cls.instance_eval do
-      include Dramatis
+      include Dramatis::Actor::Behavior
     end
     class << cls
+      self.send :undef_method, :new
       def new *args
         new_actor = Dramatis::Runtime::Actor.new
         object = allocate
@@ -37,19 +39,6 @@ module Dramatis::Actor
         new_actor.name
       end
     end
-  end
-
-  if false # for docs only ...
-
-    # call-seq:
-    #  actor -> an_interface
-    #
-    # actor provides classes that have mixed in Dramatis::Actor access
-    # to a Dramatis::Actor::Interface object by which they can access
-    # their actor name and other actor operations.
-
-    def actor; end
-
   end
 
   # call-seq:
@@ -72,25 +61,6 @@ module Dramatis::Actor
 
   def self.new behavior = nil
     ( Dramatis::Runtime::Actor.new behavior ).name
-  end
-
-  if false
-    def self.included cls #:nodoc:
-      pp caller(0)
-      warn "Dramatis::Actor included by #{cls}"
-    end
-
-    def self.derived cls #:nodoc:
-      warn "Dramatis::Actor included by #{cls}"
-    end
-
-    def self.extended cls #:nodoc:
-      warn "Dramatis::Actor included by #{cls}"
-    end
-
-    def self.inherited cls #:nodoc:
-      warn "Dramatis::Actor included by #{cls}"
-    end
   end
 
 end

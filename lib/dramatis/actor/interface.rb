@@ -94,7 +94,7 @@ class Dramatis::Actor::Interface
   # Returns the actor name for the object.
 
   def name
-    @actor.name
+    @actor and @actor.name
   end
 
   # call-seq:
@@ -114,6 +114,10 @@ class Dramatis::Actor::Interface
 
   def timeout value, *args #:nodoc: not ready
     @actor.timeout value, *args
+  end
+
+  def become behavior
+    @actor.become behavior
   end
 
   private

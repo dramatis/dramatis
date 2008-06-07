@@ -26,18 +26,50 @@ class Dramatis::Runtime::Actor #:nodoc: all
     @call_thread = nil
     @object = object
     @gate = Dramatis::Runtime::Gate.new
+    @object_interface = Dramatis::Actor::Interface.new self
     if !object
       @gate.refuse :object
+    else
+      if Dramatis::Actor::Behavior === object
+        if object.actor.name
+          raise Dramatis::Error::Bind.new( "behavior already bound" )
+        end
+        eigenclass = ( class << object; self; end )
+        eigenclass.send :undef_method, :actor
+        oi = @object_interface
+        eigenclass.send :define_method, :actor, ( lambda { oi } )
+      end
     end
     @gate.always( ( [ :object, :dramatis_exception ] ), true )
+
     blocked!
     @queue = []
     @mutex = Mutex.new
     @continuations = {}
-    @object_interface = Dramatis::Actor::Interface.new self
     Dramatis::Runtime::Scheduler.current << self
   end
   
+  def become behavior
+    return if behavior == @object
+    if Dramatis::Actor::Behavior === behavior
+      if behavior.actor.name
+        raise Dramatis::Error::Bind.new( "cannot become bound behavior" )
+      end
+      eigenclass = ( class << behavior; self; end )
+      eigenclass.send :undef_method, :actor
+      oi = @object_interface
+      eigenclass.send :define_method, :actor, ( lambda { oi } )
+    end
+    if Dramatis::Actor::Behavior === @object
+      eigenclass = ( class << @object; self; end )
+      eigenclass.send :undef_method, :actor
+      eigenclass.send :define_method, :actor,
+                ( lambda { Dramatis::Actor::Interface.new nil } )
+    end
+    @object = behavior
+    schedule
+  end
+
   def call_threading?
     @call_threading
   end
@@ -62,6 +94,7 @@ class Dramatis::Runtime::Actor #:nodoc: all
     raise Dramatis::Error::Bind if @object
     @object = object
     @gate.accept :object
+    schedule
     name
   end
 
@@ -131,6 +164,7 @@ class Dramatis::Runtime::Actor #:nodoc: all
 
   def deliver dest, args, continuation, call_thread
     old_call_thread = @call_thread
+    old_behavior_id = @object.object_id
     begin
       @call_thread = call_thread
       method = args.shift
@@ -186,7 +220,9 @@ class Dramatis::Runtime::Actor #:nodoc: all
       end
     ensure
       @call_thread = old_call_thread
-      schedule
+      if old_behavior_id == @object.object_id
+        schedule
+      end
     end
   end
 

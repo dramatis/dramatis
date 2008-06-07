@@ -8,6 +8,8 @@ end
 
 $:.push File.join( File.dirname(__FILE__), "..", "lib" )
 
+require 'dramatis'
+
 module DramatisSpecHelper
 
   def runtime_check
