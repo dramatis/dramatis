@@ -9,15 +9,15 @@ describe "Dramatis::Actor::Behavior" do
   after(:each) { runtime_check }
 
   it "should be usable apart from being an actor" do
-    class C
+    _C = Class.new do
       include Dramatis::Actor::Behavior
     end
-    c = C.new
+    c = _C.new
     c.should_not be_a_kind_of( Dramatis::Actor::Name )
   end
 
   it "should call the constructor" do
-    class C
+    _C = Class.new do
       include Dramatis::Actor::Behavior
       @@count = 0
       def self.count; @@count; end
@@ -25,13 +25,13 @@ describe "Dramatis::Actor::Behavior" do
         @@count += 1
       end
     end
-    c = C.new
+    c = _C.new
     c.should_not be_a_kind_of( Dramatis::Actor::Name )
-    C.count.should == 1
+    _C.count.should == 1
   end
 
   it "should return nil when unbound" do
-    class C
+    _C = Class.new do
       include Dramatis::Actor::Behavior
       def initialize
         check
@@ -40,12 +40,12 @@ describe "Dramatis::Actor::Behavior" do
         actor.name.should == nil
       end
     end
-    c = C.new
+    c = _C.new
     c.check
   end
 
   it "should not return nil when bound" do
-    class C
+    _C = Class.new do
       include Dramatis::Actor::Behavior
       def initialize
         actor.name.should == nil
@@ -54,17 +54,17 @@ describe "Dramatis::Actor::Behavior" do
         actor.name.should_not == nil
       end
     end
-    c = C.new
+    c = _C.new
     a = Dramatis::Actor.new c
     a.should be_a_kind_of( Dramatis::Actor::Name )
     a.check
   end
 
   it "should fail if already bound" do
-    class C
+    _C = Class.new do
       include Dramatis::Actor::Behavior
     end
-    c = C.new
+    c = _C.new
     Dramatis::Actor.new c
     lambda { Dramatis::Actor.new c }.should raise_error( Dramatis::Error::Bind )
   end
@@ -80,7 +80,7 @@ describe "Dramatis::Actor::Behavior" do
           actor.become other
         end
       end
-      class C
+      @_C = Class.new do
         include Dramatis::Actor::Behavior
         def foobar; "bar"; end
         def check name = nil
@@ -94,9 +94,9 @@ describe "Dramatis::Actor::Behavior" do
       @b = B.new
       @b.should be_a_kind_of( Dramatis::Actor::Name )
       @b.should_not be_a_kind_of( B )
-      @c = C.new
+      @c = @_C.new
       @c.should_not be_a_kind_of( Dramatis::Actor::Name )
-      @c.should be_a_kind_of( C )
+      @c.should be_a_kind_of( @_C )
     end
 
     it "should change behavior on become" do
@@ -120,7 +120,7 @@ describe "Dramatis::Actor::Behavior" do
       @c.check nil
       @b.doit @c
       @c.check @b
-      @b.doit C.new
+      @b.doit @_C.new
       @c.check nil
     end
 
@@ -144,6 +144,95 @@ describe "Dramatis::Actor::Behavior" do
 
     A.new.doit
 
+  end
+
+  it "should sleep for the allowed time" do
+    _C = Class.new do
+      include Dramatis::Actor
+      def initialize
+        actor.yield 0.1
+      end
+    end
+    t = Time::now
+    c = _C.new
+    ( Time::now - t ).should < 0.2
+    ( Time::now - t  ).should >= 0.1
+  end
+
+  it "should not gate off the caller" do
+    _C = Class.new do
+      include Dramatis::Actor
+      def f
+        actor.yield 0.1
+      end
+      def g; end
+    end
+    t = Time::now
+    c = _C.new
+    ( Time::now - t ).should < 0.1
+    Dramatis.release( c ).f
+    ( Time::now - t ).should < 0.1
+    c.g
+    ( Time::now - t ).should < 0.1
+    sleep 0.05
+    c.g
+    ( Time::now - t  ).should < 0.1
+  end
+
+  it "should defer intialization until bound" do
+    pending "I'm not sure if this is a good idea"
+    _C = Class.new do
+      @@a = 1
+      def self.a; return @@a; end
+      include Dramatis::Actor::Behavior
+      def initialize
+        @@a += 1
+        actor.accept :f
+      end
+    end
+    _C.a.should == 1
+    c = _C.new
+    _C.a.should == 1
+    Dramatis::Actor.new c
+    _C.a.should == 2
+  end
+
+  it "should call a notification method if present (become)" do
+    _B = Class.new do
+      include Dramatis::Actor
+      def initialize other
+        actor.become other
+      end
+    end
+    _C = Class.new do
+      @@a = 1
+      def self.a; return @@a; end
+      include Dramatis::Actor::Behavior
+      def dramatis_bound
+        @@a += 1
+      end
+    end
+    _C.a.should == 1
+    c = _C.new
+    _C.a.should == 1
+    _B.new c
+    _C.a.should == 2
+  end
+
+  it "should call a notification method if present (actor new)" do
+    _C = Class.new do
+      @@a = 1
+      def self.a; return @@a; end
+      include Dramatis::Actor::Behavior
+      def dramatis_bound
+        @@a += 1
+      end
+    end
+    _C.a.should == 1
+    c = _C.new
+    _C.a.should == 1
+    Dramatis::Actor.new c
+    _C.a.should == 2
   end
 
 end

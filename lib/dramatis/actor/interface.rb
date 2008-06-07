@@ -98,22 +98,38 @@ class Dramatis::Actor::Interface
   end
 
   # call-seq:
-  #  yield -> nil
+  #  yield t = 0 -> nil
   #
   # Yields the actor to allow other tasks to be executed.
+  # If the optional time argument is given, it will wait for that
+  # amount of time before scheduilng resumption. The argument defeaults
+  # to zero meaning the wakeup message will be queued immediately.
+  # 
   # Currently, messages are handled FIFO so the yield will
   # return when all the messages received up to the point of the
   # yield are executed. This could be modified if non-FIFO queue
   # processing is added
 
-  def yield
+  def yield t = 0
+
+    _Sleeper = Class.new do
+      include Dramatis::Actor
+      def nap t
+        sleep t
+      end
+    end
+    
+    if t > 0
+      sleeper = _Sleeper.new
+      ( Dramatis.interface( sleeper ).
+            continue :continuation => :rpc,
+                     :nonblocking => true ).nap( t )
+    end
+
     @actor.actor_send [ :yield ], :continuation => :rpc,
                                   :nonblocking => true
-    nil
-  end
 
-  def timeout value, *args #:nodoc: not ready
-    @actor.timeout value, *args
+    nil
   end
 
   def become behavior

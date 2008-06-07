@@ -48,7 +48,7 @@ class Exception
   def _dramatis_reraise  #:nodoc:
     # return
     # p "reraise"
-    if @_dramatis_raw_backtrace
+    if instance_variable_defined? :@_dramatis_raw_backtrace
       @_dramatis_raw_backtrace = backtrace + filter( caller )
     else
       @_dramatis_raw_backtrace = filter( backtrace ) + filter( caller )

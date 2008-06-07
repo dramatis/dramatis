@@ -41,12 +41,14 @@ class Dramatis::Runtime::Actor #:nodoc: all
       end
     end
     @gate.always( ( [ :object, :dramatis_exception ] ), true )
-
     blocked!
     @queue = []
     @mutex = Mutex.new
     @continuations = {}
     Dramatis::Runtime::Scheduler.current << self
+    if object.respond_to? :dramatis_bound
+      object.send :dramatis_bound
+    end
   end
   
   def become behavior
@@ -67,6 +69,9 @@ class Dramatis::Runtime::Actor #:nodoc: all
                 ( lambda { Dramatis::Actor::Interface.new nil } )
     end
     @object = behavior
+    if behavior.respond_to? :dramatis_bound
+      behavior.send :dramatis_bound
+    end
     schedule
   end
 
@@ -264,10 +269,6 @@ class Dramatis::Runtime::Actor #:nodoc: all
   def runnable?
     # warn "runnable? #{self} #{@state}"
     @state == :runnable
-  end
-
-  def timeout value, *args
-    @timer ||= Dramatis::Runtime::Timer.new
   end
 
 end

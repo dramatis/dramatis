@@ -10,7 +10,7 @@ require 'dramatis/actor/behavior'
 module Auction
 
   def self.new *args
-    Dramatis::Actor.new Open.new( *args )
+    Open.new( *args )
   end
 
   class Open
@@ -27,7 +27,22 @@ module Auction
 
       @bids = 0
 
-      actor.timeout @closing - Time::now, :timeout
+      actor.refuse :winner
+
+      release( actor.name ).close
+    end
+
+    def close
+      actor.yield @closing - Time::now
+
+      if @max_bid > @min_bid
+        release( @seller ).winner @max_bidder
+        release( @max_bidder ).winner @seller
+        actor.become Over.new( @max_bidder, @max_bid )
+      else
+        release( @seller ).failed @max_bid
+        actor.become Over.new( nil, @max_bid )
+      end
     end
 
     def inquire
@@ -35,7 +50,6 @@ module Auction
     end
 
     def offer bid, bidder
-      result = \
       if bid >= @max_bid + @bid_increment
         if @max_bid >= @min_bid
           release( @max_bidder ).beaten_offer bid
@@ -46,73 +60,28 @@ module Auction
       else
         [ :beaten_offer, @max_bid ]
       end
-      if ( @bids += 1 ) > 3
-        if @max_bid > @min_bid
-          release( @seller ).winner @max_bidder
-          release( @max_bidder ).winner @seller
-        else
-          release( @seller ).failed @max_bid
-        end
-        actor.become Over.new
-      end
-      result
-    end
-
-    def timeout
-      actor.timeout( @time_to_shtudown  ) { exit }
-      actor.become Over.new 
     end
   end
 
   class Over
     include Dramatis::Actor::Behavior
-    def method_missing *args
+    attr_reader :winner, :max_bid
+    def initialize winner, max_bid
+      @winner = winner
+      @max_bid = max_bid
+    end
+    def dramatis_bound
+      actor.accept :winner
+    end
+    def inquire *args
+      [ @max_bid, 0 ]
+    end
+    def offer *args
       :auction_over
     end
   end
 
 end
-
-class Auction_
-  include Dramatis::Actor
-  def initialize seller, min_bid, closing
-    @seller = seller
-    @min_bid = min_bid
-    @closing = closing
-
-    @time_to_shutdown = 3000
-    @bid_increment = 10
-    @max_bid = @min_bid - @bid_increment
-    @max_bidder = nil
-
-    actor.timeout @closing - Time::now, :timeout
-  end
-
-  def inquire
-    [ @max_bid, @closing ]
-  end
-
-  def offer bid, bidder
-    if bid >= @max_bid + @bid_increment
-      if @max_bid >= @min_bid
-        release( @max_bidder ).beaten_offer bid
-      end
-      @max_bid = bid
-      @max_bidder = bidder
-      :best_offer
-    else
-      [ :beaten_offer, @max_bid ]
-    end
-  end
-
-  def timeout
-    actor.timeout( @time_to_shtudown  ) { exit }
-    actor.become Over.new
-  end
-end
-
-MIN_BID = 100
-CLOSING = Time::now + 4
 
 class Seller
   include Dramatis::Actor
@@ -122,14 +91,11 @@ class Seller
   end
 end
 
-seller = Seller.new
-
-auction = Auction.new seller, MIN_BID, CLOSING
-
 class Client
   include Dramatis::Actor
-  def initialize id, increment, top, auction
-    @id = id
+  attr_reader :name
+  def initialize name, increment, top, auction
+    @name = name
     @increment = increment
     @top = top
     @auction = auction
@@ -162,9 +128,35 @@ class Client
     log "I won!"
   end
   def log string
-    puts "client #{@id}: #{string}"
+    puts "client #{@name}: #{string}"
   end
 end
 
-Client.new 1, 20, 200, auction
-Client.new 2, 10, 300, auction
+# Long enough to resolve
+
+seller = Seller.new
+auction = Auction.new seller, 100, Time::now + 4
+Client.new "1a", 20, 200, auction
+Client.new "2a", 10, 300, auction
+
+puts "Notice: client #{auction.winner.name} won the first auction with a bid of #{auction.max_bid}"
+
+# shorter
+
+seller = Seller.new
+auction = Auction.new seller, 100, Time::now + 1.5
+Client.new "1b", 20, 200, auction
+Client.new "2b", 10, 300, auction
+
+puts "Notice: client #{auction.winner.name} won the second auction with a bid of #{auction.max_bid}"
+
+# not rich enough
+
+seller = Seller.new
+auction = Auction.new seller, 400, Time::now + 1.5
+Client.new "1c", 20, 200, auction
+Client.new "2c", 10, 300, auction
+
+raise RuntimeError if auction.winner != nil
+
+puts "Notice: the third auction failed; the maximum recieved bid was #{auction.max_bid}"
