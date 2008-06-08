@@ -112,7 +112,7 @@ class Dramatis::Actor::Interface
 
   def yield t = 0
 
-    _Sleeper = Class.new do
+    @@_Sleeper ||= Class.new do
       include Dramatis::Actor
       def nap t
         sleep t
@@ -120,7 +120,7 @@ class Dramatis::Actor::Interface
     end
     
     if t > 0
-      sleeper = _Sleeper.new
+      sleeper = @@_Sleeper.new
       ( Dramatis.interface( sleeper ).
             continue :continuation => :rpc,
                      :nonblocking => true ).nap( t )
@@ -131,6 +131,18 @@ class Dramatis::Actor::Interface
 
     nil
   end
+
+  # call-seq:
+  #  become behavior
+  #
+  # The actor behavior is changed to the provided behavior. All future
+  # tasks will be sent to that behavior.
+  #
+  # If either the new or old behaviors mix in Dramatis::Actor::Behavior,
+  # their actor methods will be changed as appropriate (to return/not return nil)
+  #
+  # Become has the side effect of making the actor schedulable immediately
+  # since the new behavior is not by definition executing any tasks.
 
   def become behavior
     @actor.become behavior

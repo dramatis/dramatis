@@ -1,3 +1,11 @@
+from __future__ import absolute_import
+from __future__ import with_statement
+
+import time
+from logging import warning
+
+import dramatis
+
 class Interface(object):
     """provides actors with control over their runtime dynamics
 
@@ -80,18 +88,42 @@ class Interface(object):
     @property
     def name( self ):
         "Returns the actor name for the object."
-        return self._actor.name
+        return self._actor and self._actor.name
 
-    def actor_yield(self):
+    def actor_yield(self, t = 0):
         """Yields the actor to allow other tasks to be executed.
 
         Currently, messages are handled FIFO so the yield will
         return when all the messages received up to the point of the
         yield are executed. This could be modified if non-FIFO queue
         processing is added."""
+
+        class Sleeper ( dramatis.Actor ):
+            def nap(self, t):
+                time.sleep( t )
+
+        if t > 0:
+            sleeper = Sleeper()
+            ( dramatis.interface( sleeper ).
+              continuation( { "continuation": "rpc",
+                              "nonblocking": True } ) ).nap( t )
+
         self._actor.actor_send( [ "actor_yield" ], { "continuation": "rpc",
                                                      "nonblocking": True } )
         return None
+
+    def become(self, behavior):
+        """The actor behavior is changed to the provided behavior.
+
+        All future tasks will be sent to that behavior.
+
+        If either the new or old behaviors mix in
+        dramatis.Actor.Behavior, their actor methods will be changed
+        as appropriate (to return/not return nil)
+
+        Become has the side effect of making the actor schedulable immediately
+        since the new behavior is not by definition executing any tasks."""
+        self._actor.become( behavior )
 
     def _gate( self ):
         return self._actor._gate

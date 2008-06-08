@@ -138,7 +138,6 @@ describe "Dramatis::Actor::Behavior" do
         actor.name.should == nil
         me.foo
       end
-      def foo; end
     end
 
     A.new.doit

@@ -129,7 +129,7 @@ class Client
   end
 end
 
-# Long enough to resolve
+# somebody gives up
 
 seller = Seller.new
 auction = Auction.new seller, 100, Time::now + 4
@@ -138,7 +138,7 @@ Client.new "2a", 10, 300, auction
 
 puts "Notice: client #{auction.winner.name} won the first auction with a bid of #{auction.max_bid}"
 
-# shorter
+# cut off while people still have money
 
 seller = Seller.new
 auction = Auction.new seller, 100, Time::now + 1.5
@@ -147,7 +147,7 @@ Client.new "2b", 10, 300, auction
 
 puts "Notice: client #{auction.winner.name} won the second auction with a bid of #{auction.max_bid}"
 
-# not rich enough
+# too expensive
 
 seller = Seller.new
 auction = Auction.new seller, 400, Time::now + 1.5

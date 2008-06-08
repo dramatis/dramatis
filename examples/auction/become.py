@@ -8,14 +8,14 @@ import inspect
 import sys
 import os.path
 
-sys.path[0:0] = [ os.path.join( os.path.dirname( inspect.getabsfile( inspect.currentframe() ) ), '..', 'lib' ) ]
+sys.path[0:0] = [ os.path.join( os.path.dirname( inspect.getabsfile( inspect.currentframe() ) ), '..', '..', 'lib' ) ]
 
 import dramatis
 
 class Auction(object):
 
-    def __new__( *args ):
-        return Object( *args )
+    def __new__( cls, *args ):
+        return Auction.Open( *args )
 
     class Open( dramatis.Actor ):
 
@@ -28,23 +28,24 @@ class Auction(object):
             self._max_bid = self._min_bid - self._bid_increment
             self._max_bidder = None
 
-            self.actor.refuse "winner"
+            self.actor.refuse( "winner" )
             
             dramatis.release( self.actor.name ).close()
 
         def close(self):
-            self.actor.yield( @closing - Time::now )
+            self.actor.actor_yield( self._closing - time.time() )
 
             if self._max_bid > self._min_bid:
                 dramatis.release( self._seller ).winner( self._max_bidder )
                 dramatis.release( self._max_bidder ).winner( self._seller )
-                self.actor.become Over( self._max_bidder, self._max_bid )
+                self.actor.become( Auction.Over( self._max_bidder,
+                                                  self._max_bid ) )
             else:
                 dramatis.release( self._seller ).failed( self._max_bid )
-                self.actor.become Over.new( nil, self._max_bid )
+                self.actor.become( Auction.Over( None, self._max_bid ) )
                 
-                def inquire(self):
-                    return [ self._max_bid, self._closing ]
+        def inquire(self):
+            return [ self._max_bid, self._closing ]
 
         def offer(self, bid, bidder):
             if bid >= self._max_bid + self._bid_increment:
@@ -56,10 +57,13 @@ class Auction(object):
             else:
                 return [ "beaten_offer", self._max_bid ]
 
+        @property
+        def winner(self): raise "hell"
+
     class Over( dramatis.Actor.Behavior ):
-        @propery
+        @property
         def winner(self): return self._winner
-        @propery
+        @property
         def max_bid(self): return self._max_bid
 
         def __init__(self, winner, max_bid):
@@ -73,7 +77,7 @@ class Auction(object):
             [ self._max_bid, 0 ]
 
         def offer(self, *args):
-            return "auction_over"
+            return [ "auction_over", self._max_bid ]
 
 class Seller ( dramatis.Actor ):
     def winner(self, winner): pass
@@ -101,7 +105,7 @@ class Client ( dramatis.Actor ):
             self._current = self._max + self._increment
             time.sleep( ( 1 + random.randint( 0, 1000 ) )/1000.0 )
             answer, max_bid = self._auction.offer( self._current,
-                                                   self.actor.name )
+                                                    self.actor.name )
             if answer == "best_offer":
                 self.log("best offer: " + str(self._current))
             elif answer == "beaten_offer": self.beaten_offer( max_bid )
@@ -117,13 +121,38 @@ class Client ( dramatis.Actor ):
         self.log("I won!")
 
     def log(self,string):
-        print "client", self._name, ": ", string
+        print ( "client %s: %s" % ( self._name, string ) )
 
-# Long enough to resolve
+# somebody gives up
 
 seller = Seller()
 auction = Auction( seller, 100, time.time() + 4 )
 Client( "1a", 20, 200, auction )
-Client( "1b", 10, 300, auction )
+Client( "1a", 10, 300, auction )
 
-puts "Notice: client", auction.winner.name, "won the first auction with a bid of", auction.max_bid
+print "Notice: client %s won the first auction with a bid of %s" % \
+       ( auction.winner.name, auction.max_bid )
+
+# cut off while people still have money
+
+seller = Seller()
+auction = Auction( seller, 100, time.time() + 1.5 )
+Client( "1b", 20, 200, auction )
+Client( "2b", 10, 300, auction )
+
+print "Notice: client %s won the first auction with a bid of %s" % \
+       ( auction.winner.name, auction.max_bid )
+
+# too expensive
+
+seller = Seller()
+auction = Auction( seller, 400, time.time() + 1.5 )
+Client( "1c", 20, 200, auction )
+Client( "2c", 10, 300, auction )
+
+if auction.winner != None:
+    raise RuntimeError
+
+print "Notice: the third auction failed; the maximum recieved bid was %s" % \
+       auction.max_bid
+

@@ -4,18 +4,16 @@ import inspect
 import sys
 import os.path
 
-
-sys.path[0:0] = [ os.path.join( os.path.dirname( inspect.getabsfile( inspect.currentframe() ) ), '..', '..' ) ]
-
 sys.path[0:0] = [ os.path.join( os.path.dirname( inspect.getabsfile( inspect.currentframe() ) ), '..', '..', '..', 'lib' ) ]
 
 from logging import warning
 import time
 import threading
 
-from test_helper import DramatisTestHelper
-
 import dramatis.runtime
+
+sys.path[0:0] = [ os.path.join( os.path.dirname( inspect.getabsfile( inspect.currentframe() ) ), '..', '..' ) ]
+from test_helper import DramatisTestHelper
 
 class Thread_Pool_Test ( DramatisTestHelper ):
 

@@ -47,6 +47,7 @@ class Actor_Test ( DramatisTestHelper ):
                 return "bar"
         name = Foo( "foobar" )
         # logging.warning( type( name ) )
+        # warning( repr(name) )
         assert isinstance( name, dramatis.Actor.Name )
         assert name.foo() == "bar"
 
@@ -74,7 +75,7 @@ class Actor_Test ( DramatisTestHelper ):
         assert isinstance( name, Foo )
 
     def test_no_actor_name_simple(self):
-        class Foo( dramatis.Actor.Methods ): pass
+        class Foo( dramatis.Actor.Behavior ): pass
         name = Foo()
         assert isinstance( name, Foo )
 
