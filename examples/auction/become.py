@@ -58,7 +58,7 @@ class Auction(object):
                 return [ "beaten_offer", self._max_bid ]
 
         @property
-        def winner(self): raise "hell"
+        def winner(self): pass # this one is subtle ...
 
     class Over( dramatis.Actor.Behavior ):
         @property
