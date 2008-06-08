@@ -2,7 +2,13 @@
 
 # cf. Scala by Example, Chapter 3
 
-$:.push File.join( File.dirname(__FILE__), "..", "lib" )
+# See also example/auction/become.rb
+
+# This is an earlier version of the auction example that doens't do
+# timing and doesn't require actor.become. To be removed, but runs with
+# dramatis 0.1.1 which become.rb does not.
+
+$:.push File.join( File.dirname(__FILE__), "..", "..", "lib" )
 
 require 'dramatis/actor'
 
@@ -17,8 +23,6 @@ class Auction
     @bid_increment = 10
     @max_bid = @min_bid - @bid_increment
     @max_bidder = nil
-
-    actor.timeout @closing - Time::now, :timeout
   end
 
   def inquire
@@ -38,10 +42,6 @@ class Auction
     end
   end
 
-  def timeout
-    actor.timeout( @time_to_shtudown  ) { exit }
-    actor.become Over.new
-  end
 end
 
 MIN_BID = 100

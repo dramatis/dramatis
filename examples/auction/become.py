@@ -2,6 +2,8 @@
 
 # cf. Scala by Example, Chapter 3
 
+# Note: requires dramatis > 0.1.1
+
 import time
 import random
 import inspect

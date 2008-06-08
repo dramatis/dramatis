@@ -2,6 +2,8 @@
 
 # cf. Scala by Example, Chapter 3
 
+# Note: requires dramatis > 0.1.1
+
 $:.push File.join( File.dirname(__FILE__), "..", "..", "lib" )
 
 require 'dramatis/actor'
