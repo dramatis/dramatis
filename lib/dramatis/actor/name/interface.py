@@ -58,6 +58,10 @@ class Interface(object):
                     new_options["continuation"] = options["result"]
                 if options.has_key( "exception" ):
                     new_options["exception"] = options["exception"]
+                if options.has_key( "nonblocking" ):
+                    new_options["nonblocking"] = options["nonblocking"]
+                if options.has_key( "continuation" ):
+                    new_options["continuation"] = options["continuation"]
         if new_options["continuation"] == None:
             new_options["continuation"] = "none"
         super(dramatis.Actor.Name,name).__setattr__("_options",new_options)

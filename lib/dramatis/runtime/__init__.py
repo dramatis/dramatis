@@ -5,4 +5,5 @@ from dramatis.runtime.runtime import Runtime
 from dramatis.runtime.scheduler import Scheduler
 from dramatis.runtime.task import Task
 from dramatis.runtime.actor import Actor
+from dramatis.runtime.thread_pool import ThreadPool
 

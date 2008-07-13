@@ -11,120 +11,12 @@ from traceback import print_exc
 
 import dramatis.runtime.actor
 
+from dramatis.runtime.thread_pool import ThreadPool
+
 _checkio = False
 
 _local = threading.local()
 _local.dramatis_actor = None
-
-# threading._VERBOSE = True
-
-class ThreadPool(object):
-
-    class __metaclass__(type):
-        def __init__(self,*args,**kwds):
-            # hmmmm ... ?
-            super(self.__class__,self).__init__(*args,**kwds)
-            self._mutex = Lock()
-            self._threads = []
-            self._state = "running"
-
-        def checkout(self, target, args):
-            assert self._state != "exiting"
-            t = None
-            with self._mutex:
-                if len(self._threads) == 0:
-                    pt = ThreadPool.PoolThread()
-                    pt.setDaemon(True)
-                    pt.start()
-                    self._threads.append( pt )
-                t = self._threads.pop()
-            t._PoolThread__awaken( target, args )
-            return t
-
-        def checkin(self,thread):
-            with self._mutex:
-                if self._state != "exiting":
-                    self._threads.append( thread )
-                else:
-                    warning("POST EXIT CHECKIN")
-
-        def reset(self):
-            self.exit()
-            self._state = "running"
-
-        def exit(self):
-            with self._mutex:
-                self._state = "exiting"
-                for thread in self._threads:
-                    thread._PoolThread__exit()
-                for thread in self._threads:
-                    thread.join()
-                self._threads = []
-
-        def __len__(self):
-            with self._mutex: return len(self._threads)
-
-    class PoolThread(Thread):
-
-        def __init__(self):
-            super(ThreadPool.PoolThread,self).__init__( target = self.__target )
-            self.__mutex = Lock()
-            self.__wait = Condition( self.__mutex )
-            self.__state = "running"
-
-        def __exit(self):
-            with self.__mutex:
-                old_state, self.__state = self.__state, "exiting"
-                if old_state == "waiting":
-                    self.__wait.notify()
-
-        def __target( self ):
-            while True:
-                with self.__mutex:
-                    # warning(str(self) + " llop start " + self.__state)
-                    if self.__state == "exiting":
-                        return
-                    elif self.__state == "running":
-                        self.__state = "waiting"
-                        # warning(str(self) + " sleeping")
-                        self.__wait.wait()
-                        # warning(str(self) + " waking up")
-                        assert self.__state != "waiting"
-                    elif self.__state == "called":
-                        try:
-                            # warning(self.__current_target)
-                            # warning(self.__args)
-                            # warning(str(self) + " starting " + str(self.__args[0]))
-                            self.__current_target(*self.__args)
-                            # warning(str(self)+" done")
-                        except:
-                            print_exc()
-                            raise
-                        finally:
-                            self.__state = "running"
-                            ThreadPool.checkin( self )
-                    else:
-                        warning ( "!!FAIL!! " + self.__state)
-                        raise "!!FAIL!! " + self.__state
-
-        def __awaken(self,  target, args ):
-            # warning( "awaken " + str(args[0]) )
-            with self.__mutex:
-                self.__current_target = target
-                self.__args = args
-                old_state, self.__state = self.__state, "called"
-                if old_state == "waiting":
-                    self.__wait.notify()
-                elif old_state == "exiting":
-                    warning("AWAKEN AFTER EXIT")
-                    raise "AWAKEN AFTER EXIT"
-                elif old_state != "running":
-                    warning("AWAKEN BAD STATE " + old_state)
-                    raise ("AWAKEN BAD STATE " + old_state)
-
-    def __new__(cls, target, args ):
-        # warning( "sched " + str(args[0]) )
-        return cls.checkout(target, args)
 
 class Scheduler(object):
 
@@ -136,9 +28,9 @@ class Scheduler(object):
             return self._current
 
         def reset(self):
-            ThreadPool.reset()
-            self._current._reset()
-            del self._current
+            if hasattr(self,"_current"):
+                self._current._reset()
+                del self._current
 
         @property
         def actor(self):
@@ -157,9 +49,13 @@ class Scheduler(object):
                     raise "hell"
             return actor
 
-    def _reset(self): pass
+    def _reset(self):
+        for pool in self._thread_pools:
+            pool.reset()
 
     def __init__(self):
+        self._thread_pool = ThreadPool()
+        self._thread_pools = [ self._thread_pool ]
         self._mutex = Lock()
         self._wait = Condition(self._mutex)
         self._running_threads = 0
@@ -179,6 +75,13 @@ class Scheduler(object):
     def append(self,actor):
         self._actors.append( actor )
 
+    @property
+    def thread_count(self):
+        sum = 0
+        with self._mutex:
+            for pool in  self._thread_pools:
+                sum += pool.size
+        return sum
 
     def schedule( self, task ):
         # warning('schedule ' + str(self._state) )
@@ -246,8 +149,8 @@ class Scheduler(object):
                         self._running_threads += 1
 
                         try:
-                            ThreadPool( target = self._deliver_thread,
-                                        args = (task,) )
+                            self._thread_pool( target = self._deliver_thread,
+                                                args = (task,) )
                         except Exception, e:
                             warning( "got an ex 1 " + repr(e) )
                             print_exc()
@@ -369,7 +272,7 @@ class Scheduler(object):
                 self._main_state = "running"
             self._quiescing = False
 
-        ThreadPool.reset()
+        self._thread_pool.reset( quiescing )
 
         dramatis.Runtime.current._maybe_raise_exceptions( quiescing )
 
@@ -398,5 +301,3 @@ class Scheduler(object):
             dramatis.Runtime.current.exception( exception )
         finally:
             _local.dramatis_actor = None
-
-    ThreadPool = ThreadPool

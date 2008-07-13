@@ -17,15 +17,52 @@ class Actor(object):
         self._call_thread = None
         self._behavior = behavior
         self._gate = dramatis.runtime.Gate()
+        self._interface = dramatis.Actor.Interface(self)
         if not behavior:
             self._gate.refuse("object")
+        else:
+            if isinstance(behavior,dramatis.Actor.Behavior):
+                if behavior.actor.name:
+                    raise dramatis.error.Bind( "behavior already bound" )
+                oi = self._interface
+                class actor_class ( behavior.__class__.__bases__[0] ):
+                    @property
+                    def actor( cls ):
+                        return oi
+                behavior.__class__ = actor_class
         self._gate.always( ( [ "object", "dramatis_exception" ] ), True )
         self.block()
         self._queue = []
         self._mutex = Lock()
         self._continuations = {}
-        self._interface = dramatis.Actor.Interface(self)
         dramatis.runtime.Scheduler.current.append( self )
+        if hasattr(behavior,"dramatis_bound"):
+            behavior.dramatis_bound()
+
+    def become(self, behavior):
+        if behavior == self._behavior: return
+
+        if isinstance( behavior, dramatis.Actor.Behavior ):
+            if behavior.actor.name:
+                raise dramatis.error.Bind( "cannot become bound behavior" )
+            new_oi = self._interface
+            class actor_class ( behavior.__class__.__bases__[0] ):
+                @property
+                def actor( cls ):
+                    return new_oi
+            behavior.__class__ = actor_class
+
+        if isinstance( self._behavior, dramatis.Actor.Behavior ):
+            old_oi = dramatis.Actor.Interface( None )
+            class actor_class ( self._behavior.__class__.__bases__[0] ):
+                @property
+                def actor( cls ):
+                    return old_oi
+            self._behavior.__class__ = actor_class
+        self._behavior = behavior
+        if hasattr(behavior,"dramatis_bound"):
+            behavior.dramatis_bound()
+        self.schedule()
 
     @property
     def name(self):
@@ -96,6 +133,7 @@ class Actor(object):
 
     def deliver( self, dest, args, continuation, call_thread ):
         old_call_thread = self._call_thread
+        old_behavior = self._behavior
         try:
             self._call_thread = call_thread
             method = args[0]
@@ -139,7 +177,8 @@ class Actor(object):
         finally:
             self._call_thread = old_call_thread
             # warning( "final schedule " + str( self._behavior ) )
-            self.schedule()
+            if old_behavior is self._behavior:
+                self.schedule()
             # warning( "after final schedule " + str( self._behavior ) )
 
     def object_initialize( self, *args ):
@@ -152,6 +191,7 @@ class Actor(object):
         if self._behavior: raise dramatis.error.Bind()
         self._behavior = behavior
         self._gate.accept( "object" )
+        self.schedule()
         return self.name
 
     def exception( self, exception ):

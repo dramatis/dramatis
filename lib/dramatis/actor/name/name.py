@@ -3,6 +3,7 @@ from __future__ import absolute_import
 from logging import warning
 from traceback import print_exc
 from traceback import print_stack
+from traceback import extract_stack
 
 from dramatis.actor.name.interface import Interface as _Interface
 
@@ -96,8 +97,13 @@ class Name(object):
                     return FunctionProxy(attr,a,o)
                 elif ( str(type(desc)) == "<type 'wrapper_descriptor'>" ):
                     return FunctionProxy(attr,a,o)
+                # Honestly, I have not idea ...
+                elif ( str(type(desc)) == "<type 'getset_descriptor'>" ):
+                    return FunctionProxy(attr,a,o)
                 else:
-                    raise "hell: type? " + str( type(desc) )
+                    print_stack()
+                    warning(  "hell: type? " + str( type(desc) ) )
+                    raise Exception( "hell: type? " + str( type(desc) ) )
         # The attribute is not defined (at this time)
         # The only choice seems to be to assume it's a function
         return FunctionProxy(attr,a,o)

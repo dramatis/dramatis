@@ -23,21 +23,13 @@ import dramatis.error
 from dramatis import interface
 Actor = dramatis.Actor
 
-class Task_Test:
+sys.path[0:0] = [ os.path.join( os.path.dirname( inspect.getabsfile( inspect.currentframe() ) ), '..', '..' ) ]
+from test_helper import DramatisTestHelper
 
-    def setup(self): pass
+class Task_Test ( DramatisTestHelper ):
 
     def teardown(self):
-        try:
-            dramatis.Runtime.current.quiesce()
-            assert len( dramatis.Runtime.current.exceptions() ) == 0
-            assert threading.activeCount() == \
-                    1 + len(dramatis.runtime.Scheduler.ThreadPool)
-        finally:
-            dramatis.Runtime.reset()
-
-    def test(self):
-        assert True
+        self.runtime_check()
 
     def test_return_errors_to_caller(self):
         "should return errors to calling actor even when non-rpc (non-main)"

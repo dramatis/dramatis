@@ -44,13 +44,14 @@ class Dramatis::Actor::Name::Interface
   def continue options = {}, &continuation
     raise "contradictory options passed to continue" \
         if ( options == nil and continuation ) or
-           ( options and !continuation )
+           ( options and !options[:continuation] and !continuation )
     a, o = @name.instance_eval { [ @actor, @options ] }
     @name = Dramatis::Actor::Name.new a
     @name.instance_eval do
       @options = o.dup
-      @options[:continuation] = options == nil ? :none : continuation
+      @options[:continuation] = options == nil ? :none : ( options[:continuation] or continuation )
       options and @options[:exception] = options[:exception]
+      options and @options[:nonblocking] = options[:nonblocking]
     end
     @name
   end

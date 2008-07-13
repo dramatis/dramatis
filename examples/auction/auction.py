@@ -2,13 +2,19 @@
 
 # cf. Scala by Example, Chapter 3
 
+# See also example/auction/become.py
+
+# This is an earlier version of the auction example that doens't do
+# timing and doesn't require actor.become. To be removed, but runs with
+# dramatis 0.1.1 which become.py does not.
+
 import time
 import random
 import inspect
 import sys
 import os.path
 
-sys.path[0:0] = [ os.path.join( os.path.dirname( inspect.getabsfile( inspect.currentframe() ) ), '..', 'lib' ) ]
+sys.path[0:0] = [ os.path.join( os.path.dirname( inspect.getabsfile( inspect.currentframe() ) ), '..', '..', 'lib' ) ]
 
 from logging import warning
 

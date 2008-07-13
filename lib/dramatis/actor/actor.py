@@ -7,14 +7,13 @@ from dramatis import Runtime
 import dramatis.runtime as runtime
 from dramatis.actor.interface import Interface as _Interface
 
-class _Methods(type):
-    pass
+from dramatis.actor.behavior import Behavior as _Behavior
 
-class Metaclass(_Methods):
+class Metaclass(type(_Behavior)):
     
     def __init__(cls,name,bases,dict):
         # warning( ["__init__", cls] )
-        super(Metaclass,cls).__init__(cls,name,bases, dict)
+        super(Metaclass,cls).__init__(name,bases, dict)
         
     def __call__( cls, *args, **kwds ):
         """create a new actor
@@ -39,14 +38,15 @@ class Metaclass(_Methods):
 
         # warning( ["__call__", cls,args,kwds] )
         if cls == Actor:
-            return Actor.Name( runtime.Actor( *args,**kwds ) )
+            # SMP
+            return runtime.Actor( *args,**kwds ).name
         else:
             # Hmmm ... this is a little heavy handed, but the only
             # thing I can think of (right now) if "actor" is to be
             # allowed in the constructor
             actor = runtime.Actor()
             interface = actor._interface
-            name = Actor.Name( actor )
+            name = actor.name
             behavior = cls.__new__( cls, *args, **kwds )
             class actor_class ( behavior.__class__ ):
                 @property
@@ -67,7 +67,7 @@ class Metaclass(_Methods):
             # return Actor.Name( runtime.Actor( object ) )
             return name
         
-class Actor(object):
+class Actor(_Behavior):
     """
     Class used as the base of actor classes.
 
@@ -90,6 +90,4 @@ class Actor(object):
     Name = _Name
     Interface = _Interface
 
-    class Methods(object):
-        __metaclass__ = _Methods
-
+    Behavior = _Behavior

@@ -1,4 +1,4 @@
-module Dramatis; end
+module Darmatis; end
 class Dramatis::Runtime; end
 
 require 'thread'
@@ -14,12 +14,7 @@ class Dramatis::Runtime::Scheduler #:nodoc: all
 
   def checkio; false; end
 
-  @@thread_pools = []
-
   def self.reset
-    @@thread_pools.each do |thread_pool|
-      thread_pool.reset
-    end
     @@current.reset
     @@current = nil
   end
@@ -31,7 +26,9 @@ class Dramatis::Runtime::Scheduler #:nodoc: all
   end
 
   def reset
-    # pp @suspended_continuations
+    @thread_pools.each do |thread_pool|
+      thread_pool.reset
+    end
   end
 
   def schedule task
@@ -149,7 +146,7 @@ class Dramatis::Runtime::Scheduler #:nodoc: all
     raise "hell #{@main_state.to_s}" if @main_state != :may_finish and @main_state != :running
     # warn "?threads? #{Thread.list.join(' ')}"
     # warn "main has exited: done"
-    @thread_pool.reset()
+    @thread_pool.reset quiescing
     Dramatis::Runtime.current.maybe_raise_exceptions quiescing
   end
 
@@ -159,7 +156,7 @@ class Dramatis::Runtime::Scheduler #:nodoc: all
 
   def thread_count
     @mutex.synchronize do
-      @@thread_pools.inject(0) { |a,b| a+b.length }
+      @thread_pools.inject(0) { |a,b| a+b.size }
     end
   end
 
@@ -167,7 +164,7 @@ class Dramatis::Runtime::Scheduler #:nodoc: all
 
   def initialize
     @thread_pool = Dramatis::Runtime::ThreadPool.new
-    @@thread_pools << @thread_pool
+    @thread_pools = [ @thread_pool ]
     # Thread.abort_on_exception = true
     @mutex = Mutex.new
     @wait = ConditionVariable.new

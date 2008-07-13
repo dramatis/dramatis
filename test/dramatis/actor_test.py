@@ -24,21 +24,13 @@ import dramatis.error
 from dramatis import interface
 Actor = dramatis.Actor
 
-class Actor_Test:
+sys.path[0:0] = [ os.path.join( os.path.dirname( inspect.getabsfile( inspect.currentframe() ) ), '..' ) ]
+from test_helper import DramatisTestHelper
 
-    def setup(self): pass
+class Actor_Test ( DramatisTestHelper ):
 
     def teardown(self):
-        try:
-            dramatis.Runtime.current.quiesce()
-            assert len( dramatis.Runtime.current.exceptions() ) == 0
-            assert threading.activeCount() == \
-                    1 + len(dramatis.runtime.Scheduler.ThreadPool)
-        finally:
-            dramatis.Runtime.reset()
-
-    def test(self):
-        assert True
+        self.runtime_check()
 
     # it should be creatable as a derived type and return the right type
 
@@ -55,6 +47,7 @@ class Actor_Test:
                 return "bar"
         name = Foo( "foobar" )
         # logging.warning( type( name ) )
+        # warning( repr(name) )
         assert isinstance( name, dramatis.Actor.Name )
         assert name.foo() == "bar"
 
@@ -82,7 +75,7 @@ class Actor_Test:
         assert isinstance( name, Foo )
 
     def test_no_actor_name_simple(self):
-        class Foo( dramatis.Actor.Methods ): pass
+        class Foo( dramatis.Actor.Behavior ): pass
         name = Foo()
         assert isinstance( name, Foo )
 
