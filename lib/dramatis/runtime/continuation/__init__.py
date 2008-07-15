@@ -98,6 +98,7 @@ class RPC(object):
                 self._state = "done"
                 dramatis.runtime.Scheduler.current.wakeup_notification( self )
                 self._wait.notify()
+        return True
 
     def continuation_exception( self, exception ):
         with self._mutex:
@@ -109,6 +110,8 @@ class RPC(object):
                 self._state = "done"
                 dramatis.runtime.Scheduler.current.wakeup_notification( self )
                 self._wait.notify()
+        return True
+
 
 class Block( object ):
 
@@ -131,12 +134,14 @@ class Block( object ):
 
     def continuation_result(self, result):
         self._result_block( result )
-
+        return False
+    
     def continuation_exception(self, exception):
         if self._exception_block:
             self._exception_block( exception )
         else:
             dramatis.release( self._name ).dramatis_exception( exception )
+        return False
 
 class Future(object):
 
@@ -208,6 +213,7 @@ class Future(object):
                 self._state = "done"
                 dramatis.runtime.Scheduler.current.wakeup_notification( self )
                 self._wait.notify()
+        return False
 
     def continuation_exception( self, exception ):
         with self._mutex:
@@ -219,4 +225,6 @@ class Future(object):
                 self._state = "done"
                 dramatis.runtime.Scheduler.current.wakeup_notification( self )
                 self._wait.notify()
+        return False
+
 

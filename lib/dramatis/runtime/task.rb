@@ -80,6 +80,7 @@ class Dramatis::Runtime::Task #:nodoc: all
   end
 
   def deliver
+    # warn "dd #{self}"
     @actor.deliver @dest, @args, @continuation, @call_thread
   end
 
@@ -155,6 +156,7 @@ class Dramatis::Runtime::Task #:nodoc: all
                 if blocking
                   @actor.gate.only [ :continuation, tag ], :tag => tag
                 end
+                # warn "qq"
                 @actor.schedule self
               end
               begin
@@ -215,6 +217,7 @@ class Dramatis::Runtime::Task #:nodoc: all
             @wait.signal
           end
         end
+        return true
       end
 
       def continuation_exception exception
@@ -231,6 +234,7 @@ class Dramatis::Runtime::Task #:nodoc: all
             @wait.signal
           end
         end
+        return true
       end
 
     end
@@ -261,6 +265,7 @@ class Dramatis::Runtime::Task #:nodoc: all
 
       def continuation_result result
         @result_block.call result
+        return false
       end
 
       def continuation_exception exception
@@ -271,6 +276,7 @@ class Dramatis::Runtime::Task #:nodoc: all
         else
           release( @name ).dramatis_exception exception
         end
+        return false
       end
 
     end
@@ -302,9 +308,10 @@ class Dramatis::Runtime::Task #:nodoc: all
               call_thread = @call_thread
               @actor.instance_eval do
                 @actor.instance_eval do
-                  @call_thread = call_thread
+                 @call_thread = call_thread
                 end
                 @actor.gate.only [ :continuation, tag ], :tag => tag
+                # warn "qqq"
                 @actor.schedule self
               end
               begin
@@ -369,6 +376,7 @@ class Dramatis::Runtime::Task #:nodoc: all
             @wait.signal
           end
         end
+        return false
       end
 
       def continuation_exception exception
@@ -385,6 +393,7 @@ class Dramatis::Runtime::Task #:nodoc: all
             @wait.signal
           end
         end
+        return false
       end
     end
   end

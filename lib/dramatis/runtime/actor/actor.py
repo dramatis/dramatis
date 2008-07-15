@@ -160,7 +160,8 @@ class Actor(object):
                 elif( method == "exception" ):
                     method = "continuation_exception"
                 else: raise "hell *"
-                c.__getattribute__(method).__call__(*args)
+                if c.__getattribute__(method).__call__(*args):
+                    old_behavior = None
                 del self._continuations[ continuation_name ]
             else: raise "hell 1: " + str(self._dest)
             continuation.result( result )

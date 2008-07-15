@@ -72,6 +72,7 @@ class Dramatis::Runtime::Actor #:nodoc: all
     if behavior.respond_to? :dramatis_bound
       behavior.send :dramatis_bound
     end
+    # warn "x #{self}"
     schedule
   end
 
@@ -99,6 +100,7 @@ class Dramatis::Runtime::Actor #:nodoc: all
     raise Dramatis::Error::Bind if @object
     @object = object
     @gate.accept :object
+    # warn "y #{self}"
     schedule
     name
   end
@@ -155,6 +157,7 @@ class Dramatis::Runtime::Actor #:nodoc: all
       # FIX arguments to gate
       if !runnable? and ( @gate.accepts?(  *( [ task.type, task.method ] + task.arguments ) ) or current_call_thread?( task.call_thread ) )
         runnable!
+        # warn "a #{self} #{@state} #{task}"
         Dramatis::Runtime::Scheduler.current.schedule task
       else
         # warn "+>schd #{self} #{@queue.join(' ')}"
@@ -168,6 +171,10 @@ class Dramatis::Runtime::Actor #:nodoc: all
   end
 
   def deliver dest, args, continuation, call_thread
+    # warn "b #{@state} #{dest} #{args} #{Thread.current} #{self}"
+    if false and !runnable?
+      warn caller.join("\n")
+    end
     old_call_thread = @call_thread
     old_behavior_id = @object.object_id
     begin
@@ -181,7 +188,7 @@ class Dramatis::Runtime::Actor #:nodoc: all
           self.send method, *args
           # p "sent actor #{method}"
         when :object
-          # p "send object #{@object} #{method} #{args.length}"
+          # warn "send object #{@object} #{method} #{args.length}"
           v = @object.send method, *args
           if v.object_id == @object.object_id
             v = name
@@ -203,7 +210,15 @@ class Dramatis::Runtime::Actor #:nodoc: all
                      else; raise "hell *"
                    end
           # pp c.to_s, "send", method, args
-          c.send method, *args
+
+          if c.send(  method, *args )
+
+            # the object no longer belongs to this thread; it belongs to the awoken thread
+            # so don't try to reschedule it
+            old_behavior_id = nil
+
+          end
+
           @continuations.delete continuation_name
           # pp "csd", continuation_name, @continuations.keys
         else
@@ -226,7 +241,9 @@ class Dramatis::Runtime::Actor #:nodoc: all
     ensure
       @call_thread = old_call_thread
       if old_behavior_id == @object.object_id
+        # warn "z #{@state} #{dest} #{args.join(' ')} #{Thread.current} #{self}"
         schedule
+        # warn "za #{@state} #{dest} #{args} #{Thread.current} #{self}"
       end
     end
   end
@@ -252,7 +269,7 @@ class Dramatis::Runtime::Actor #:nodoc: all
       else
         blocked!
       end
-      # warn "<schd #{self} #{@queue.join(' ')} #{@state} #{Thread.current}"
+      # warn "<schd #{self} #{task} #{Thread.current} #{@queue.join(' ')} #{@state} #{Thread.current}"
     end
   end
 
@@ -310,12 +327,14 @@ class Dramatis::Runtime::Actor::Main < Dramatis::Runtime::Actor  #:nodoc: all
   end
 
   def quiesce
+    "zz"
     schedule
   end
 
   def finalize
     if !@at_exit_run
       @at_exit_run = true
+      # warn "zzz #{self}"
       schedule
       Dramatis::Runtime::Scheduler.current.main_at_exit
     end

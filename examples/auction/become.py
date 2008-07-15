@@ -98,12 +98,12 @@ class Client ( dramatis.Actor ):
         self.log( "started" )
         self._max = auction.inquire()[0]
         self.log( "status " + str(self._max) )
-        self.bid()
+        dramatis.release( self.actor.name ).bid()
 
     def bid(self):
-        if self._max > self._top:
+        if self._max >= self._top:
             self.log("too high for me")
-        elif ( self._current < self._max ):
+        elif ( self._current <= self._max ):
             self._current = self._max + self._increment
             time.sleep( ( 1 + random.randint( 0, 1000 ) )/1000.0 )
             answer, max_bid = self._auction.offer( self._current,
@@ -158,3 +158,14 @@ if auction.winner != None:
 print "Notice: the third auction failed; the maximum recieved bid was %s" % \
        auction.max_bid
 
+# lots of clients ...
+
+seller = Seller()
+auction = Auction( seller, 400, time.time() + 20 )
+for i in xrange(20):
+    Client( str(i),
+            10 + 10*random.randint(0,2), 
+            random.randint(0,20000-1), auction )
+
+print "Notice: client %s won the fourth auction with a bid of %s" % \
+       ( auction.winner.name, auction.max_bid )

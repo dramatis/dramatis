@@ -70,7 +70,8 @@ class Dramatis::Runtime::Gate  #:nodoc: all
       end
       tbd.reverse.each do |index|
         # p "remove #{index} #{list[index].join(' ')} at #{index}"
-        list[index,1] = []
+        # list[index,1] = []
+        list.slice! index
       end
       if prepend and value != nil
         list.unshift [ args, value, tag ]
@@ -99,7 +100,8 @@ class Dramatis::Runtime::Gate  #:nodoc: all
             # FIX: tag?
             prepend = false
           else
-            @list[list_index,1] = []
+            # @list[list_index,1] = []
+            @list.slice! list_index
           end
           break
         end

@@ -102,20 +102,24 @@ class Client
     log "started"
     @max = auction.inquire[0]
     log "status #{@max}"
-    bid
+    release( actor.name ).bid
   end
   def bid
-    if @max > @top
+    # log("bid chance: current: #{@current} max: #{@max} top: #{@top}")
+    if @max >= @top
       log("too high for me")
-    elsif ( @current < @max )
+    elsif ( @current <= @max )
       @current = @max + @increment
       sleep( ( 1 + rand( 1000 ) )/1000.0 )
+      # log("i bid #{@current}")
       answer, max_bid = @auction.offer @current, actor.name
       case answer
       when :best_offer; log("best offer: #{@current}")
       when :beaten_offer; beaten_offer max_bid
       when :auction_over; log("auction over, oh well")
       end
+    else
+      raise "should not get here ..."
     end
   end
   def beaten_offer max_bid
@@ -159,3 +163,11 @@ Client.new "2c", 10, 300, auction
 raise RuntimeError if auction.winner != nil
 
 puts "Notice: the third auction failed; the maximum recieved bid was #{auction.max_bid}"
+
+# lots of clients ...
+
+seller = Seller.new
+auction = Auction.new seller, 400, Time::now + 20
+20.times { |i| Client.new i, 10 + 10*rand(3), 3000 + rand(20000), auction }
+
+puts "Notice: client #{auction.winner.name} won the fourth auction with a bid of #{auction.max_bid}"
