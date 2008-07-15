@@ -5,12 +5,12 @@ create( Name ) ->
     spawn( fun() -> loop({Name}) end ).
 
 volley(Player, Volleys, Opponent) ->
-    Player ! { send_volley, Volleys, Opponent }.
+    Player ! { send, Volleys, Opponent }.
 
 loop(State) ->
     { Name } = State,
     receive
-        { send_volley, Volleys, Opponent } ->
+        { send, Volleys, Opponent } ->
             if
                 Volleys == 0 ->
                     io:format("~s: done~n",[Name]);
