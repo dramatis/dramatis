@@ -327,7 +327,6 @@ class Dramatis::Runtime::Actor::Main < Dramatis::Runtime::Actor  #:nodoc: all
   end
 
   def quiesce
-    "zz"
     schedule
   end
 
