@@ -9,13 +9,13 @@ play() ->
     Round = spawn_link( fun() -> round:init( Players ) end ),
     Round ! { play, self() },
     receive
-        { Round, Loser, Volleys } ->
+        { result, Loser, Volleys } ->
             Loser ! { name, self() },
             receive
-                { Loser, Name } -> 
-                    io:format( "~s lost after ~p volleys~n",
-                               [ Name, Volleys ] )
-            end
+                { result, Name } ->  true
+            end,
+            io:format( "~s lost after ~p volleys~n",
+                       [ Name, Volleys ] )
     end.
     
 

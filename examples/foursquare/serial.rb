@@ -10,23 +10,27 @@ class FourSquare::Player
     @name = name
   end
 
-  def round round, opponents
+  def join round, opponents
     @round = round
     @opponents = opponents
   end
 
   def serve
-    # We ignore the possiblity of service faults
-    puts "#{name} serves to #{@opponents[0].name}"
+    # We ignore the possiblity
+    # of service faults
+    print "#{name} serves ",
+          "to #{@opponents[0].name}\n"
     @opponents[0].volley 1
   end
 
   def volley volleys
     # We ignore serve do-overs
-    if made_save
+    # We ignore out of bound hits
+    if made_save()
       # we ignore bad hits
-      opponent = choose
-      puts "#{name} hits to #{opponent.name}"
+      opponent = choose()
+      opponent_name = opponent.name
+      puts "#{name} hits to #{opponent_name}"
       opponent.volley volleys + 1
     else
       @round.failed self, volleys
@@ -36,7 +40,7 @@ class FourSquare::Player
 private
 
   def made_save
-    rand < 0.9
+    rand < 0.99
   end  
 
   def choose
@@ -52,12 +56,16 @@ class FourSquare::Round
   def initialize players
     @players = players
     @players.each do |player|
-      player.round self, @players.select { |opponent| opponent != player }
+      opponents =
+        @players.select do |opponent|
+          opponent != player
+        end
+      player.join self, opponents
     end
   end
 
   def play
-    @players[3].serve
+    @players[-1].serve
   end
 
   def failed loser, volleys
@@ -76,4 +84,5 @@ players = [ Player.new( "John" ),
 
 round = Round.new players
 round.play
-puts "#{round.loser.name} lost after #{round.volleys} volleys"
+print "#{round.loser.name} lost after ",
+      "#{round.volleys} volleys\n"
