@@ -58,6 +58,22 @@ module Dramatis #:doc:
   module_function :release
 
   # :call-seq:
+  #   continuation(name) block -> a_name
+  #
+  # Takes an actor name and a block and returns a new actor name
+  # which, when used as the target of a method call, will cause the
+  # continuation result to be executed by the given block. The call
+  # will not block or otherwise wait for a result but the block will
+  # be executed (by the calling actor) at some future point.  The
+  # result of such the call is always nil.
+
+  def continuation name, &block
+    interface( name ).continue( &block )
+  end
+
+  module_function :release
+
+  # :call-seq:
   #   future(name) -> a_name
   #
   # Takes an actor name and returns a new actor name which, when used
