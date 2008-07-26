@@ -20,9 +20,9 @@ loop( State ) ->
             Server ! serve,
             NewState = State#round{ from = From };
         { failed, Loser, Volleys } ->
+            NewState = State,
             From = State#round.from,
-            From ! { self(), Loser, Volleys },
-            NewState = State;
+            From ! { result, Loser, Volleys };
         Any ->
             NewState = State,
             io:format( "round didn't expect ~p~n", [Any] ),

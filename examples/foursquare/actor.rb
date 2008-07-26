@@ -9,42 +9,44 @@ module FourSquare; end
 class FourSquare::Player
   
   include Dramatis::Actor
+  
+  attr_reader :name
 
   def initialize name
-    actor.enable_call_threading
     @name = name
   end
 
-  def to_s
-    @name
-  end
-
-  def round round, opponents
+  def join round, opponents
     @round = round
     @opponents = opponents
   end
 
-  def serve ball
-    # We ignore the possiblity of service faults
-    puts "#{self} serves to #{@opponents[0]}"
-    @opponents[0].volley ball
+  def serve
+    # We ignore the possiblity
+    # of service faults
+    print "#{name} serves ",
+          "to #{@opponents[0].name}\n"
+    release( @opponents[0] ).volley 1
   end
 
-  def volley ball
+  def volley volleys
     # We ignore serve do-overs
-    if made_save
-      opponent = choose
-      puts "#{self} hits to #{opponent}"
-      opponent.volley ball
+    # We ignore out of bound hits
+    if made_save()
+      # we ignore bad hits
+      opponent = choose()
+      opponent_name = opponent.name
+      puts "#{name} hits to #{opponent_name}"
+      release( opponent ).volley volleys + 1
     else
-      @round.failed self
+      @round.failed self, volleys
     end
   end
 
 private
 
   def made_save
-    rand < 0.999
+    rand < 0.9
   end  
 
   def choose
@@ -53,28 +55,38 @@ private
 
 end
 
-class FourSquare::Ball; end
-
 class FourSquare::Round
 
   include Dramatis::Actor
 
-  attr_reader :players, :loser
+  attr_reader :players, :loser, :volleys
   
   def initialize players
-    actor.enable_call_threading
+
+    actor.refuse :loser
+    actor.refuse :volleys
+
     @players = players
     @players.each do |player|
-      player.round self, @players.select { |opponent| opponent != player }
+      opponents =
+        @players.select do |opponent|
+          opponent != player
+        end
+      player.join self, opponents
     end
   end
 
   def play
-    @players[3].serve Ball.new
+    @players[-1].serve
   end
 
-  def failed loser
+  def failed loser, volleys
     @loser = loser
+    @volleys = volleys
+
+    actor.accept :loser
+    actor.accept :volleys
+
   end
 
 end
@@ -88,4 +100,5 @@ players = [ Player.new( "John" ),
 
 round = Round.new players
 round.play
-puts "#{round.loser} lost"
+print "#{round.loser.name} lost after ",
+      "#{round.volleys} volleys\n"

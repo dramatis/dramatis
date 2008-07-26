@@ -25,8 +25,8 @@ volley(Player, Volleys) ->
 init(Player) ->
     {ok,Player}.
 
-handle_call(name,_From,Player) ->
-    {reply,Player#player.name,Player};
+handle_call(name,_From,State) ->
+    {reply,State#player.name,State};
 
 handle_call({round,Round,Opponents},_From,Player) ->
     New = Player#player{round = Round, opponents = Opponents},
@@ -40,18 +40,18 @@ handle_cast(serve,Player) ->
     player:volley( Opponent, 1 ),
     {noreply, Player};
 
-handle_cast({volley,Volleys},Player) ->
+handle_cast({volley,Volleys},State) ->
     Okay = made_serve(),
     if
         Okay ->
-            Opponent = choose(Player),
-            io:format( "~s hits to ~s~n", [ Player#player.name,
+            Opponent = choose(State),
+            io:format( "~s hits to ~s~n", [ State#player.name,
                                             player:name( Opponent ) ] ),
             player:volley(Opponent, Volleys+1);
         true ->
-            round:failed( Player#player.round, self(), Volleys )
+            round:failed( State#player.round, self(), Volleys )
     end,
-    {noreply,Player};
+    {noreply,State};
 
 handle_cast(_,_) -> fail.
 
