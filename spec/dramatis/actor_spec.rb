@@ -25,7 +25,7 @@ describe "Dramatis::Actor" do
     end
 
     name = f.new
-    name.should be_a_kind_of( Actor::Name )
+    ( Actor::Name === name).should be_true
 
   end
 
@@ -45,7 +45,7 @@ describe "Dramatis::Actor" do
 
   it "should create a new name when invoked with new" do
     name = Actor.new Object.new
-    name.should be_a_kind_of( Actor::Name )
+    ( Actor::Name === name ).should be_true
   end
 
   it "should deadlock if an rpc is made to an unbound name" do
@@ -408,8 +408,8 @@ describe "Dramatis::Actor" do
       end
     end
     anA = a.new
-    anA.should be_kind_of( Dramatis::Actor::Name )
-    anA.me.should be_kind_of( Dramatis::Actor::Name )
+    ( Dramatis::Actor::Name === anA ).should be_true
+    ( Dramatis::Actor::Name === anA.me ).should be_true
   end
 
   it "should map self in actor method calls to name" do
@@ -420,7 +420,7 @@ describe "Dramatis::Actor" do
         actor.name.f self
       end
       def f ref
-        ref.object_id != self.object_id
+        ref.instance_eval{ __id__ } != __id__
       end
     end
     anA = a.new

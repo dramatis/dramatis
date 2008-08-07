@@ -1,6 +1,8 @@
+require 'rubygems'
+require 'builder/blankslate'
+
 module Dramatis; end
 module Dramatis::Actor; end
-class Dramatis::Actor::Name; end
 
 require 'dramatis/actor'
 
@@ -13,17 +15,38 @@ require 'dramatis/actor'
 # through the Dramatis::Actor::Name::Interface object, accessible via
 # Dramatis.interface.
 
-class Dramatis::Actor::Name
+class Dramatis::Actor::Name < BlankSlate
 
-  def to_s_off #:nodoc:
+  def _to_s #:nodoc:
     method_missing :to_s
   end
 
-  def dup #:nodoc:
+  def _respond_to? #:nodoc:
+    method_missing :respond_to?
+  end
+
+  def _dup #:nodoc:
     raise "hell again"
   end
 
+  def == other
+    # p "== #{__id__} #{other.__id__}"
+    if other.__id__ == nil.__id__
+      return false
+    end
+
+    if other.__id__ == __id__
+      return true
+    end
+
+    other_actor = other.instance_eval { @actor }
+
+    return @actor == other_actor
+  end
+
   def method_missing *args, &block  #:nodoc:
+    # p "missing: #{args[0]}"
+    # puts Kernel.caller.join("\n")
     options = @options
     if block
       options = options.clone

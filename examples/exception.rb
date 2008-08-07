@@ -10,12 +10,18 @@ if ARGV[0] == "serial"
   $serial = true
 end
 
+if $serial
+  puts "doing this serially"
+else
+  puts "doing this with actors"
+end
+
 class Foo
   if !$serial
     include Dramatis::Actor
   end
   def foo that
-    return that.bar -3
+    return that.bar( -3 )
   end
 end
 

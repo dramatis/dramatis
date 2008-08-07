@@ -33,10 +33,10 @@ class Dramatis::Runtime::Task #:nodoc: all
     name = Dramatis::Runtime::Scheduler.actor
     actor = name.instance_eval { @actor }
 
-    object_id = actor.object.object_id
+    object_id = actor.object.instance_eval { __id__ }
 
     @args.each_with_index do |arg,i|
-      if arg.object_id == object_id
+      if arg.instance_eval { __id__ } == object_id
         @args[i] = name
       end
     end

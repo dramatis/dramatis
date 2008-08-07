@@ -34,7 +34,10 @@ module Dramatis #:doc:
   def interface object, *args, &block 
     interface = nil    
     begin
-      interface = object.class.const_get( :Interface )
+      cls = object.instance_eval do
+        class << self; self; end
+      end
+      interface = cls.const_get( :Interface )
     rescue NameError => name_error
       raise Dramatis::Error::Interface.new(  "object is not a dramatis interfaceable object: " + object.class.to_s )
     end

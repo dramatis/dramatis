@@ -32,7 +32,7 @@ describe Dramatis do
 
   it "should be creatable bound" do
     name = Dramatis::Actor.new Object.new
-    name.should be_kind_of( Dramatis::Actor::Name )
+    (Dramatis::Actor::Name === name).should be_true
   end
 
   it "should allow and execute messages to bound names" do
@@ -112,7 +112,7 @@ describe Dramatis do
   it "rpc binds should return an actor name" do
     name = Dramatis::Actor.new
     retval = Dramatis.interface( name ).bind Hash.new
-    retval.should be_kind_of( Dramatis::Actor::Name )
+    (Dramatis::Actor::Name === retval).should be_true
   end
 
   it "should be possible to bind with a non-rpc continuation" do
@@ -123,7 +123,7 @@ describe Dramatis do
     retval.should equal( nil )
     result.should equal( nil )
     Dramatis::Runtime.current.quiesce
-    result.should_not be_nil
+    ( nil.class === result ).should_not be_true
   end
 
   it "should provide a url, if asked" do

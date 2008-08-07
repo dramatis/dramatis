@@ -309,7 +309,7 @@ class Dramatis::Runtime::Actor::Main < Dramatis::Runtime::Actor  #:nodoc: all
     def dramatis_exception e
       if Dramatis::Runtime.current.warnings?
         warn "exception on main thread: #{e}"
-        # pp caller
+        pp caller
       end
       Dramatis::Runtime.current.exception e
     end

@@ -37,7 +37,7 @@ describe "Dramatis::Actor::Behavior" do
         check
       end
       def check
-        actor.name.should == nil
+        raise "fail" unless ( nil.class === actor.name )
       end
     end
     c = _C.new
@@ -48,15 +48,15 @@ describe "Dramatis::Actor::Behavior" do
     _C = Class.new do
       include Dramatis::Actor::Behavior
       def initialize
-        actor.name.should == nil
+        raise "fail" unless ( nil.class === actor.name )
       end
       def check
-        actor.name.should_not == nil
+        raise "fail" if ( nil.class === actor.name )
       end
     end
     c = _C.new
     a = Dramatis::Actor.new c
-    a.should be_a_kind_of( Dramatis::Actor::Name )
+    ( Dramatis::Actor::Name === a ).should be_true
     a.check
   end
 
@@ -84,7 +84,7 @@ describe "Dramatis::Actor::Behavior" do
         include Dramatis::Actor::Behavior
         def foobar; "bar"; end
         def check name = nil
-          actor.name.should == name
+          raise "fail" unless actor.name == name
         end
         def doit other = nil
           other = self if other == nil
@@ -92,11 +92,11 @@ describe "Dramatis::Actor::Behavior" do
         end
       end
       @b = B.new
-      @b.should be_a_kind_of( Dramatis::Actor::Name )
-      @b.should_not be_a_kind_of( B )
+      (Dramatis::Actor::Name === @b).should be_true
+      (B === @b).should be_false
       @c = @_C.new
-      @c.should_not be_a_kind_of( Dramatis::Actor::Name )
-      @c.should be_a_kind_of( @_C )
+      (Dramatis::Actor::Name === @c).should_not be_true
+      (@_C === @c).should be_true
     end
 
     it "should change behavior on become" do
@@ -135,7 +135,8 @@ describe "Dramatis::Actor::Behavior" do
       def doit
         me = actor.name
         actor.become B.new
-        actor.name.should == nil
+        # ( nil.class === actor.name ).should be_true
+        raise "fail" unless ( nil.class === actor.name )
         me.foo
       end
     end

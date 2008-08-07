@@ -1,6 +1,7 @@
 module Dramatis; end
 module Dramatis::Actor; end
-class Dramatis::Actor::Name; end
+
+require 'dramatis/actor/name'
 
 # A Dramatis::Actor::Name::Interface object provides the ability to
 # modify the semantics of actor name and perform other actor-level operations on an
@@ -94,6 +95,10 @@ class Dramatis::Actor::Name::Interface
     actor_send :exception, exception
   end
 
+  def inspect
+    to_s
+  end
+
   private
 
   def continuation c, options
@@ -123,7 +128,7 @@ class Dramatis::Actor::Name::Interface
 
   def initialize name #:nodoc:
     raise "hell: " + name.inspect \
-      if !name or !name.kind_of? Dramatis::Actor::Name
+      if !name or !Dramatis::Actor::Name === name
     @name = name
   end
 
