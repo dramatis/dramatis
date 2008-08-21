@@ -44,6 +44,10 @@ class Dramatis::Actor::Name < BlankSlate
     return @actor == other_actor
   end
 
+  def hash
+    @actor.hash
+  end
+
   def method_missing *args, &block  #:nodoc:
     # p "missing: #{args[0]}"
     # puts Kernel.caller.join("\n")

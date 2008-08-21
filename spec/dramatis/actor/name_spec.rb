@@ -132,6 +132,47 @@ describe Dramatis do
     url.should match( %r[http://] )
   end
 
+  it "should hash as the actor, not the behavior" do
+    behavior = Object.new
+    actor = Dramatis::Actor.new behavior
+    actor.hash.should_not == behavior.hash
+    actor.hash.should_not equal(behavior.hash)
+    (actor.hash == behavior.hash).should be_false
+  end
+
+  it "should not forward hash requests to the behavior" do
+    c = Class.new do
+      include Dramatis::Actor
+      def initialize
+        Hash.new[actor.name] = :foo
+      end
+    end
+    c.new
+  end
+
+  it "should hash two actors to different values" do
+    b1 = Object.new
+    a1 = Dramatis::Actor.new b1
+    b2 = Object.new
+    a2 = Dramatis::Actor.new b2
+    a1.hash.should_not == a2.hash
+    (a1 == a2).should be_false
+  end
+
+  it "should hash two names to different values, even w/diff cont sematnics" do
+    b1 = Object.new
+    a1 = Dramatis::Actor.new b1
+    a2 = release( a1 )
+    a1.hash.should == a2.hash
+    (a1 == a2).should be_true
+  end
+
+  it "should hash to the actor mailbox/state" do
+    # I'm not quite sure if this test should be implemented;
+    # The actor state is pretty hidden
+    pending
+  end
+
   it "unbound names should queue messages and deliver them in order"
 
   it "messages should be delivered out of order sometimes"
