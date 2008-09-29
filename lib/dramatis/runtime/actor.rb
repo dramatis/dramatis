@@ -347,3 +347,32 @@ class Dramatis::Runtime::Actor::Main < Dramatis::Runtime::Actor  #:nodoc: all
   end
 
 end
+
+# Factor if this wokrs
+
+class Dramatis::Runtime::Actor::Exogneous < Dramatis::Runtime::Actor  #:nodoc: all
+
+  class DefaultBehavior
+
+    class Exception < ::Exception; end
+
+    def method_missing *args
+      raise Exception.new( "must use Actor#become to enable an exogenous actor" )
+    end
+
+    def dramatis_exception e
+      if Dramatis::Runtime.current.warnings?
+        warn "exception on exogneous thread: #{e}"
+        pp caller
+      end
+      Dramatis::Runtime.current.exception e
+    end
+
+  end
+
+  def initialize
+    super DefaultBehavior.new
+    runnable!
+  end
+
+end

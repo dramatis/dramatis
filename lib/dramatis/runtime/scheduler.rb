@@ -357,6 +357,11 @@ class Dramatis::Runtime::Scheduler #:nodoc: all
         # p "here", actor
         actor = Dramatis::Runtime::Actor::Main.current.name
         # p "there", actor
+      else
+        if !actor = thread[:dramatis_exogneous_actor]
+          actor = thread[:dramatis_exogneous_actor] =
+            Dramatis::Runtime::Actor::Exogneous.new.name
+        end
       end
     else
       # this is a debugging path; can go away
