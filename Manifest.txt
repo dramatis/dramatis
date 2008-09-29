@@ -6,7 +6,8 @@ Rakefile
 config/hoe.rb
 config/requirements.rb
 examples/README.txt
-examples/auction.rb
+examples/auction/auction.rb
+examples/auction/become.rb
 examples/bank/bank.rb
 examples/bank/bank_test.rb
 examples/exception.rb
@@ -14,6 +15,8 @@ examples/fib/conservative.rb
 examples/fib/future.rb
 examples/fib/original.rb
 examples/fib/threads.rb
+examples/foursquare/actor.rb
+examples/foursquare/serial.rb
 examples/im/distributed/chat.rb
 examples/im/distributed/chat/client.rb
 examples/im/distributed/chat/screen.rb
@@ -57,6 +60,7 @@ examples/telephone/third/kid.rb
 examples/telephone/third/run.rb
 lib/dramatis.rb
 lib/dramatis/actor.rb
+lib/dramatis/actor/behavior.rb
 lib/dramatis/actor/interface.rb
 lib/dramatis/actor/name.rb
 lib/dramatis/actor/name/interface.rb
@@ -73,8 +77,6 @@ lib/dramatis/runtime/scheduler.rb
 lib/dramatis/runtime/task.rb
 lib/dramatis/runtime/thread_pool.rb
 lib/dramatis/runtime/timer.rb
-lib/dramatis/shoes.rb
-lib/dramatis/shoes/runtime.rb
 lib/dramatis/version.rb
 script/destroy
 script/generate
@@ -88,8 +90,8 @@ spec/dramatis/actor_spec.rb
 spec/dramatis/dramatis_spec.rb
 spec/dramatis/exc_spec.rb
 spec/dramatis/runtime/gate_spec.rb
-spec/dramatis/runtime/thread_pool.rb
-spec/dramatis/shoes_spec.rb
+spec/dramatis/runtime/gc_spec.rb
+spec/dramatis/runtime/thread_pool_spec.rb
 spec/dramatis/simple_spec.rb
 spec/exp_spec.rb
 spec/simple2_spec.rb
