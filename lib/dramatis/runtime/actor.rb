@@ -172,6 +172,7 @@ class Dramatis::Runtime::Actor #:nodoc: all
 
   def deliver dest, args, continuation, call_thread
     # warn "b #{@state} #{dest} #{args} #{Thread.current} #{self}"
+    # p "x #{dest} #{args}"
     if false and !runnable?
       warn caller.join("\n")
     end

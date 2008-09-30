@@ -489,4 +489,23 @@ describe "Dramatis::Actor" do
 
   end
 
+  it "should forward respond_to? to the actor" do
+
+    y = Class.new BlankSlate
+
+    aY = y.new
+    
+    lambda { aY.respond_to?(:foo) }.should raise_error( NoMethodError )
+
+    f = Class.new do
+      include Dramatis::Actor
+      def foo; end
+    end
+
+    name = f.new
+    name.respond_to?( :foo ).should be_true
+    name.respond_to?( :bar ).should be_false
+
+  end
+
 end
