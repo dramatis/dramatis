@@ -19,6 +19,13 @@ include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
           expect(new type).toEqual(any(Name));
         });
         
+        it("should accept a methods hash",function(){
+          var methods = { a: function(){}, b: function(){} };
+          var type = new Actor.Type(function(){},methods);
+          expect(type.prototype.a).toEqual(methods.a);
+          expect(type.prototype.b).toEqual(methods.b);
+        });
+        
       });
      });
    });

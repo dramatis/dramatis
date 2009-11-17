@@ -5,3 +5,5 @@ include(jazrb_root + '/lib/dramatis/actor.js');
 include(jazrb_root + '/lib/dramatis/actor/name.js');
 include(jazrb_root + '/lib/dramatis/actor/type.js');
 include(jazrb_root + '/lib/dramatis/director.js');
+include(jazrb_root + '/lib/dramatis/runtime.js');
+include(jazrb_root + '/lib/dramatis/runtime/reactor.js');
