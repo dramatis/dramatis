@@ -7,3 +7,5 @@ include(jazrb_root + '/lib/dramatis/actor/type.js');
 include(jazrb_root + '/lib/dramatis/director.js');
 include(jazrb_root + '/lib/dramatis/runtime.js');
 include(jazrb_root + '/lib/dramatis/runtime/reactor.js');
+include(jazrb_root + '/lib/dramatis/runtime/reactor/channel.js');
+include(jazrb_root + '/lib/dramatis/runtime/reactor/channel/xmpp.js');

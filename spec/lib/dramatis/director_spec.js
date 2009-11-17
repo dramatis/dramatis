@@ -45,15 +45,6 @@ include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
           Dramatis.Director.reset();
         });
 
-        it("should call callback on success",function(){
-          spyOn(Dramatis.Director.current.reactor, "connect").andCallFake(function(){
-          });
-          var s = "bosh://host:port/path/user:password@vhostname";
-          Dramatis.Director.current.disconnect("bosh://host:port/path/user:password@vhostname");
-          expect(Dramatis.Director.current.reactor.disconnect).wasCalledWith(s);
-        });
-
-
       });
 
     });

@@ -15,14 +15,6 @@ include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
             this.good_url = "bosh://host:port/http-bind/user:password@vhost";
           });
           
-          it("should call callback on success",function(){
-            var okay = jasmine.createSpy("okay");
-            var not_okay = jasmine.createSpy("not okay");
-            this.reactor.connect(this.good_url, okay, not_okay);
-            expect(okay).wasCalled();
-            expect(not_okay).wasNotCalled();
-          });
-
           xit("should add a new channel object on connect",function(){
           });
 
