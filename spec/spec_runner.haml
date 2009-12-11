@@ -1,0 +1,21 @@
+!!!
+%html{html_attrs}
+  %head
+    %title Specs
+  %body
+    %script{:type => "text/javascript", :src=>"spec_helper.js"}
+    %script{:type => "text/javascript", :src=>"json2.js"}
+    :javascript
+      (function($){
+        var match = window.location.toString().match(/\?specs=([^&]+)/);
+        if(match){
+          var specs = JSON.parse(unescape(match[1]));
+          for(var i=0; i < specs.length; i++ ) {
+            document.write("<script type='text/javascript' src='../" + specs[i] +"'></s"+"cript>");
+          }
+        }
+      })(jQuery);
+
+/ Local Variables:
+/ mode:auto-revert
+/ End:

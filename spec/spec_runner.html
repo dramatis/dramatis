@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang='en-US' xml:lang='en-US' xmlns='http://www.w3.org/1999/xhtml'>
+  <head>
+    <title>Specs</title>
+  </head>
+  <body>
+    <script src='spec_helper.js' type='text/javascript'></script>
+    <script src='json2.js' type='text/javascript'></script>
+    <script type='text/javascript'>
+      //<![CDATA[
+        (function($){
+          var match = window.location.toString().match(/\?specs=([^&]+)/);
+          if(match){
+            var specs = JSON.parse(unescape(match[1]));
+            for(var i=0; i < specs.length; i++ ) {
+              document.write("<script type='text/javascript' src='../" + specs[i] +"'></s"+"cript>");
+            }
+          }
+        })(jQuery);
+      //]]>
+    </script>
+  </body>
+</html>
+<!-- Local Variables: -->
+<!-- mode:auto-revert -->
+<!-- End: -->

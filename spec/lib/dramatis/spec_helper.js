@@ -9,3 +9,5 @@ include(jazrb_root + '/lib/dramatis/runtime.js');
 include(jazrb_root + '/lib/dramatis/runtime/reactor.js');
 include(jazrb_root + '/lib/dramatis/runtime/reactor/channel.js');
 include(jazrb_root + '/lib/dramatis/runtime/reactor/channel/xmpp.js');
+include(jazrb_root + '/vendor/strophejs/strophe.js');
+include(jazrb_root + '/vendor/strophejs/contrib/mock/strophe.js');

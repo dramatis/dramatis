@@ -11,10 +11,8 @@ include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
           var Channel = Reactor.Channel;
           var BadURL = Channel.BadURL;
 
-          it("should hand off BOSH urls to XMPP",function(){
-            spyOn(Channel, "XMPP");
-            expect(new Channel("bosh://....")).toBeDefined();
-            expect(Channel.XMPP).wasCalled();
+          beforeEach(function(){
+            this.bosh_url = "bosh://host:port/http-bind/user:password@vhost";
           });
 
           it("should call bad on unparsable url",function(){
@@ -23,6 +21,12 @@ include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
             expect(function(){new Channel("xbosh://....")}).toThrow(jasmine.any(BadURL));
             expect(good).wasNotCalled();
             expect(bad).wasNotCalled();
+          });
+
+          it("should hand off BOSH urls to XMPP",function(){
+            spyOn(Channel, "XMPP");
+            expect(new Channel("bosh://....")).toBeDefined();
+            expect(Channel.XMPP).wasCalled();
           });
 
         });

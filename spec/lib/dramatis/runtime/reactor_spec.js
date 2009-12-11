@@ -15,7 +15,18 @@ include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
             this.good_url = "bosh://host:port/http-bind/user:password@vhost";
           });
           
-          xit("should add a new channel object on connect",function(){
+          it("should have a connections array that starts empty",function(){
+            expect(this.reactor.connections.length).toBe(0);
+          });
+
+          it("should add a new channel object on connect",function(){
+            var url = this.good_url
+            spyOn(Reactor, "Channel").andCallFake(function(url,good,bad){
+              expect(url).toBe(url);
+              good({});
+            });
+            this.reactor.connect(url);
+            expect(this.reactor.connections.length).toBeGreaterThan(0);
           });
 
         });

@@ -1,0 +1,22 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+require 'json'
+require 'uri'
+require 'pathname'
+
+runner = "file://"+Pathname("spec/spec_runner.html").realpath.to_s
+specs = Dir["spec/**/*_spec.js"]
+specs = specs.select do |spec|
+  html = spec.dup
+  html.sub! %r(^spec/), ""
+  html.sub! %r(_?[Ss]pec\.js$), ".html"
+  puts html if !File.exist?(html)
+  !File.exist?(html)
+end
+app = "/Applications/Firefox.app/Contents/MacOS/firefox"
+app = "open -a Firefox --args"
+cmd = "#{app} '#{runner}?specs=#{URI.escape(specs.to_json)}'"
+
+puts cmd
+# system cmd

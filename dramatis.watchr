@@ -116,7 +116,7 @@ watch( %r(.*\.x?html?$), [ :load, :created, :modified ], nil, :batch => :html ) 
 end
 
 # don't watch vendor
-watch( %r(^vendor/(jquery|raphael|underscore)), [ nil, :load ], lambda { false } )
+watch( %r(^vendor/(jquery|raphael|underscore|strophejs|jazrb)), [ nil, :load ], lambda { false } )
 
 Signal.trap('QUIT') do
   EM.stop
