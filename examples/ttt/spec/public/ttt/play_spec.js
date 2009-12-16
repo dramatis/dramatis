@@ -1,6 +1,7 @@
 var jazrb_root = this.jazrb_root || ".";
-
-include(jazrb_root + "/spec/public/ttt/spec_helper.js");
+include(jazrb_root + "/spec/spec_helper.js");
+var ttt_root = this.ttt_root || ".";
+include(ttt_root + "/spec/public/spec_helper.js");
 
 (function($){
 
