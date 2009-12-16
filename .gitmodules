@@ -7,3 +7,6 @@
 [submodule "vendor/jquery"]
 	path = vendor/jquery
 	url = git://github.com/jquery/jquery.git
+[submodule "examples/ttt"]
+	path = examples/ttt
+	url = git://github.com/smparkes/ttt.git
