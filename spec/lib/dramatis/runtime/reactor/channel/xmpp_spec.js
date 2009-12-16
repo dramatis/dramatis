@@ -69,6 +69,24 @@ include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
 
             });
             
+            describe("same domain proxy connection",function(){
+              
+              beforeEach(function(){
+                spyOn(Strophe,"Connection").andCallFake(Strophe.Mock.Connection.SameDomain);
+              });
+
+              it("should call callback if xmpp connect via same domain negotiation",function(){
+                var url = this.bosh_url;
+                new Channel(url,function(channel){
+                  complete();
+                },function(reason){
+                  expect("should not be called").toBeUndefined();
+                });
+                incomplete();
+              });
+              
+            });
+
           });
         });
       });

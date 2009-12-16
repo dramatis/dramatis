@@ -1,0 +1,59 @@
+!!!
+%html{html_attrs}
+  %head
+    %title Play TTT!
+    %link{:href=>"ttt.css",:rel=>"stylesheet",:type=>"text/css"}
+    %script{:type => "text/javascript", :src=>"ttt.js"}
+    %script{:type => "text/javascript", :src=>"play.js"}
+  %body
+
+    #client.connection
+      .value
+        %input#client_name
+        %div
+          .status
+          %a.button{:href=>"#"}
+            localhost
+            %span.url
+              bosh://localhost:5280/http-bind/user:password@localhost
+          %a.button{:href=>"#"}
+            macbook-pro
+            %span.url
+              bosh://macbook-pro:5280/http-bind/user:password@macbook-pro
+          %a.button{:href=>"#"}
+            smparkes.net
+            %span.url
+              bosh://smparkes.net:5280/http-bind/user:password@smparkes.net
+      .control
+        %label{:for => "server_name"}
+          Dramatis connection:
+        %div
+          %a.button{:href=>"#"} Connect
+
+    #server.connection
+      .value
+        %input#server_name
+        %div
+          %a.button{:href=>"#"}
+            localhost
+            %span.url
+              xmpp://server@localhost#master#server
+          %a.button{:href=>"#"}
+            smparkes.net
+            %span.url
+              xmpp://server@smparkes.net#master#server
+          %a.button{:href=>"#"}
+            macbook-pro
+            %span.url
+              xmpp://server@macbook-pro#master#server
+      .control
+        %label{:for => "server_name"}
+          Join a game @
+        %div
+          %a.button{:href=>"#"} Join
+
+    .clear
+
+    #play
+
+    %script{:type => "text/javascript", :src=>"spec_helper.js"}

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang='en-US' xml:lang='en-US' xmlns='http://www.w3.org/1999/xhtml'>
+  <head>
+    <title>Play TTT!</title>
+    <link href='ttt.css' rel='stylesheet' type='text/css'>
+    <script src='ttt.js' type='text/javascript'></script>
+    <script src='play.js' type='text/javascript'></script>
+  </head>
+  <body>
+    <div class='connection' id='client'>
+      <div class='value'>
+        <input id='client_name'>
+        <div>
+          <div class='status'></div>
+          <a class='button' href='#'>
+            localhost
+            <span class='url'>
+              bosh://localhost:5280/http-bind/user:password@localhost
+            </span>
+          </a>
+          <a class='button' href='#'>
+            macbook-pro
+            <span class='url'>
+              bosh://macbook-pro:5280/http-bind/user:password@macbook-pro
+            </span>
+          </a>
+          <a class='button' href='#'>
+            smparkes.net
+            <span class='url'>
+              bosh://smparkes.net:5280/http-bind/user:password@smparkes.net
+            </span>
+          </a>
+        </div>
+      </div>
+      <div class='control'>
+        <label for='server_name'>
+          Dramatis connection:
+        </label>
+        <div>
+          <a class='button' href='#'>Connect</a>
+        </div>
+      </div>
+    </div>
+    <div class='connection' id='server'>
+      <div class='value'>
+        <input id='server_name'>
+        <div>
+          <a class='button' href='#'>
+            localhost
+            <span class='url'>
+              xmpp://server@localhost#master#server
+            </span>
+          </a>
+          <a class='button' href='#'>
+            smparkes.net
+            <span class='url'>
+              xmpp://server@smparkes.net#master#server
+            </span>
+          </a>
+          <a class='button' href='#'>
+            macbook-pro
+            <span class='url'>
+              xmpp://server@macbook-pro#master#server
+            </span>
+          </a>
+        </div>
+      </div>
+      <div class='control'>
+        <label for='server_name'>
+          Join a game @
+        </label>
+        <div>
+          <a class='button' href='#'>Join</a>
+        </div>
+      </div>
+    </div>
+    <div class='clear'></div>
+    <div id='play'></div>
+    <script src='spec_helper.js' type='text/javascript'></script>
+  </body>
+</html>
