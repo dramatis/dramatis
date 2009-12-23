@@ -76,6 +76,7 @@ include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
               });
 
               it("should call callback if xmpp connect via same domain negotiation",function(){
+                pending();
                 var url = this.bosh_url;
                 new Channel(url,function(channel){
                   complete();
