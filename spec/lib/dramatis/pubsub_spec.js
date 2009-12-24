@@ -42,6 +42,8 @@ include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
         incomplete();
       });
 
+      it("should only send state to new object on init request");
+
       it("should be possible to unsubscribe", function() {
         pending();
       });
