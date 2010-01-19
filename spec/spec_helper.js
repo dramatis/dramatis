@@ -33,4 +33,5 @@ if(!this.jasmine){
   })();
 };
 !this.jQuery && document.write("<script type='text/javascript' src='" + jazrb_root + "/vendor/jquery/dist/jquery.js'></script>");
+document.write("<script type='text/javascript' src='" + jazrb_root + "/spec/jquery.print.js'></script>");
 document.write("<script type='text/javascript' src='" + jazrb_root + "/spec/spec_runner.js'></script>");
