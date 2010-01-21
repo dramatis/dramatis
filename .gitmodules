@@ -10,3 +10,6 @@
 [submodule "examples/ttt"]
 	path = examples/ttt
 	url = git://github.com/smparkes/ttt.git
+[submodule "vendor/jquery.print"]
+	path = vendor/jquery.print
+	url = git://github.com/smparkes/jquery.print.git

@@ -25,10 +25,11 @@ include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
       });
 
       it("should pass disconnect to the reactor",function(){
-        spyOn(Dramatis.Director.current.reactor, "disconnect");
+        var reactor = Dramatis.Director.current.reactor();
+        spyOn(reactor, "disconnect");
         var s = "bosh://host:port/path/user:password@vhostname";
         Dramatis.Director.current.disconnect("bosh://host:port/path/user:password@vhostname");
-        expect(Dramatis.Director.current.reactor.disconnect).wasCalledWith(s);
+        expect(reactor.disconnect).wasCalledWith(s);
       });
 
       if("should have a reset",function(){

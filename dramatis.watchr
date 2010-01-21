@@ -107,6 +107,38 @@ end
 
 # watch( %r((spec/.*[Ss]pec)\.(html|js)$), [ :load, :created, :modified ] ) do |md|
 
+jslint = lambda do |*args|
+  files = []
+  # boy, clean this up, but call/splat are subtle
+  if Array === args[0]
+    args = args[0][0]
+    files = args.map { |pair| pair[0][0] }
+    files.compact!
+    files.uniq!
+  else
+    (file, event) = *args
+    files = [ file ]
+  end
+  if !files.empty?
+    cmd = "jslintrb #{files.join(" ")}"
+    puts cmd
+    system cmd
+    if $?.exited? && $?.exitstatus != 0
+      puts "exit status: #{$?.exitstatus}"
+    else
+      puts "\e[32mok\e[0m"
+    end
+    if  $?.signaled? && $?.termsig == 2
+      Process.kill 2, 0
+    end
+  end
+end
+
+watch( %r(^((spec|lib|public)/.*)\.js$), [ :load, :created, :modified ],
+       nil, :batch => :jslint ) do |events|
+  jslint.call events
+end
+
 watch( %r(^(spec/.*[Ss]pec)\.js$), [ :load, :created, :modified ], nil, :batch => :js ) do |events|
   jazrb.call events
 end

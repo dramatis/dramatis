@@ -1,5 +1,10 @@
-jazrb_root = this.jazrb_root || "..";
-if(!this.jasmine){
+/*globals document*/
+/*jslint
+  evil: true
+*/
+"use strict";
+var jazrb_root = (function(){return this;}()).jazrb_root || "..";
+if(!(function(){return this;}()).jasmine){
   document.write("<script type='text/javascript' src='" + jazrb_root + "/vendor/jazrb/vendor/jasmine/src/base.js'></script>");
   document.write("<script type='text/javascript' src='" + jazrb_root + "/vendor/jazrb/vendor/jasmine/src/util.js'></script>");
   document.write("<script type='text/javascript' src='" + jazrb_root + "/vendor/jazrb/vendor/jasmine/src/Env.js'></script>");
@@ -19,7 +24,7 @@ if(!this.jasmine){
   document.write("<script type='text/javascript' src='" + jazrb_root + "/vendor/jazrb/vendor/jasmine/src/WaitsBlock.js'></script>");
   document.write("<script type='text/javascript' src='" + jazrb_root + "/vendor/jazrb/vendor/jasmine/src/WaitsForBlock.js'></script>");
   document.write("<script type='text/javascript' src='" + jazrb_root + "/vendor/jazrb/vendor/jasmine/lib/TrivialReporter.js'></script>");
-  if(this.Envjs){
+  if((function(){return this;}()).Envjs){
     document.write("<script type='text/javascript' src='" + jazrb_root + "/vendor/jazrb/vendor/jasmine/lib/EnvjsReporter.js'></script>");
   }
   (function(){
@@ -30,8 +35,10 @@ if(!this.jasmine){
     cssNode.href = jazrb_root + "/vendor/jazrb/vendor/jasmine/lib/jasmine.css";
     cssNode.media = 'screen';
     headID.appendChild(cssNode);
-  })();
-};
-!this.jQuery && document.write("<script type='text/javascript' src='" + jazrb_root + "/vendor/jquery/dist/jquery.js'></script>");
-document.write("<script type='text/javascript' src='" + jazrb_root + "/spec/jquery.print.js'></script>");
+  }());
+}
+if(!(function(){return this;}()).jQuery){
+  document.write("<script type='text/javascript' src='" + jazrb_root + "/vendor/jquery/dist/jquery.js'></script>");
+}
+document.write("<script type='text/javascript' src='" + jazrb_root + "/vendor/jquery.print/dist/jquery.print.js'></script>");
 document.write("<script type='text/javascript' src='" + jazrb_root + "/spec/spec_runner.js'></script>");
