@@ -1,11 +1,6 @@
-/*global jQuery, jasmine, window, jazrb_root*/
-/*jslint
-    evil: true
-*/
-
+/*jslint evil: true*/
 "use strict";
-
-var include = (function () { return this; } () ).include || jasmine.include;
+include = (function () { return this; } () ).include || jasmine.include;
 
 (function ($) {
 

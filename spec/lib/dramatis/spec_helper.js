@@ -1,4 +1,3 @@
-/*globals include,jazrb_root*/
 "use strict";
 if(!(function(){return this;}()).Dramatis){
   include(jazrb_root + '/spec/lib/spec_helper.js');

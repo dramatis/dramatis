@@ -3,4 +3,5 @@
  "onevar": false,
  "nomen": false,
  "regexp": false,
- "plusplus": false }
+ "plusplus": false,
+ "predef": [ "Dramatis" ] }

@@ -5,18 +5,36 @@ require 'json'
 require 'uri'
 require 'pathname'
 
-runner = "file://"+Pathname("spec/spec_runner.html").realpath.to_s
+prefix = ARGV[0] || "file://"+Pathname(".").realpath.to_s
+prefix[-1] == "/" or prefix += "/"
+
+runner = prefix + "spec/spec_runner.html"
+files = []
 specs = Dir["spec/**/*_spec.js"]
 specs = specs.select do |spec|
   html = spec.dup
+  puts html
   html.sub! %r(^spec/), ""
   html.sub! %r(_?[Ss]pec\.js$), ".html"
-  puts html if !File.exist?(html)
+  if File.exist? html
+    files << html
+  end
   !File.exist?(html)
 end
-app = "/Applications/Firefox.app/Contents/MacOS/firefox"
-app = "open -a Firefox --args"
-cmd = "#{app} '#{runner}?specs=#{URI.escape(specs.to_json)}'"
 
-puts cmd
-# system cmd
+if false
+  files = files.join("?specs=true' '#{prefix}")
+  files = "'#{prefix}#{files}?specs=true'" if files
+  app = "firefox"
+  cmd = "#{app} #{files} '#{runner}?specs=#{URI.escape(specs.to_json)}'"
+  puts cmd
+  system cmd
+else
+  files = files.map{ |file| "'#{prefix}#{file}?specs=true'" }
+  for file in files+["'#{runner}?specs=#{URI.escape(specs.to_json)}'"] do
+    app = "firefox"
+    cmd = "#{app} #{file}"
+    puts cmd
+    system cmd
+  end
+end

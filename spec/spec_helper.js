@@ -1,9 +1,6 @@
-/*globals document*/
-/*jslint
-  evil: true
-*/
+/*jslint evil: true*/
 "use strict";
-var jazrb_root = (function(){return this;}()).jazrb_root || "..";
+jazrb_root = (function(){return this;}()).jazrb_root || "..";
 if(!(function(){return this;}()).jasmine){
   document.write("<script type='text/javascript' src='" + jazrb_root + "/vendor/jazrb/vendor/jasmine/src/base.js'></script>");
   document.write("<script type='text/javascript' src='" + jazrb_root + "/vendor/jazrb/vendor/jasmine/src/util.js'></script>");
