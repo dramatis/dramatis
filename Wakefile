@@ -1,16 +1,14 @@
-#!/usr/bin/env watchr
-
-begin; require 'watchr/event_handlers/em'; rescue LoadError; end
-begin; require 'watchr/deps'; rescue LoadError; end
+begin; require 'wake/event_handlers/em'; rescue LoadError; end
+begin; require 'wake/deps'; rescue LoadError; end
 
 # p "reload"
 
 watch( %r(.*), :modified, lambda { |md| File.directory? md[0] } ) do |md|
-  File.directory? md[0] and raise Watchr::Refresh
+  File.directory? md[0] and raise Wake::Refresh
 end
 
-watch( %r(dramatis.watchr), :modified ) do |md|
-  raise Watchr::Refresh
+watch( %r(dramatis.wake), :modified ) do |md|
+  raise Wake::Refresh
 end
 
 watch( %r((^(public|spec)/.*)\.haml$), [:load, :created, :modified] ) do |md, event|
