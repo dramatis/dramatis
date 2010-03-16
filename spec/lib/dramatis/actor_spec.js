@@ -1,6 +1,6 @@
-jazrb_root = this.jazrb_root || ".";
-include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
-
+// jazrb_root = this.jazrb_root || ".";
+// include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
+"use strict";
 (function($){
   describe("dramatis",function(){
     describe("actor",function(){
@@ -15,7 +15,7 @@ include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
 
       it("should attach behaviors",function(){
         var behavior = {};
-        new Actor(behavior);
+        (new Actor(behavior));
         expect(behavior.__dramatis__).toBeDefined();
       });
 
@@ -52,14 +52,14 @@ include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
           expect(p).toBe("b");
           complete();
         } };
-        var type = new Actor.Type(function(){
+        var Type = new Actor.Type(function(){
           Dramatis.Actor.Behavior.call(this,arguments);
         }, methods);
-        var instance = new type;
+        var instance = new Type();
         instance.a("a");
         instance.b("b");
       });
 
     });
   });
-})(jQuery);
+}(jQuery));

@@ -1,6 +1,6 @@
-jazrb_root = this.jazrb_root || ".";
-include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
-
+// jazrb_root = this.jazrb_root || ".";
+// include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
+"use strict";
 (function(){
   describe("dramatis",function(){
     describe("actor",function(){
@@ -15,11 +15,11 @@ include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
         });
 
         it("should be represented as an actor name",function(){
-          var cls = new Actor.Type(function(){});
-          expect(new cls).toEqual(any(Name));
+          var Cls = new Actor.Type(function(){});
+          expect(new Cls()).toEqual(any(Name));
         });
         
       });
      });
    });
-})();
+}());

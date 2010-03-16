@@ -1,9 +1,12 @@
-jazrb_root = this.jazrb_root || ".";
-include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
-
+//jazrb_root = this.jazrb_root || ".";
+// include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
+"use strict";
 (function($){
   describe("dramatis",function(){
     describe("future",function(){
+
+      var window = (function(){return this;}());
+      var setTimeout = window.setTimeout;
 
       var Future = Dramatis.Future;
 
@@ -83,4 +86,4 @@ include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
 
     });
   });
-})(jQuery);
+}(jQuery));

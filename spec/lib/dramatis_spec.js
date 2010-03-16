@@ -1,6 +1,6 @@
-jazrb_root = this.jazrb_root || ".";
-include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
-
+// jazrb_root = this.jazrb_root || ".";
+// include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
+"use strict";
 (function(){
   describe("dramatis",function(){
 
@@ -42,4 +42,4 @@ include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
 
 
   });
-})();
+}());

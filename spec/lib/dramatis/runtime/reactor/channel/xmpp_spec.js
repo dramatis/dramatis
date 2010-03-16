@@ -1,6 +1,6 @@
-jazrb_root = this.jazrb_root || ".";
-include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
-
+// jazrb_root = this.jazrb_root || ".";
+// include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
+"use strict";
 (function(){
   describe("dramatis",function(){
     describe("runtime",function(){
@@ -24,7 +24,7 @@ include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
                 expect(url).toBe(url);
                 throw new NoConnection(url);
               });
-              expect(function(){new Channel(url)}).toThrow(jasmine.any(NoConnection));
+              expect(function(){(new Channel(url));}).toThrow(jasmine.any(NoConnection));
             });
 
             describe("able to connect",function(){
@@ -42,10 +42,10 @@ include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
 
               it("should call callback if xmpp can connect",function(){
                 var url = this.bosh_url;
-                new Channel(url,function(channel){
+                (new Channel(url,function(channel){
                   expect(channel).toBeDefined();
                   complete();
-                });
+                }));
                 incomplete();
               });
 
@@ -59,11 +59,11 @@ include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
 
               it("should call callback if xmpp cannot connect",function(){
                 var url = this.bosh_url;
-                new Channel(url,function(channel){
+                (new Channel(url,function(channel){
                   expect("should not be called").toBeUndefined();
                 },function(reason){
                   complete();
-                });
+                }));
                 incomplete();
               });
 
@@ -78,11 +78,11 @@ include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
               it("should call callback if xmpp connect via same domain negotiation",function(){
                 pending();
                 var url = this.bosh_url;
-                new Channel(url,function(channel){
+                (new Channel(url,function(channel){
                   complete();
                 },function(reason){
                   expect("should not be called").toBeUndefined();
-                });
+                }));
                 incomplete();
               });
               
@@ -93,4 +93,4 @@ include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
       });
     });
   });
-})();
+}());

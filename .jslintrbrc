@@ -4,4 +4,6 @@
  "nomen": false,
  "regexp": false,
  "plusplus": false,
- "predef": [ "Dramatis" ] }
+ "predef": [ "Dramatis",
+             "Strophe"                
+           ] }

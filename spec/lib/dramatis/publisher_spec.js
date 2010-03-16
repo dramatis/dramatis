@@ -1,6 +1,6 @@
-jazrb_root = this.jazrb_root || ".";
-include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
-
+//jazrb_root = this.jazrb_root || ".";
+// include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
+"use strict";
 (function($){
   describe("dramatis",function(){
     describe("publisher",function(){
@@ -11,9 +11,9 @@ include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
       });
 
       it("should accept subscription requests w/o options", function() {
-        var cls = function(){};
-        $.extend(cls.prototype,Dramatis.Publisher.prototype);
-        var pub =  new cls;
+        var Cls = function(){};
+        $.extend(Cls.prototype,Dramatis.Publisher.prototype);
+        var pub =  new Cls();
         pub.add_subscription( {} );
       });
 
@@ -23,4 +23,4 @@ include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
     });
 
   });
-})(jQuery);
+}(jQuery));

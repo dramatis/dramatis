@@ -1,6 +1,6 @@
-jazrb_root = this.jazrb_root || ".";
-include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
-
+// jazrb_root = this.jazrb_root || ".";
+// include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
+"use strict";
 (function(){
   describe("dramatis",function(){
     describe("actor",function(){
@@ -12,12 +12,12 @@ include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
           var any = jasmine.any;
 
           it("should be possible to create new actor name types",function(){
-            expect(new Actor.Name.Type).toBeDefined();
+            expect(new Actor.Name.Type()).toBeDefined();
           });
 
           it("should be a subclass of the base name type",function(){
-            var type = new Actor.Name.Type;
-            expect(new type).toEqual(any(Name));
+            var Type = new Actor.Name.Type();
+            expect(new Type()).toEqual(any(Name));
           });
           
           it("should reflect the actor methods on the prototype",function(){
@@ -34,21 +34,21 @@ include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
             var methods = { a: function(){}, b: function(){} };
             var actor = function(){};
             actor.prototype = methods;
-            var type = new Actor.Name.Type(actor);
-            var name = new type;
+            var Type = new Actor.Name.Type(actor);
+            var name = new Type();
             expect(name.a).toBeDefined();
             expect(name.b).toBeDefined();
             expect(name.c).toBeUndefined();
           });
           
           it("instances should reflect the constructor",function(){
-            var type = new Actor.Name.Type;
-            var name = new type;
-            expect(name.constructor).toBe(type);
+            var Type = new Actor.Name.Type();
+            var name = new Type();
+            expect(name.constructor).toBe(Type);
           });
           
         });
       });
     });
   });
-})();
+}());

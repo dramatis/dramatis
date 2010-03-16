@@ -1,17 +1,17 @@
-jazrb_root = this.jazrb_root || ".";
-include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
-
+//jazrb_root = this.jazrb_root || ".";
+//include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
+"use strict";
 (function($){
   describe("dramatis",function(){
     describe("pubsub",function(){
 
+      var Actor = Dramatis.Actor;
+
       beforeEach(function(){
-        this.subscriber = function(){};
-        $.extend(this.subscriber.prototype,Dramatis.Subscriber.prototype);
-        this.publisher = function(){};
-        $.extend(this.publisher.prototype,Dramatis.Publisher.prototype);
-        this.sub = new this.subscriber;
-        this.pub = new this.publisher;
+        this.Subscriber = new Actor.Type( new Dramatis.Class( [ Dramatis.Subscriber ] ) );
+        this.Publisher = new Actor.Type( new Dramatis.Class( [ Dramatis.Publisher ] ) );
+        this.sub = new this.Subscriber();
+        this.pub = new this.Publisher();
       });
 
       it("should be possible to subscribe to a publisher",function(){
@@ -29,7 +29,7 @@ include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
         incomplete();
       });
 
-      it("should receive an initial state if asked", function() {
+      it("should receive an initial state", function() {
         var hash = {a: "b"};
         this.sub.method = function method(state) {
           expect(state).toEqual(hash);
@@ -38,8 +38,12 @@ include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
         this.pub.update = function update() {
           this.notify(hash);
         };
-        this.sub.subscribe({to: this.pub, call: "method", initial: true});
+        this.sub.subscribe({to: this.pub, call: "method"});
         incomplete();
+      });
+
+      it("should not receive an initial state if up to date", function() {
+        pending();
       });
 
       it("should only send state to new object on init request");
@@ -53,4 +57,4 @@ include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
     });
 
   });
-})(jQuery);
+}(jQuery));

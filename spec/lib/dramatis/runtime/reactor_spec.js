@@ -1,6 +1,6 @@
-jazrb_root = this.jazrb_root || ".";
-include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
-
+// jazrb_root = this.jazrb_root || ".";
+// include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
+"use strict";
 (function(){
   describe("dramatis",function(){
     describe("runtime",function(){
@@ -20,7 +20,7 @@ include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
           });
 
           it("should add a new channel object on connect",function(){
-            var url = this.good_url
+            var url = this.good_url;
             spyOn(Reactor, "Channel").andCallFake(function(url,good,bad){
               expect(url).toBe(url);
               good({});
@@ -34,4 +34,4 @@ include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
       });
     });
   });
-})();
+}());

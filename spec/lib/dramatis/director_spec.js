@@ -1,6 +1,6 @@
-jazrb_root = this.jazrb_root || ".";
-include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
-
+// jazrb_root = this.jazrb_root || ".";
+//include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
+"use strict";
 (function(){
   describe("dramatis",function(){
     describe("director",function(){
@@ -32,7 +32,7 @@ include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
         expect(reactor.disconnect).wasCalledWith(s);
       });
 
-      if("should have a reset",function(){
+      it("should have a reset", function(){
         spyOn(Dramatis.Director.current.reactor, "destroy");
         spyOn(Dramatis.Director.current, "destroy");
         Dramatis.Director.reset();
@@ -50,4 +50,4 @@ include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
 
     });
   });
-})();
+}());

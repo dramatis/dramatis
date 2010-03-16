@@ -1,6 +1,6 @@
-jazrb_root = this.jazrb_root || ".";
-include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
-
+// jazrb_root = this.jazrb_root || ".";
+// include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
+"use strict";
 (function(){
   describe("dramatis",function(){
     describe("runtime",function(){
@@ -18,7 +18,7 @@ include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
           it("should call bad on unparsable url",function(){
             var good = jasmine.createSpy("good");
             var bad = jasmine.createSpy("bad");
-            expect(function(){new Channel("xbosh://....")}).toThrow(jasmine.any(BadURL));
+            expect(function(){(new Channel("xbosh://...."));}).toThrow(jasmine.any(BadURL));
             expect(good).wasNotCalled();
             expect(bad).wasNotCalled();
           });
@@ -34,4 +34,4 @@ include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
       });
     });
   });
-})();
+}());

@@ -1,6 +1,6 @@
-jazrb_root = this.jazrb_root || ".";
-include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
-
+// jazrb_root = this.jazrb_root || ".";
+// include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
+"use strict";
 (function(){
   describe("dramatis",function(){
     describe("actor",function(){
@@ -12,27 +12,27 @@ include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
 
         it("should accept the actor interface arg in the constructor",function(){
           incomplete();
-          var type = new Actor.Type(function(/*..*/){
+          var Type = new Actor.Type(function(/*..*/){
             var len = arguments.length; 
             Actor.Behavior.call(this,arguments);
             expect(len-arguments.length).toBe(1);
             complete();
           });
-          new type;
+          (new Type());
         });
 
         it("should bind the behavior in the base constructor",function(){
           incomplete();
-          var type = new Actor.Type(function(/*..*/){
+          var Type = new Actor.Type(function(/*..*/){
             var len = arguments.length; 
             Actor.Behavior.call(this,arguments);
             expect(this.__dramatis__.actor.behavior).toBe(this);
             complete();
           });
-          new type;
+          (new Type());
         });
 
       });
     });
   });
-})();
+}());

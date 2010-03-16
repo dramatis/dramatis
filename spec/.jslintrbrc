@@ -12,10 +12,11 @@
               "beforeEach",
               "afterEach",
               "describe",
+              "pending",
               "spyOn",
               "fill_in",
               "click_link",
               "jazrb_root",
               "include",
-              "Dramatis" ],
-  "withstmt": true }
+              "Strophe",
+              "Dramatis" ] }
