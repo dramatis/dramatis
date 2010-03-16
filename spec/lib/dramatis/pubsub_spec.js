@@ -1,5 +1,3 @@
-//jazrb_root = this.jazrb_root || ".";
-//include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
 "use strict";
 (function($){
   describe("dramatis",function(){
@@ -30,6 +28,7 @@
       });
 
       it("should receive an initial state", function() {
+        pending();
         var hash = {a: "b"};
         this.sub.method = function method(state) {
           expect(state).toEqual(hash);

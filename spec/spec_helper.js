@@ -1,5 +1,7 @@
-/*jslint evil: true*/
 "use strict";
+jazz.include("lib/dramatis.js");
+jazz.include("vendor/jquery.print/dist/jquery.print.js");
+/*
 jazrb_root = (function(){return this;}()).jazrb_root || "..";
 if(!(function(){return this;}()).jasmine){
   document.write("<script type='text/javascript' src='" + jazrb_root + "/vendor/jazrb/vendor/jasmine/src/base.js'></script>");
@@ -39,3 +41,4 @@ if(!(function(){return this;}()).jQuery){
 }
 document.write("<script type='text/javascript' src='" + jazrb_root + "/vendor/jquery.print/dist/jquery.print.js'></script>");
 document.write("<script type='text/javascript' src='" + jazrb_root + "/spec/spec_runner.js'></script>");
+*/

@@ -16,7 +16,7 @@
               "spyOn",
               "fill_in",
               "click_link",
-              "jazrb_root",
               "include",
               "Strophe",
+              "jazz",
               "Dramatis" ] }

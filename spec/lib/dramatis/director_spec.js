@@ -1,5 +1,3 @@
-// jazrb_root = this.jazrb_root || ".";
-//include(jazrb_root + "/spec/lib/dramatis/spec_helper.js");
 "use strict";
 (function(){
   describe("dramatis",function(){
@@ -33,6 +31,7 @@
       });
 
       it("should have a reset", function(){
+        pending();
         spyOn(Dramatis.Director.current.reactor, "destroy");
         spyOn(Dramatis.Director.current, "destroy");
         Dramatis.Director.reset();

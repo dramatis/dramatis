@@ -1,15 +1,9 @@
 [submodule "vendor/strophejs"]
 	path = vendor/strophejs
 	url = git://github.com/smparkes/strophejs.git
-[submodule "vendor/jazrb"]
-	path = vendor/jazrb
-	url = git@github.com:smparkes/jazrb.git
 [submodule "vendor/jquery"]
 	path = vendor/jquery
 	url = git://github.com/jquery/jquery.git
-[submodule "examples/ttt"]
-	path = examples/ttt
-	url = git://github.com/smparkes/ttt.git
 [submodule "vendor/jquery.print"]
 	path = vendor/jquery.print
 	url = git://github.com/smparkes/jquery.print.git
