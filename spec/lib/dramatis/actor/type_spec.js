@@ -34,7 +34,7 @@
             called = true;
             complete();
           });
-          (new Type());
+          new Type();
         });
         
         it("should pass the actor interface to the constructor",function(){
@@ -43,7 +43,7 @@
             expect(__dramatis__).toEqual(any(Actor.Interface));
             complete();
           });
-          (new Type());
+          new Type();
         });
 
         it("should call behavior constructor with correct arguments",function(){
@@ -53,7 +53,7 @@
             expect(arguments).toEqual( [ 1, 2, "a", { b: "c" } ] );
             complete();
           });
-          (new Type( 1, 2, "a", { b: "c" } ));
+          new Type( 1, 2, "a", { b: "c" } );
         });
 
         it("should call the behavior methods when name methods called",function(){

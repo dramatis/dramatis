@@ -21,7 +21,7 @@
 
       it("should provide a Subscope method",function(){
         var Player = new Dramatis.Class(function Player(){});
-        (new Dramatis.Class.Subscope(Player));
+        new Dramatis.Class.Subscope(Player);
         var View = new Player.Class(function View(){});
         expect(View+"").toBe("Dramatis.Player.View");
       });

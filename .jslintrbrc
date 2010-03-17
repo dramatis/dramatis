@@ -4,6 +4,7 @@
  "nomen": false,
  "regexp": false,
  "plusplus": false,
+ "newside": true,
  "predef": [ "Dramatis",
              "Strophe"                
            ] }

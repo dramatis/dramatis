@@ -7,3 +7,6 @@
 [submodule "vendor/jquery.print"]
 	path = vendor/jquery.print
 	url = git://github.com/smparkes/jquery.print.git
+[submodule "vendor/feste"]
+	path = vendor/feste
+	url = git://github.com/smparkes/feste.git
