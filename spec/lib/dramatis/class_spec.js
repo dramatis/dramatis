@@ -1,6 +1,6 @@
 "use strict";
 (function(){
-  describe("ttt",function(){
+  describe("dramatis",function(){
     describe("class",function(){
 
       it("should be default creatable",function(){
@@ -33,7 +33,7 @@
 
       it("should add a toString if given a name",function() {
         var Cls = new Dramatis.Class( {}, {name: "TestName"} );
-        expect(Cls+"").toBe("TestName");
+        expect(Cls+"").toBe("Dramatis.TestName");
       });
       
       it("should not add a toString if not given a name",function() {

@@ -1,6 +1,5 @@
 "use strict";
 jazz.include("lib/dramatis.js");
-jazz.include("vendor/jquery.print/dist/jquery.print.js");
 /*
 jazrb_root = (function(){return this;}()).jazrb_root || "..";
 if(!(function(){return this;}()).jasmine){

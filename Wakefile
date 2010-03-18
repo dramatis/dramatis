@@ -1,8 +1,8 @@
 # -*- mode: ruby -*-
 
-ignore "vendor/{ttt,jquery,strophejs}/**"
+ignore "vendor/{jquery,strophejs}/**"
 
-web = "{lib,spec}/**/*"
+web = "{lib,spec,vendor/feste/{lib,spec}}/**/*"
 
 haml web
 sass web
