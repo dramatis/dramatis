@@ -17,10 +17,10 @@
       });
 
       it("should receive callbacks on publisher changes",function(){
-        pending("actor names don't have stubs for added methods");
         var hash = {a: "b"};
         this.sub.subscribe({to: this.pub, call: "method"});
-        this.sub.method = function method(state) {
+        // Yeah ... works but that doesn't mean it's a good IF
+        this.sub.__dramatis__.actor.behavior.method = function method(state) {
           expect(state).toEqual(hash);
           complete();
         };

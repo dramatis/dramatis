@@ -3,6 +3,10 @@
   describe("dramatis",function(){
     describe("publisher",function(){
 
+      it("should have the right name",function(){
+        expect(Dramatis.Publisher+"").toBe("Dramatis.Publisher");
+      });
+
       it("should be posssible to mix publisher in",function(){
         var cls = function(){};
         $.extend(cls.prototype,Dramatis.Publisher.prototype);
