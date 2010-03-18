@@ -10,3 +10,6 @@
 [submodule "vendor/feste"]
 	path = vendor/feste
 	url = git://github.com/smparkes/feste.git
+[submodule "vendor/puck"]
+	path = vendor/puck
+	url = git://github.com/smparkes/puck.git

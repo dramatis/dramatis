@@ -6,6 +6,7 @@
  "plusplus": false,
  "newside": true,
  "predef": [ "Feste",
+             "Puck",
              "Dramatis",
              "Strophe"
            ] }
