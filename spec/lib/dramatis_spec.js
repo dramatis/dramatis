@@ -19,7 +19,9 @@
     it("should call callback on succesful connect",function(){
       spyOn(Strophe,"Connection").andCallFake(Strophe.Mock.Connection.Good);
       var c = "bosh://localhost:5280/http-bind/user:password@localhost";
-      Dramatis.connect(c,function good_callback(){
+      Dramatis.connect(c,function good_callback(channel){
+        expect(channel).toBeDefined();
+        debug(channel.uri());
         complete();
       },function failed_callback(){
         expect("should not be called").toBeUndefined();

@@ -6,6 +6,8 @@
         describe("channel",function(){
           describe("xmpp",function(){
 
+            var global = (function(){return this;}());
+
             var Reactor = Dramatis.Runtime.Reactor;
             var Channel = Reactor.Channel;
             var XMPP = Reactor.Channel.XMPP;
@@ -13,7 +15,7 @@
             var NoConnection = Channel.NoConnection;
 
             beforeEach(function(){
-              this.bosh_url = "bosh://host:port/http-bind/user:password@vhost";
+              this.bosh_url = "bosh://host:port/http-bind/user:password@vhost/resource";
             });
 
             it("should fail if xmpp can't connect",function(){
@@ -34,7 +36,7 @@
               it("should parse url to appropriate fields",function(){
                 var xmpp = new XMPP(this.bosh_url);
                 expect(xmpp.service).toBe("http://host:port/http-bind");
-                expect(xmpp.jid).toBe("user@vhost");
+                expect(xmpp.jid).toBe("user@vhost/resource");
                 expect(xmpp.password).toBe("password");
               });
 
@@ -43,6 +45,40 @@
                 (new Channel(url,function(channel){
                   expect(channel).toBeDefined();
                   complete();
+                }));
+                incomplete();
+              });
+
+              it("should have a uri accessor if it can connect",function(){
+                var url = this.bosh_url;
+                (new Channel(url,function(channel){
+                  expect(channel).toBeDefined();
+                  expect(channel.uri()).toBe("xmpp:user@vhost/resource");
+                  complete();
+                }));
+                incomplete();
+              });
+
+              it("should not call connect fail after connection complete",function(){
+                var url = this.bosh_url;
+                (new Channel(url,function(channel){
+                  channel.connection.fail();
+                  global.setTimeout(function(){
+                    complete();
+                  },0);
+                },function(){
+                  expect(true).toBe(false);
+                }));
+                incomplete();
+              });
+
+              it("should call disconnect callbacks on connection lost",function(){
+                var url = this.bosh_url;
+                (new Channel(url,function(channel){
+                  channel.on_disconnect(function(){
+                    complete();
+                  });
+                  channel.connection.fail();
                 }));
                 incomplete();
               });
