@@ -35,7 +35,7 @@ describe("dramatis",function(){
     });
 
     it("should add a toString if given a name",function() {
-      var Cls = new Dramatis.Class( {}, {name: "TestName"} );
+      var Cls = new Dramatis.Class( ({}), {name: "TestName"} );
           expect(Cls+"").toBe("Dramatis.TestName");
     });
     
