@@ -23,6 +23,12 @@
           expect(Runtime.Actor.Name.Remote).wasCalled();
         });
 
+        it("should have be extensible",function(){
+          var name = new Actor.Name();
+          Actor.Name.extend(name, "foo");
+          expect(name.foo).toEqual(any(Function));
+        });
+
       });
      });
    });
