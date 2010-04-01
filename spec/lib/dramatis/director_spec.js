@@ -3,6 +3,7 @@
   describe("dramatis",function(){
     describe("director",function(){
 
+      var Actor = Dramatis.Actor;
       var any = jasmine.any;
 
       it("should provide access to the current director",function(){
@@ -40,11 +41,30 @@
       });
 
       describe("connection states",function(){
-
         beforeEach(function(){
           Dramatis.Director.reset();
         });
+      });
 
+      it("should deliver local tasks",function(){
+        var actor = new Actor({a: function(){}});
+        spyOn(actor,"a");
+        actor.a();
+        expect(actor.a).wasCalled();
+      });
+
+      it("should forward remote tasks to remote directors",function(){
+        var name = new Actor.Name("xmpp:user@host#actor");
+        var bosh =  "bosh://host:port/http-bind/user:password@vhost";
+        Actor.Name.extend(name, "a");
+        spyOn(Strophe,"Connection").andCallFake(Strophe.Mock.Connection.Good);
+        spyOn(Dramatis.Runtime.Reactor.Channel.XMPP.prototype,"send");
+        Dramatis.Director.current.connect(bosh, function() {
+          name.a();
+          expect(Dramatis.Runtime.Reactor.Channel.XMPP.prototype.send).wasCalled();
+          complete();
+        });
+        incomplete();
       });
 
     });

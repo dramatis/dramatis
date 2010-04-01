@@ -121,31 +121,43 @@
               });
             });
 
-            describe("jid parsering",function(){
+            describe("jid parsing",function(){
               it("should parse xmpp urls",function(){
                 expect(XMPP.parse_url("xmpp:user@host/resource#actor")).toBeDefined();
               });
 
               it("should parse xmpp urls to the proper route and name",function(){
                 expect(XMPP.parse_url("xmpp:user@host/resource#actor")).toEqual({
-                  route: "xmpp:user@host/resource",
+                  route: new XMPP.Route("user","host","resource"),
                   actor: "actor"
                 });
               });
 
               it("should parse xmpp urls to the proper route and name w/resources",function(){
                 expect(XMPP.parse_url("xmpp:user@host#actor")).toEqual({
-                  route: "xmpp:user@host",
+                  route: new XMPP.Route("user","host"),
                   actor: "actor"
                 });
+              });
+
+              it("should convert routes to string w/o resources",function() {
+                expect(new XMPP.Route("user","host","resource")+"").
+                  toBe("xmpp:user@host/resource");
+              });
+
+              it("should convert routes to string w/resources",function() {
+                expect(new XMPP.Route("user","host")+"").
+                  toBe("xmpp:user@host");
               });
 
               it("should ignore non-xmpp urls",function(){
                 expect(XMPP.parse_url("http:")).toBeUndefined();
               });
               
+              it("should have a send method",function(){
+                expect(XMPP.prototype.send).toBeDefined();
+              });
             });
-
           });
         });
       });

@@ -58,6 +58,20 @@
         instance.b("b");
       });
 
+      it("should have an enqueue method",function(){
+        var name = new Actor({});
+        expect(name.__runtime__.actor.enqueue).toBeDefined();
+      });
+
+      it("should enqueue to the director on first enquue",function(){
+        var director = Dramatis.Director.current;
+        spyOn(director,"run");
+        var name = new Actor({a:function(){}});
+        name.a();
+        expect(director.run).wasCalled();
+      });
+
+
     });
   });
 }(jQuery));
