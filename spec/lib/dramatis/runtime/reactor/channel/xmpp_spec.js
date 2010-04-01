@@ -119,6 +119,30 @@
                 }));
                 incomplete();
               });
+            });
+
+            describe("jid parsering",function(){
+              it("should parse xmpp urls",function(){
+                expect(XMPP.parse_url("xmpp:user@host/resource#actor")).toBeDefined();
+              });
+
+              it("should parse xmpp urls to the proper route and name",function(){
+                expect(XMPP.parse_url("xmpp:user@host/resource#actor")).toEqual({
+                  route: "xmpp:user@host/resource",
+                  actor: "actor"
+                });
+              });
+
+              it("should parse xmpp urls to the proper route and name w/resources",function(){
+                expect(XMPP.parse_url("xmpp:user@host#actor")).toEqual({
+                  route: "xmpp:user@host",
+                  actor: "actor"
+                });
+              });
+
+              it("should ignore non-xmpp urls",function(){
+                expect(XMPP.parse_url("http:")).toBeUndefined();
+              });
               
             });
 

@@ -23,7 +23,6 @@
           expect(Runtime.Actor.Name.Remote).wasCalled();
         });
 
-
       });
      });
    });
