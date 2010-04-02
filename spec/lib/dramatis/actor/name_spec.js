@@ -29,6 +29,14 @@
           expect(name.foo).toEqual(any(Function));
         });
 
+        it("should jsonize to something reasonable",function(){
+          spyOn(Dramatis.Director.current,"route").andReturn(new Runtime.Reactor.Channel.XMPP.Route("user","host","resource"));
+          var actor = new Actor({});
+          var json = JSON.stringify(actor);
+          expect(json).toMatch("Dramatis.Runtime.Actor.Name.Remote");
+          expect(json).toMatch("xmpp:user@host/resource");
+        });
+
       });
      });
    });
