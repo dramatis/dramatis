@@ -34,8 +34,8 @@
         it("should callback with correct value of futures (precomputed)",function(){
           incomplete();
           var futures = [ new Future(), new Future() ];
-          futures[0].success(1);
-          futures[1].success(2);
+          futures[0].value.call(1);
+          futures[1].value.call(2);
           Future.using( futures[0], futures[1], function(){
             expect(arguments).toEqual([1,2]);
             complete();
@@ -49,19 +49,19 @@
             expect(arguments).toEqual([1,2]);
             complete();
           });
-          setTimeout(function(){futures[1].success(2);},50);
-          setTimeout(function(){futures[0].success(1);},100);
+          setTimeout(function(){futures[1].value.call(2);},50);
+          setTimeout(function(){futures[0].value.call(1);},100);
         });
 
         it("should callback with correct value of futures (hybrid)",function(){
           incomplete();
           var futures = [ new Future(), new Future() ];
-          futures[1].success(2);
+          futures[1].value.call(2);
           Future.using( futures[0], futures[1], function(){
             expect(arguments).toEqual([1,2]);
             complete();
           });
-          setTimeout(function(){futures[0].success(1);},100);
+          setTimeout(function(){futures[0].value.call(1);},100);
         });
 
       });

@@ -4,7 +4,8 @@
     describe("runtime",function(){
       describe("task",function(){
 
-            var Task = Dramatis.Runtime.Task;
+        var Task = Dramatis.Runtime.Task;
+        var Callable = Dramatis.Runtime.Callable;
 
         it("should convert to json",function(){
           var task = new Task();
@@ -12,10 +13,21 @@
         });
 
         it("should roundrip through json",function(){
-          var task = new Task( "name", "method", [ "args" ], "continuation" );
-          var json = JSON.stringify(task);
-          var new_task = Dramatis.JSON.parse(json);
-          expect(new_task).toEqual(task);
+          var name = new Dramatis.Actor({});
+          var task = new Task(new Callable([name, "method"]), [ "args" ], "continuation");
+
+          spyOn(Strophe,"Connection").andCallFake(Strophe.Mock.Connection.Good);
+          Dramatis.Director.current.
+            connect("bosh://host:port/http-bind/user:password@vhost",
+                    function(){
+                      var json = JSON.stringify(task);
+                      // console.debug("js",json);
+                      var new_task = Dramatis.JSON.parse(json);
+                      // console.debug(JSON.stringify(new_task));
+                      expect(new_task).toEqual(task);
+                      complete();
+                    });
+          incomplete();
         });
 
       });

@@ -55,7 +55,7 @@
 
       it("should forward remote tasks to remote directors",function(){
         var name = new Actor.Name("xmpp:user@host#actor");
-        var bosh =  "bosh://host:port/http-bind/user:password@vhost";
+        var bosh = "bosh://host:port/http-bind/user:password@vhost";
         Actor.Name.extend(name, "a");
         spyOn(Strophe,"Connection").andCallFake(Strophe.Mock.Connection.Good);
         spyOn(Dramatis.Runtime.Reactor.Channel.XMPP.prototype,"send");

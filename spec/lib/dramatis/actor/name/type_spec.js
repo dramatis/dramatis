@@ -15,7 +15,7 @@
 
           it("should be a subclass of the base name type",function(){
             var Type = new Actor.Name.Type();
-            expect(new Type()).toEqual(any(Name));
+            expect(new Type({id:0})).toEqual(any(Name));
           });
           
           it("should reflect the actor methods on the prototype",function(){
@@ -33,7 +33,7 @@
             var actor = function(){};
             actor.prototype = methods;
             var Type = new Actor.Name.Type(actor);
-            var name = new Type();
+            var name = new Type({id:0});
             expect(name.a).toBeDefined();
             expect(name.b).toBeDefined();
             expect(name.c).toBeUndefined();
@@ -41,7 +41,7 @@
           
           it("instances should reflect the constructor",function(){
             var Type = new Actor.Name.Type();
-            var name = new Type();
+            var name = new Type({id:0});
             expect(name.constructor).toBe(Type);
           });
           
