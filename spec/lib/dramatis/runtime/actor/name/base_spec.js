@@ -14,11 +14,11 @@
 
             it("should create tasks on call",function(){
               var name = new Actor({foo: function(){}});
-              spyOn(name.__runtime__.actor.behavior,"foo");
+              spyOn(name.__runtime__.actor().behavior,"foo");
               spyOn(Runtime,"Task").andCallThrough();
               name.foo();
               expect(Runtime.Task).wasCalled();
-              expect(name.__runtime__.actor.behavior.foo).wasCalled();
+              expect(name.__runtime__.actor().behavior.foo).wasCalled();
             });
 
           });

@@ -15,10 +15,6 @@
               expect(name.__runtime__.send).toBeDefined();
             });
 
-            it("should route calls",function(){
-              pending();
-            });
-
           });
         });
       });

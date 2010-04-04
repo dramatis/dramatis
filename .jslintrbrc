@@ -5,6 +5,7 @@
  "regexp": false,
  "plusplus": false,
  "newside": true,
+ "gettersetter": true,
  "predef": [ "Feste",
              "Puck",
              "Dramatis",

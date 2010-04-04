@@ -20,7 +20,7 @@
         var hash = {a: "b"};
         this.sub.subscribe({to: this.pub, call: "method"});
         // Yeah ... works but that doesn't mean it's a good IF
-        this.sub.__runtime__.actor.behavior.method = function method(state) {
+        this.sub.__runtime__.actor().behavior.method = function method(state) {
           expect(state).toEqual(hash);
           complete();
         };

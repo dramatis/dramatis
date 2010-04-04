@@ -60,7 +60,7 @@
 
       it("should have an enqueue method",function(){
         var name = new Actor({});
-        expect(name.__runtime__.actor.enqueue).toBeDefined();
+        expect(name.__runtime__.actor().enqueue).toBeDefined();
       });
 
       it("should enqueue to the director on first enquue",function(){

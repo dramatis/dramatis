@@ -129,14 +129,14 @@
               it("should parse xmpp urls to the proper route and name",function(){
                 expect(XMPP.parse_url("xmpp:user@host/resource#actor")).toEqual({
                   route: new XMPP.Route("user","host","resource"),
-                  actor: "actor"
+                  id: "actor"
                 });
               });
 
               it("should parse xmpp urls to the proper route and name w/resources",function(){
                 expect(XMPP.parse_url("xmpp:user@host#actor")).toEqual({
                   route: new XMPP.Route("user","host"),
-                  actor: "actor"
+                  id: "actor"
                 });
               });
 

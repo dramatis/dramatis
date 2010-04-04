@@ -21,9 +21,9 @@
             connect("bosh://host:port/http-bind/user:password@vhost",
                     function(){
                       var json = JSON.stringify(task);
-                      // console.debug("js",json);
                       var new_task = Dramatis.JSON.parse(json);
-                      // console.debug(JSON.stringify(new_task));
+                      // Force resolution ...
+                      new_task.callable.name.actor();
                       expect(new_task).toEqual(task);
                       complete();
                     });
