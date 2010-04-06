@@ -1,5 +1,4 @@
 "use strict";
-jazz.include("lib/dramatis.js");
 (function(){
   var global = (function(){return this;}());
   if (!global.console) {
@@ -7,3 +6,4 @@ jazz.include("lib/dramatis.js");
     global.console.debug = global.debug;
   }
 }());
+jazz.include("lib/dramatis.js");
