@@ -117,6 +117,30 @@
 
       });
 
+      describe("termination",function() {
+        it("should be happy with behaviors that don't have terminate",function() {
+          spyOn(Dramatis,"error");
+          var actor = new Actor({a: function(){var a;return a.b;}});
+          Actor.terminate(actor);
+          expect(Dramatis.error).wasNotCalled();
+        });
+
+        it("should call terminate on behaviors at termination",function() {
+          var Cls = new Actor.Type(function(){
+            Actor.Behavior.call(this,arguments);
+            Actor.on_terminate(this, "on_terminate");
+          }, {
+            on_terminate: function(reason) {
+              expect(reason).toEqual(any(Dramatis.Exception.Terminated.Normal));
+              complete();
+            }
+          });
+          var actor = new Cls();
+          Actor.terminate(actor);
+          incomplete();
+        });
+      });
+
       describe("pubsub",function() {
 
         it("should be possible to subscribe to lifecycle events",function(){
