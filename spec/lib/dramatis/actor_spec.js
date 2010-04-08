@@ -139,6 +139,12 @@
           Actor.terminate(actor);
           incomplete();
         });
+
+
+        it("should not deliver tasks to terminated actors", function(){
+          pending();
+        });
+
       });
 
       describe("pubsub",function() {
