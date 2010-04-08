@@ -6,8 +6,8 @@
       var Actor = Dramatis.Actor;
 
       beforeEach(function(){
-        this.Subscriber = new Actor.Type( new Dramatis.Class( [ Dramatis.Subscriber ] ) );
-        this.Publisher = new Actor.Type( new Dramatis.Class( [ Dramatis.Publisher ] ) );
+        this.Subscriber = new Actor.Type(new Dramatis.Class([Dramatis.Subscriber]));
+        this.Publisher = new Actor.Type(new Dramatis.Class([Dramatis.Publisher]));
         this.sub = new this.Subscriber();
         this.pub = new this.Publisher();
       });

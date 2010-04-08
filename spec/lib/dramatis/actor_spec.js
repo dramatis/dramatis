@@ -6,6 +6,7 @@
       var Actor = Dramatis.Actor;
       var Name = Actor.Name;
       var any = jasmine.any;
+      var c = Dramatis.Continue;
 
       it("should be possible to create bare actors from a behavior",function(){
         expect(new Actor({})).toBeDefined();
@@ -71,6 +72,89 @@
         expect(director.run).wasCalled();
       });
 
+
+      describe("exceptions",function(){
+
+        it("should call raise on actors on uncaught exceptions", function(){
+          spyOn(Dramatis,"error");
+          spyOn(Dramatis.Actor.prototype,"raise");
+          var actor = new Actor({a: function(){var a;return a.b;}});
+          actor.a();
+          expect(Dramatis.error).wasCalled();
+          expect(Dramatis.Actor.prototype.raise).wasCalled();
+        });
+
+        it("should call abort on caught raise actors on uncaught exceptions", function(){
+          spyOn(Dramatis,"error");
+          spyOn(Dramatis.Actor.prototype,"abort");
+          var actor = new Actor({a: function(){var a;return a.b;}});
+          actor.a();
+          expect(Dramatis.error).wasCalled();
+          expect(Dramatis.Actor.prototype.abort).wasCalled();
+        });
+
+        it("should call termiante on caught raise actors on uncaught exceptions", function(){
+          spyOn(Dramatis,"error");
+          spyOn(Dramatis.Actor.prototype,"terminate");
+          var actor = new Actor({a: function(){var a;return a.b;}});
+          actor.a();
+          expect(Dramatis.error).wasCalled();
+          expect(Dramatis.Actor.prototype.terminate).wasCalled();
+        });
+
+        it("should throw an error to the caller on failure", function(){
+          spyOn(Dramatis,"error");
+          var actor = new Actor({a: function(){var a;return a.b;}});
+          actor.a(c({
+            exception: [actor, function(e){
+              expect(e).toEqual(any(Dramatis.Exception.Terminated));
+              expect(Dramatis.error).wasCalled();
+              complete();
+            }]
+          }));
+          incomplete();
+        });
+
+      });
+
+      describe("pubsub",function() {
+
+        it("should be possible to subscribe to lifecycle events",function(){
+          var actor = new Actor({a: function(){var a;return a.b;}});
+          Dramatis.extend(this, Dramatis.Subscriber);
+          this.subscribe({to: Actor.lifecycle(actor), call:"method"});
+          expect(true).toBe(true);
+        });
+        
+        it("should call subscriber on failiure",function(){
+          spyOn(Dramatis,"error");
+          var actor = new Actor({a: function(){var a;return a.b;}});
+          Dramatis.extend(this, Dramatis.Subscriber);
+          this.subscribe({to: Actor.lifecycle(actor), call:  function(an, reason){
+            expect(an.equals(actor));
+            expect(reason).toEqual(any(Dramatis.Exception.Terminated));
+            expect(Dramatis.error).wasCalled();
+            complete();
+          }});
+          actor.a();
+          incomplete();
+        });
+
+        it("should call subscriber on normal termination",function(){
+          var actor = new Actor({a: function(){
+            Actor.terminate(this);
+          }});
+          Dramatis.extend(this, Dramatis.Subscriber);
+          this.subscribe({to: Actor.lifecycle(actor), call:  function(an, reason){
+            expect(an.equals(actor));
+            expect(reason).toEqual(any(Dramatis.Exception.Terminated.Normal));
+            complete();
+          }});
+          actor.a();
+          incomplete();
+        });
+
+      });
 
     });
   });
