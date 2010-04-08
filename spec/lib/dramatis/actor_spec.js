@@ -117,6 +117,26 @@
 
       });
 
+      describe("id",function(){
+        it("should provide an id fn",function(){
+          expect(Actor.id).toBeDefined();
+        });
+
+        it("should for work actor names",function(){
+          var actor = new Actor({a: function(){var a;return a.b;}});
+          expect(typeof Actor.id(actor) === "number").toBe(true);
+        });
+
+        it("should for work behaviors",function(){
+          var actor = new Actor({a: function(){
+            expect(typeof Actor.id(this) === "number").toBe(true);
+            complete();
+          }});
+          actor.a();
+          incomplete();
+        });
+      });
+
       describe("termination",function() {
         it("should be happy with behaviors that don't have terminate",function() {
           spyOn(Dramatis,"error");
