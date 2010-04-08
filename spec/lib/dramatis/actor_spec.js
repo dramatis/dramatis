@@ -76,20 +76,16 @@
       describe("exceptions",function(){
 
         it("should call raise on actors on uncaught exceptions", function(){
-          spyOn(Dramatis,"error");
           spyOn(Dramatis.Actor.prototype,"raise");
           var actor = new Actor({a: function(){var a;return a.b;}});
           actor.a();
-          expect(Dramatis.error).wasCalled();
           expect(Dramatis.Actor.prototype.raise).wasCalled();
         });
 
         it("should call abort on caught raise actors on uncaught exceptions", function(){
-          spyOn(Dramatis,"error");
           spyOn(Dramatis.Actor.prototype,"abort");
           var actor = new Actor({a: function(){var a;return a.b;}});
           actor.a();
-          expect(Dramatis.error).wasCalled();
           expect(Dramatis.Actor.prototype.abort).wasCalled();
         });
 
