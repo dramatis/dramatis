@@ -22,7 +22,8 @@
         expect(new Actor({})).toEqual(any(Name));
       });
 
-      it("should have methods on the name that reflect the behavior methods",function(){
+      it("should have methods on the name that reflect the behavior methods",
+         function(){
         var behavior = { a: function(){}, b: function(){} };
         var actor = new Actor(behavior);
         expect(actor).toEqual(any(Name));
@@ -111,6 +112,23 @@
           incomplete();
         });
 
+      });
+
+      describe("behavior",function(){
+        it("should be defined", function(){
+          expect(Actor.behavior).toBeDefined();
+        });
+
+        it("should return behaviors for local actors", function(){
+          var behavior = ({});
+          var actor = new Actor(behavior);
+          expect(Actor.behavior(actor)).toBe(behavior);
+        });
+
+        it("should return undefined for remote actors", function(){
+          var actor = new Actor.Name("xmpp:user@host/resource#id");
+          expect(Actor.behavior(actor)).toBeUndefined();
+        });
       });
 
       describe("id",function(){
