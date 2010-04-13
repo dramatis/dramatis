@@ -15,6 +15,12 @@
               expect(name.__runtime__.send).toBeDefined();
             });
 
+            it("should resolve to a uri",function(){
+              var name = new Actor.Name("xmpp:user@host#actor");
+              var runtime = name.__runtime__;
+              expect(runtime.uri()).toBe("xmpp:user@host#actor");
+            });
+
           });
         });
       });

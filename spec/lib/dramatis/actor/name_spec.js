@@ -37,6 +37,13 @@
           expect(json).toMatch("xmpp:user@host/resource");
         });
 
+        it("should coerce to a uri",function(){
+          spyOn(Dramatis.Director.current,"route").andReturn(new Runtime.Reactor.Channel.XMPP.Route("user","host","resource"));
+          var actor = new Actor({});
+          var uri = Actor.Name.uri(actor);
+          expect(uri).toMatch(/^xmpp:user@host\/resource#\d+$/);
+        });
+
       });
      });
    });

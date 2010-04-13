@@ -140,12 +140,22 @@
                 });
               });
 
-              it("should convert routes to string w/o resources",function() {
+              it("should produce uris w/resources",function() {
+                expect(new XMPP.Route("user","host","resource").uri("actor")).
+                  toBe("xmpp:user@host/resource#actor");
+              });
+
+              it("should produce uris w/o resources",function() {
+                expect(new XMPP.Route("user","host").uri("actor")).
+                  toBe("xmpp:user@host#actor");
+              });
+
+              it("should convert routes to string w/resources",function() {
                 expect(new XMPP.Route("user","host","resource")+"").
                   toBe("xmpp:user@host/resource");
               });
 
-              it("should convert routes to string w/resources",function() {
+              it("should convert routes to string w/o resources",function() {
                 expect(new XMPP.Route("user","host")+"").
                   toBe("xmpp:user@host");
               });
