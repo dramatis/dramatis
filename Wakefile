@@ -7,5 +7,5 @@ web = "{lib,spec,vendor/{feste,puck}/{lib,spec}}/**/*"
 haml web
 sass web
 
-jslintrb web
+jslint_rb web
 jazz web
