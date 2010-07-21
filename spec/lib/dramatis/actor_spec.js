@@ -190,7 +190,7 @@
           expect(true).toBe(true);
         });
         
-        it("should call subscriber on failiure",function(){
+        it("should call subscriber on failure",function(){
           spyOn(Dramatis,"error");
           var actor = new Actor({a: function(){var a;return a.b;}});
           Dramatis.extend(this, Dramatis.Subscriber);
